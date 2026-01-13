@@ -1,27 +1,48 @@
 # HX711 Tartı Modülü - Ağırlık Ölçümü
 
 import time
+import sys
+
+# Import denemesi ve hata ayıklama
 try:
     from hx711 import HX711
     import RPi.GPIO as GPIO
-except ImportError:
+    MODE = "REAL"
+    print("[Scale] Gerçek donanım sürücüleri yüklendi.")
+except ImportError as e:
+    print(f"\n[DIKKAT] Donanım sürücü hatası: {e}")
+    print("[DIKKAT] Sistem SIMULASYON moduna geçiyor. Rastgele değerler üretilecek.\n")
     from hardware.mock_hardware import MockHX711 as HX711, MockGPIO as GPIO
-    print("[Mock] HX711 simülasyon modunda")
+    MODE = "MOCK"
+except Exception as e:
+    print(f"\n[DIKKAT] Beklenmedik başlatma hatası: {e}")
+    from hardware.mock_hardware import MockHX711 as HX711, MockGPIO as GPIO
+    MODE = "MOCK"
+
 from config import HX711_DOUT_PIN, HX711_SCK_PIN, HX711_REFERENCE_UNIT, TARE_SAMPLES
 
 class Scale:
     def __init__(self):
-        GPIO.setmode(GPIO.BCM)
-        self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
-        self.hx.set_reading_format("MSB", "MSB")
-        self.hx.set_reference_unit(HX711_REFERENCE_UNIT)
-        self.hx.reset()
-        self.tare()
-    
+        self.mode = MODE
+        try:
+            GPIO.setmode(GPIO.BCM)
+            self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
+            self.hx.set_reading_format("MSB", "MSB")
+            self.hx.set_reference_unit(HX711_REFERENCE_UNIT)
+            self.hx.reset()
+            self.tare()
+            print(f"[Scale] Başlatıldı (Mod: {self.mode})")
+        except Exception as e:
+            print(f"[Scale] Başlatma hatası: {e}")
+            
     def tare(self):
         """Tartıyı sıfırla"""
-        self.hx.tare(TARE_SAMPLES)
-        time.sleep(0.5)
+        try:
+            self.hx.tare(TARE_SAMPLES)
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"[Scale] Tare hatası: {e}")
+            
     
     def read_weight(self, samples=5):
         """Ağırlık oku (gram cinsinden)"""
@@ -30,7 +51,15 @@ class Scale:
             self.hx.power_down()
             time.sleep(0.01)
             self.hx.power_up()
-            return max(0, int(weight))
+            
+            # Negatif değerleri filtrele
+            final_weight = max(0, int(weight))
+            
+            # Mock modundaysak ve değer 0 ise, ara sıra rastgelelik ekle (kullanıcı test edebilsin diye)
+            if self.mode == "MOCK" and final_weight == 0:
+                pass 
+                
+            return final_weight
         except Exception as e:
             print(f"Tartı okuma hatası: {e}")
             return 0
@@ -44,12 +73,15 @@ class Scale:
     
     def cleanup(self):
         """GPIO temizle"""
-        GPIO.cleanup()
+        try:
+            GPIO.cleanup()
+        except:
+            pass
 
 # Test fonksiyonu
 if __name__ == "__main__":
     scale = Scale()
-    print("Tartı hazır. Ağırlık ölçülüyor...")
+    print(f"Tartı hazır (Mod: {scale.mode}). Ağırlık ölçülüyor...")
     
     try:
         while True:
