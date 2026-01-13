@@ -1,0 +1,10 @@
+{
+  "users": {
+    "1": {
+      "name": "Test Kullanıcı",
+      "age": 30,
+      "weight": 70,
+      "height": 175
+    }
+  }
+}

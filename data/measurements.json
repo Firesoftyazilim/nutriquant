@@ -1,0 +1,58 @@
+{
+  "measurements": [
+    {
+      "timestamp": "2026-01-07T14:44:18.043557",
+      "user_id": 1,
+      "food": "Lahmacun",
+      "weight": 481,
+      "nutrition": {
+        "name": "Lahmacun",
+        "weight": 481,
+        "calorie": 1202.5,
+        "protein": 43.3,
+        "carb": 134.7,
+        "fat": 52.9
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-07T14:44:28.063729",
+      "user_id": 1,
+      "food": "Dana Izgara",
+      "weight": 447,
+      "nutrition": {
+        "name": "Dana Izgara",
+        "weight": 447,
+        "calorie": 970.0,
+        "protein": 116.2,
+        "carb": 0.0,
+        "fat": 53.6
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-07T14:44:38.084816",
+      "user_id": 1,
+      "food": "Beyaz Peynir",
+      "weight": 252,
+      "nutrition": {
+        "name": "Beyaz Peynir",
+        "weight": 252,
+        "calorie": 665.3,
+        "protein": 35.3,
+        "carb": 5.0,
+        "fat": 52.9
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+    "bulgur_pilavi": {
+        "name": "Bulgur Pilavı",
+        "calorie": 120,
+        "protein": 3.1,
+        "carb": 25.6,
+        "fat": 2.0
+    },
+    "pirinc_pilavi": {
+        "name": "Pirinç Pilavı",
+        "calorie": 130,
+        "protein": 2.7,
+        "carb": 28.0,
+        "fat": 2.8
+    },
+    "makarna_sade": {
+        "name": "Makarna (Haşlanmış)",
+        "calorie": 131,
+        "protein": 5.0,
+        "carb": 25.0,
+        "fat": 1.1
+    },
+    "tavuk_izgara": {
+        "name": "Tavuk Izgara",
+        "calorie": 165,
+        "protein": 31.0,
+        "carb": 0.0,
+        "fat": 3.6
+    },
+    "dana_izgara": {
+        "name": "Dana Izgara",
+        "calorie": 217,
+        "protein": 26.0,
+        "carb": 0.0,
+        "fat": 12.0
+    },
+    "kofte_izgara": {
+        "name": "Köfte Izgara",
+        "calorie": 254,
+        "protein": 17.0,
+        "carb": 6.0,
+        "fat": 20.0
+    },
+    "somon_izgara": {
+        "name": "Somon Izgara",
+        "calorie": 208,
+        "protein": 20.0,
+        "carb": 0.0,
+        "fat": 13.0
+    },
+    "mercimek_corbasi": {
+        "name": "Mercimek Çorbası",
+        "calorie": 70,
+        "protein": 4.5,
+        "carb": 10.2,
+        "fat": 2.1
+    },
+    "zeytinyagli_fasulye": {
+        "name": "Zeytinyağlı Fasulye",
+        "calorie": 90,
+        "protein": 2.5,
+        "carb": 9.0,
+        "fat": 5.0
+    },
+    "omlet": {
+        "name": "Omlet",
+        "calorie": 154,
+        "protein": 11.0,
+        "carb": 1.0,
+        "fat": 11.0
+    },
+    "menemen": {
+        "name": "Menemen",
+        "calorie": 110,
+        "protein": 5.5,
+        "carb": 4.5,
+        "fat": 7.5
+    },
+    "yogurt_tam": {
+        "name": "Yoğurt",
+        "calorie": 61,
+        "protein": 3.5,
+        "carb": 4.7,
+        "fat": 3.3
+    },
+    "beyaz_peynir": {
+        "name": "Beyaz Peynir",
+        "calorie": 264,
+        "protein": 14.0,
+        "carb": 2.0,
+        "fat": 21.0
+    },
+    "elma": {
+        "name": "Elma",
+        "calorie": 52,
+        "protein": 0.3,
+        "carb": 14.0,
+        "fat": 0.2
+    },
+    "muz": {
+        "name": "Muz",
+        "calorie": 89,
+        "protein": 1.1,
+        "carb": 23.0,
+        "fat": 0.3
+    },
+    "lahmacun": {
+        "name": "Lahmacun",
+        "calorie": 250,
+        "protein": 9.0,
+        "carb": 28.0,
+        "fat": 11.0
+    },
+    "pizza_margherita": {
+        "name": "Pizza Margherita",
+        "calorie": 266,
+        "protein": 11.0,
+        "carb": 33.0,
+        "fat": 10.0
+    },
+    "manti": {
+        "name": "Mantı",
+        "calorie": 210,
+        "protein": 9.0,
+        "carb": 28.0,
+        "fat": 7.0
+    }
+}
