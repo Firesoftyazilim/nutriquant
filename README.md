@@ -73,10 +73,13 @@ project/
 cd project
 chmod +x setup.sh
 ./setup.sh
+source venv/bin/activate
 ```
 
 ### 3. AI Model Yerleştirme
-TensorFlow Lite modelini `models/food_classifier.tflite` yoluna kopyalayın.
+Projenin çalışması için bir TensorFlow Lite modeline ihtiyacı vardır. Eğer kendi modelinizi eğitmediyseniz, sistem **simülasyon modunda** (rastgele yemek seçerek) çalışmaya devam edecektir. 
+
+Kendi modelinizi eğitmek için [Teachable Machine](https://teachablemachine.withgoogle.com/) kullanabilir ve çıktıyı `models/food_classifier.tflite` olarak kaydedebilirsiniz.
 
 ## GPIO Bağlantıları
 
@@ -94,6 +97,7 @@ TensorFlow Lite modelini `models/food_classifier.tflite` yoluna kopyalayın.
 
 ### Başlatma
 ```bash
+source venv/bin/activate
 python3 main.py
 ```
 

@@ -31,8 +31,13 @@ sudo raspi-config nonint do_i2c 0
 sudo raspi-config nonint do_camera 0
 
 # Python bağımlılıkları
+echo "Sanal ortam oluşturuluyor..."
+python3 -m venv venv
+source venv/bin/activate
+
 echo "Python paketleri kuruluyor..."
-pip3 install -r requirements.txt
+pip install --upgrade pip
+pip install -r requirements.txt
 
 # Data klasörü oluştur
 mkdir -p data
@@ -49,6 +54,8 @@ echo ""
 echo "Kurulum tamamlandı!"
 echo ""
 echo "Kullanım:"
+echo "  source venv/bin/activate"
 echo "  python3 main.py"
 echo ""
-echo "Not: TensorFlow Lite modelini models/food_classifier.tflite yoluna yerleştirin"
+echo "Not 1: Uygulamayı her zaman 'source venv/bin/activate' komutuyla sanal ortamı açarak çalıştırın."
+echo "Not 2: TensorFlow Lite modelini models/food_classifier.tflite yoluna yerleştirin. (Eğer yoksa sistem simülasyon modunda çalışacaktır)"
