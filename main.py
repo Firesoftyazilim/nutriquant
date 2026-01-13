@@ -1,5 +1,6 @@
 # Nutriquant - Ana Uygulama
 # Raspberry Pi 4 - Akıllı Yemek Tartısı
+# v2.0 - Dashboard ve Manuel Kontrol
 
 import time
 import sys
@@ -12,7 +13,7 @@ from ai.food_recognition import FoodRecognizer
 from core.nutrition import NutritionCalculator
 from core.bmi import BMICalculator
 from core.database import Database
-from ui.display import Display
+from ui.display import Display, UIState
 from config import MIN_WEIGHT_THRESHOLD
 
 class Nutriquant:
@@ -28,9 +29,13 @@ class Nutriquant:
         self.nutrition_calc = NutritionCalculator()
         self.bmi_calc = BMICalculator()
         self.db = Database()
+        
+        # UI Başlat
         self.display = Display()
+        self.state = UIState.DASHBOARD
         
         self.current_user = self.load_default_user()
+        self.current_nutrition = None # Son ölçüm sonucu
         
         print("Sistem hazır!")
         self.speaker.play_ready()
@@ -55,96 +60,103 @@ class Nutriquant:
         """Ana döngü"""
         try:
             while True:
+                # 1. Sensörleri Oku
+                weight = self.scale.read_weight()
                 battery_percent = self.battery.get_percentage()
-                self.display.show_home_screen(battery_percent)
                 
+                # 2. UI Durumuna Göre Çizim Yap
+                if self.display.state == UIState.DASHBOARD:
+                    self.display.show_dashboard(weight, battery_percent)
+                    
+                # 3. Olayları Dinle
                 event = self.display.handle_events()
+                
                 if event == 'quit':
                     break
+                    
+                elif event == 'click_scan':
+                    self.perform_scan(weight)
+                    
+                elif event == 'click_retry':
+                    self.display.state = UIState.DASHBOARD
+                    self.led.off()
+                    
+                elif event == 'click_save':
+                    self.save_result()
+                    self.display.state = UIState.DASHBOARD
+                    self.speaker.play_success()
                 
-                weight = self.scale.read_weight()
-                
-                if weight >= MIN_WEIGHT_THRESHOLD:
-                    self.process_measurement(weight)
-                
-                time.sleep(0.5)
-        
         except KeyboardInterrupt:
             print("\nKapatılıyor...")
         
         finally:
             self.cleanup()
     
-    def process_measurement(self, weight):
-        """Ölçüm işle"""
-        print(f"\nÖlçüm: {weight}g")
-        
-        self.led.blue()
-        self.speaker.play_beep()
-        self.display.show_measuring_screen(weight)
-        time.sleep(1)
-        
+    def perform_scan(self, weight):
+        """Tarama ve Analiz İşlemi"""
+        # Ağırlık kontrolü (Opsiyonel: 0 olsa bile çalışsın istendi ama uyarı verebiliriz)
+        if weight < 10:
+            print("Uyarı: Ağırlık çok düşük")
+            # Yine de devam ediyoruz, belki sadece görüntü istiyorlardır
+            
+        self.display.state = UIState.SCANNING
+        self.display.show_camera_feed()
         self.led.white()
+        self.speaker.play_beep()
+        
+        # Kamera Görüntüsü Al (Biraz gecikme efekti verilebilir)
+        time.sleep(0.5) 
         image = self.camera.capture_image()
         
+        self.display.state = UIState.ANALYZING
+        self.display.show_analysis()
+        self.led.blue()
+        
+        # AI Analizi
         food_key, confidence = self.recognizer.recognize(image)
         
         if not food_key:
             print("Yemek tanınamadı")
             self.led.yellow()
             self.speaker.play_warning()
-            self.display.show_error_screen("Yemek tanınamadı")
-            time.sleep(2)
+            # Hata ekranı yerine, bilinmeyen olarak devam edebilir veya uyarı verebiliriz
+            # Şimdilik Dashboard'a dönelim
+            time.sleep(1)
+            self.display.state = UIState.DASHBOARD
             self.led.off()
             return
+            
+        print(f"Tanınan: {food_key} (Weight: {weight}g)")
         
-        print(f"Tanınan yemek: {food_key} (%{confidence*100:.1f})")
+        # Besin Hesaplama
+        nutrition = self.nutrition_calc.calculate(food_key, max(weight, 100)) # En az 100g baz alalım hesap için
         
-        nutrition = self.nutrition_calc.calculate(food_key, weight)
-        
-        if not nutrition:
-            print("Besin değerleri hesaplanamadı")
-            self.led.red()
-            self.speaker.play_error()
-            self.display.show_error_screen("Besin değerleri bulunamadı")
-            time.sleep(2)
-            self.led.off()
-            return
-        
-        bmi = self.bmi_calc.calculate(
-            self.current_user['weight'],
-            self.current_user['height']
-        )
-        bmi_comment = self.bmi_calc.get_comment(bmi, self.current_user['age'])
-        should_warn = self.bmi_calc.should_warn(bmi, self.current_user['age'])
-        
-        self.db.add_measurement(
-            user_id=1,
-            food_name=nutrition['name'],
-            weight=weight,
-            nutrition=nutrition,
-            bmi_data={'bmi': bmi, 'comment': bmi_comment}
-        )
-        
-        if should_warn:
-            self.led.red()
-            self.speaker.play_warning()
-        else:
+        if nutrition:
+            self.current_nutrition = nutrition
+            
+            # VKİ Kontrolü
+            bmi = self.bmi_calc.calculate(self.current_user['weight'], self.current_user['height'])
+            bmi_comment = self.bmi_calc.get_comment(bmi, self.current_user['age'])
+            
+            self.display.state = UIState.RESULT
+            self.display.show_results(nutrition['name'], nutrition, bmi_comment)
             self.led.green()
-            self.speaker.play_success()
-        
-        self.display.show_result_screen(nutrition['name'], nutrition, bmi_comment)
-        
-        print(f"\n{nutrition['name']}: {nutrition['weight']}g")
-        print(f"Kalori: {nutrition['calorie']} kcal")
-        print(f"Protein: {nutrition['protein']}g")
-        print(f"Karbonhidrat: {nutrition['carb']}g")
-        print(f"Yağ: {nutrition['fat']}g")
-        print(f"VKİ: {bmi} - {bmi_comment}")
-        
-        time.sleep(5)
-        self.led.off()
-    
+        else:
+            self.led.red()
+            self.display.state = UIState.DASHBOARD
+            
+    def save_result(self):
+        """Sonucu veritabanına kaydet"""
+        if self.current_nutrition:
+            self.db.add_measurement(
+                user_id=1,
+                food_name=self.current_nutrition['name'],
+                weight=self.current_nutrition['weight'],
+                nutrition=self.current_nutrition,
+                bmi_data={'bmi': 0, 'comment': '-'}
+            )
+            print("Kayıt başarılı")
+
     def cleanup(self):
         """Kaynakları temizle"""
         print("Temizlik yapılıyor...")

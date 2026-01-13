@@ -1,8 +1,30 @@
 # 4.3" Dokunmatik Ekran UI - Pygame
+# Modern Nutriquant Interface
 
 import pygame
 import sys
+import time
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, FULLSCREEN, FPS, APP_NAME
+
+# Renk Paleti (Modern & Premium)
+COLORS = {
+    'bg_dark': (20, 24, 30),      # Koyu Arka Plan
+    'card_bg': (32, 38, 48),      # Kart Arka Planı
+    'primary': (0, 122, 255),     # Canlı Mavi
+    'primary_hover': (0, 100, 230),
+    'accent': (255, 69, 58),      # Canlı Kırmızı (Accent)
+    'success': (50, 215, 75),     # Yeşil
+    'text_main': (255, 255, 255), # Beyaz Metin
+    'text_sec': (160, 170, 180),  # Gri Metin
+    'border': (60, 65, 75)        # Kenarlık
+}
+
+class UIState:
+    DASHBOARD = 0
+    SCANNING = 1
+    ANALYZING = 2
+    RESULT = 3
+    ERROR = 4
 
 class Display:
     def __init__(self):
@@ -13,158 +35,179 @@ class Display:
         pygame.display.set_caption(APP_NAME)
         
         self.clock = pygame.time.Clock()
-        self.font_large = pygame.font.Font(None, 72)
-        self.font_medium = pygame.font.Font(None, 48)
-        self.font_small = pygame.font.Font(None, 32)
         
-        self.colors = {
-            'white': (255, 255, 255),
-            'black': (0, 0, 0),
-            'gray': (128, 128, 128),
-            'light_gray': (200, 200, 200),
-            'green': (0, 200, 0),
-            'red': (200, 0, 0),
-            'blue': (0, 100, 200),
-            'yellow': (255, 200, 0)
-        }
-    
-    def clear(self, color='white'):
-        """Ekranı temizle"""
-        self.screen.fill(self.colors[color])
-    
-    def draw_text(self, text, x, y, font='medium', color='black', center=False):
-        """Metin çiz"""
-        font_obj = {
-            'large': self.font_large,
-            'medium': self.font_medium,
-            'small': self.font_small
-        }.get(font, self.font_medium)
+        # Fontlar
+        try:
+            # Sistem fontlarını dene, yoksa varsayılan
+            self.font_xl = pygame.font.SysFont("segoeui", 64, bold=True)
+            self.font_lg = pygame.font.SysFont("segoeui", 48, bold=True)
+            self.font_md = pygame.font.SysFont("segoeui", 32)
+            self.font_sm = pygame.font.SysFont("segoeui", 24)
+        except:
+            self.font_xl = pygame.font.Font(None, 80)
+            self.font_lg = pygame.font.Font(None, 60)
+            self.font_md = pygame.font.Font(None, 40)
+            self.font_sm = pygame.font.Font(None, 28)
+            
+        self.state = UIState.DASHBOARD
         
-        text_surface = font_obj.render(str(text), True, self.colors[color])
-        text_rect = text_surface.get_rect()
+        # Buton tanımları (Rect objeleri)
+        self.btn_scan = pygame.Rect(SCREEN_WIDTH//2 - 120, 280, 240, 80)
+        self.btn_back = pygame.Rect(20, 20, 60, 40)
+        self.btn_retry = pygame.Rect(SCREEN_WIDTH//2 - 140, 380, 130, 60)
+        self.btn_save = pygame.Rect(SCREEN_WIDTH//2 + 10, 380, 130, 60)
+
+    def draw_rounded_rect(self, surface, color, rect, radius=15):
+        """Köşeleri yuvarlatılmış dikdörtgen çiz"""
+        pygame.draw.rect(surface, color, rect, border_radius=radius)
+
+    def draw_card(self, x, y, w, h, title=None, value=None):
+        """Bilgi kartı çiz"""
+        rect = pygame.Rect(x, y, w, h)
+        self.draw_rounded_rect(self.screen, COLORS['card_bg'], rect, 15)
+        pygame.draw.rect(self.screen, COLORS['border'], rect, 2, border_radius=15)
         
-        if center:
-            text_rect.center = (x, y)
+        if title:
+            text = self.font_sm.render(title, True, COLORS['text_sec'])
+            self.screen.blit(text, (x + 20, y + 15))
+            
+        if value:
+            text = self.font_lg.render(value, True, COLORS['text_main'])
+            self.screen.blit(text, (x + 20, y + 50))
+
+    def draw_button(self, rect, text, primary=True):
+        """Modern buton çiz"""
+        color = COLORS['primary'] if primary else COLORS['card_bg']
+        hover_color = COLORS['primary_hover'] if primary else COLORS['border']
+        
+        # Basit hover efekti (mouse pozisyonuna göre)
+        mouse_pos = pygame.mouse.get_pos()
+        if rect.collidepoint(mouse_pos):
+            self.draw_rounded_rect(self.screen, hover_color, rect, 20)
         else:
-            text_rect.topleft = (x, y)
+            self.draw_rounded_rect(self.screen, color, rect, 20)
+            
+        text_surf = self.font_md.render(text, True, COLORS['text_main'])
+        text_rect = text_surf.get_rect(center=rect.center)
+        self.screen.blit(text_surf, text_rect)
+
+    def show_dashboard(self, weight, battery):
+        """Ana Dashboard Ekranı"""
+        self.screen.fill(COLORS['bg_dark'])
         
-        self.screen.blit(text_surface, text_rect)
-    
-    def draw_button(self, text, x, y, width, height, color='blue', text_color='white'):
-        """Buton çiz"""
-        pygame.draw.rect(self.screen, self.colors[color], (x, y, width, height), border_radius=10)
-        self.draw_text(text, x + width // 2, y + height // 2, 'medium', text_color, center=True)
-        return pygame.Rect(x, y, width, height)
-    
-    def draw_progress_bar(self, x, y, width, height, progress, color='green'):
-        """İlerleme çubuğu çiz"""
-        pygame.draw.rect(self.screen, self.colors['light_gray'], (x, y, width, height), border_radius=5)
+        # Başlık
+        title = self.font_lg.render(f"Merhaba, {APP_NAME}", True, COLORS['text_main'])
+        self.screen.blit(title, (30, 40))
         
-        fill_width = int(width * (progress / 100))
-        if fill_width > 0:
-            pygame.draw.rect(self.screen, self.colors[color], (x, y, fill_width, height), border_radius=5)
-    
-    def show_home_screen(self, battery_percent):
-        """Ana ekran"""
-        self.clear()
+        # Üst Bilgi Kartları
+        self.draw_card(30, 120, 220, 120, "Anlık Ağırlık", f"{weight}g")
         
-        self.draw_text(APP_NAME, SCREEN_WIDTH // 2, 100, 'large', 'blue', center=True)
-        self.draw_text("Yemek Tartısı", SCREEN_WIDTH // 2, 180, 'medium', 'gray', center=True)
+        # Pil Durumu (Basit grafik)
+        pil_color = COLORS['success'] if battery > 20 else COLORS['accent']
+        self.draw_card(270, 120, 220, 120, "Pil Durumu", f"%{battery}")
+        pygame.draw.rect(self.screen, COLORS['bg_dark'], (430, 140, 40, 20), border_radius=3)
+        pygame.draw.rect(self.screen, pil_color, (432, 142, 36 * (battery/100), 16), border_radius=2)
+
+        # Büyük Tara Butonu
+        self.draw_button(self.btn_scan, "Yemeği Tara", primary=True)
         
-        self.draw_text("Tabağı tartıya yerleştirin", SCREEN_WIDTH // 2, 300, 'medium', 'black', center=True)
-        
-        self.draw_text(f"Pil: %{battery_percent}", 20, SCREEN_HEIGHT - 40, 'small', 'gray')
-        
-        self.update()
-    
-    def show_measuring_screen(self, weight):
-        """Ölçüm ekranı"""
-        self.clear()
-        
-        self.draw_text("Ölçüm Yapılıyor...", SCREEN_WIDTH // 2, 80, 'large', 'blue', center=True)
-        
-        self.draw_text(f"{weight}g", SCREEN_WIDTH // 2, 240, 'large', 'black', center=True)
-        
-        self.draw_text("Lütfen bekleyin", SCREEN_WIDTH // 2, 350, 'medium', 'gray', center=True)
+        # Alt Bilgi
+        info = self.font_sm.render("Tabağı yerleştirin ve tarama başlatın", True, COLORS['text_sec'])
+        self.screen.blit(info, (SCREEN_WIDTH//2 - info.get_width()//2, 400))
         
         self.update()
-    
-    def show_result_screen(self, food_name, nutrition, bmi_comment):
-        """Sonuç ekranı"""
-        self.clear()
+
+    def show_camera_feed(self):
+        """Kamera Önizleme (Simüle edilmiş)"""
+        self.screen.fill(COLORS['bg_dark'])
         
-        self.draw_text(food_name, SCREEN_WIDTH // 2, 60, 'large', 'blue', center=True)
+        # Kamera Çerçevesi
+        cam_rect = pygame.Rect(40, 40, SCREEN_WIDTH-80, SCREEN_HEIGHT-80)
+        pygame.draw.rect(self.screen, (0,0,0), cam_rect)
+        pygame.draw.rect(self.screen, COLORS['primary'], cam_rect, 4, border_radius=10)
         
-        y = 150
-        self.draw_text(f"{nutrition['weight']}g", SCREEN_WIDTH // 2, y, 'medium', 'black', center=True)
-        
-        y += 80
-        self.draw_text(f"Kalori: {nutrition['calorie']} kcal", 100, y, 'medium', 'black')
-        
-        y += 50
-        self.draw_text(f"Protein: {nutrition['protein']}g", 100, y, 'small', 'gray')
-        
-        y += 40
-        self.draw_text(f"Karbonhidrat: {nutrition['carb']}g", 100, y, 'small', 'gray')
-        
-        y += 40
-        self.draw_text(f"Yağ: {nutrition['fat']}g", 100, y, 'small', 'gray')
-        
-        y += 60
-        color = 'red' if bmi_comment in ['Yüksek', 'Obez'] else 'green'
-        self.draw_text(f"VKİ Durumu: {bmi_comment}", SCREEN_WIDTH // 2, y, 'medium', color, center=True)
+        text = self.font_md.render("Görüntü Yakalanıyor...", True, COLORS['text_main'])
+        self.screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT-60))
         
         self.update()
-    
-    def show_error_screen(self, message):
-        """Hata ekranı"""
-        self.clear()
         
-        self.draw_text("Hata!", SCREEN_WIDTH // 2, 150, 'large', 'red', center=True)
-        self.draw_text(message, SCREEN_WIDTH // 2, 250, 'medium', 'black', center=True)
+    def show_analysis(self):
+        """Analiz Animasyonu"""
+        self.screen.fill(COLORS['bg_dark'])
+        
+        text = self.font_xl.render("Yapay Zeka Analizi...", True, COLORS['primary'])
+        self.screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT//2 - 40))
+        
+        sub = self.font_sm.render("Besin değerleri hesaplanıyor", True, COLORS['text_sec'])
+        self.screen.blit(sub, (SCREEN_WIDTH//2 - sub.get_width()//2, SCREEN_HEIGHT//2 + 40))
         
         self.update()
-    
+
+    def show_results(self, food_name, nutrition, bmi_status):
+        """Sonuç Ekranı"""
+        self.screen.fill(COLORS['bg_dark'])
+        
+        # Yemek Adı (Başlık)
+        title = self.font_xl.render(food_name, True, COLORS['primary'])
+        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 40))
+        
+        # Besin Değerleri Grid
+        grid_y = 120
+        grid_gap = 20
+        card_w = 170
+        
+        # Kalori (Büyük)
+        self.draw_card(SCREEN_WIDTH//2 - 90, grid_y, 180, 100, "Kalori", f"{nutrition['calorie']} kcal")
+        
+        # Detaylar
+        row2_y = grid_y + 120
+        self.draw_card(SCREEN_WIDTH//2 - 250, row2_y, 160, 90, "Protein", f"{nutrition['protein']}g")
+        self.draw_card(SCREEN_WIDTH//2 - 80, row2_y, 160, 90, "Karb.", f"{nutrition['carb']}g")
+        self.draw_card(SCREEN_WIDTH//2 + 90, row2_y, 160, 90, "Yağ", f"{nutrition['fat']}g")
+        
+        # Aksiyon Butonları
+        self.draw_button(self.btn_retry, "Tekrar", primary=False)
+        self.draw_button(self.btn_save, "Kaydet", primary=True)
+        
+        self.update()
+
+    def clear(self):
+        self.screen.fill(COLORS['bg_dark'])
+
     def update(self):
-        """Ekranı güncelle"""
         pygame.display.flip()
         self.clock.tick(FPS)
-    
+
     def handle_events(self):
-        """Olayları işle"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return 'quit'
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return 'quit'
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = event.pos
+                if self.state == UIState.DASHBOARD:
+                    if self.btn_scan.collidepoint(pos):
+                        return 'click_scan'
+                elif self.state == UIState.RESULT:
+                    if self.btn_retry.collidepoint(pos):
+                        return 'click_retry'
+                    elif self.btn_save.collidepoint(pos):
+                        return 'click_save'
         return None
-    
+
     def cleanup(self):
-        """Pygame'i kapat"""
         pygame.quit()
 
-# Test fonksiyonu
+# Test Bloğu
 if __name__ == "__main__":
     display = Display()
-    
-    try:
-        display.show_home_screen(75)
-        pygame.time.wait(2000)
-        
-        display.show_measuring_screen(180)
-        pygame.time.wait(2000)
-        
-        nutrition = {
-            'name': 'Bulgur Pilavı',
-            'weight': 180,
-            'calorie': 216,
-            'protein': 5.6,
-            'carb': 46.1,
-            'fat': 3.6
-        }
-        display.show_result_screen('Bulgur Pilavı', nutrition, 'Normal')
-        pygame.time.wait(3000)
-        
-    finally:
-        display.cleanup()
+    display.show_dashboard(0, 85)
+    time.sleep(2)
+    display.show_analysis()
+    time.sleep(2)
+    nutri = {'calorie': 320, 'protein': 25, 'carb': 45, 'fat': 12}
+    display.show_results("Izgara Tavuk", nutri, "Normal")
+    time.sleep(3)
+    display.cleanup()
