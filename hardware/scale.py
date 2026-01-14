@@ -27,6 +27,8 @@ class Scale:
         try:
             GPIO.setmode(GPIO.BCM)
             self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
+            
+            # tatobari/hx711py API
             self.hx.set_reading_format("MSB", "MSB")
             self.hx.set_reference_unit(HX711_REFERENCE_UNIT)
             self.hx.reset()
@@ -47,10 +49,8 @@ class Scale:
     def read_weight(self, samples=5):
         """Ağırlık oku (gram cinsinden)"""
         try:
-            weight = self.hx.get_weight(samples)
-            self.hx.power_down()
-            time.sleep(0.01)
-            self.hx.power_up()
+            # tatobari/hx711py API: get_weight_mean() kullanır
+            weight = self.hx.get_weight_mean(samples)
             
             # Negatif değerleri filtrele
             final_weight = max(0, int(weight))
@@ -66,7 +66,8 @@ class Scale:
     
     def calibrate(self, known_weight_grams):
         """Kalibrasyon yap - bilinen ağırlık ile"""
-        raw_value = self.hx.get_weight(10)
+        # tatobari/hx711py API: get_weight_mean() kullanır
+        raw_value = self.hx.get_weight_mean(10)
         reference_unit = raw_value / known_weight_grams
         self.hx.set_reference_unit(reference_unit)
         return reference_unit
