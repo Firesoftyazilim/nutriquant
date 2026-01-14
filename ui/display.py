@@ -25,6 +25,10 @@ class UIState:
     ANALYZING = 2
     RESULT = 3
     ERROR = 4
+    TEST_MENU = 5
+    TEST_SCALE = 6
+    TEST_CAMERA = 7
+    TEST_SPEAKER = 8
 
 class Display:
     def __init__(self):
@@ -56,6 +60,16 @@ class Display:
         self.btn_back = pygame.Rect(20, 20, 60, 40)
         self.btn_retry = pygame.Rect(SCREEN_WIDTH//2 - 140, 380, 130, 60)
         self.btn_save = pygame.Rect(SCREEN_WIDTH//2 + 10, 380, 130, 60)
+        
+        # Test Alanı Butonları
+        self.btn_test_mode = pygame.Rect(SCREEN_WIDTH - 160, 20, 140, 50)
+        
+        self.btn_test_scale = pygame.Rect(SCREEN_WIDTH//2 - 240, 140, 220, 100)
+        self.btn_test_cam = pygame.Rect(SCREEN_WIDTH//2 + 20, 140, 220, 100)
+        self.btn_test_spk = pygame.Rect(SCREEN_WIDTH//2 - 240, 260, 220, 100)
+        self.btn_test_back = pygame.Rect(SCREEN_WIDTH//2 + 20, 260, 220, 100)
+        
+        self.btn_spk_play = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2 - 40, 200, 80)
 
     def draw_rounded_rect(self, surface, color, rect, radius=15):
         """Köşeleri yuvarlatılmış dikdörtgen çiz"""
@@ -111,14 +125,17 @@ class Display:
         # Büyük Tara Butonu
         self.draw_button(self.btn_scan, "Yemeği Tara", primary=True)
         
+        # Test Modu Butonu (Sağ Üst)
+        self.draw_button(self.btn_test_mode, "Test Modu", primary=False)
+        
         # Alt Bilgi
         info = self.font_sm.render("Tabağı yerleştirin ve tarama başlatın", True, COLORS['text_sec'])
         self.screen.blit(info, (SCREEN_WIDTH//2 - info.get_width()//2, 400))
         
         self.update()
 
-    def show_camera_feed(self):
-        """Kamera Önizleme (Simüle edilmiş)"""
+    def show_camera_feed(self, image=None):
+        """Kamera Önizleme"""
         self.screen.fill(COLORS['bg_dark'])
         
         # Kamera Çerçevesi
@@ -126,8 +143,23 @@ class Display:
         pygame.draw.rect(self.screen, (0,0,0), cam_rect)
         pygame.draw.rect(self.screen, COLORS['primary'], cam_rect, 4, border_radius=10)
         
-        text = self.font_md.render("Görüntü Yakalanıyor...", True, COLORS['text_main'])
+        if image is not None:
+            # Numpy array (H, W, 3) -> Pygame Surface
+            # Pygame surfarray expects (W, H, 3) generally, so we swap axes
+            try:
+                # image shape check
+                if len(image.shape) == 3:
+                     # Transpose for Pygame: (Height, Width, Colors) -> (Width, Height, Colors)
+                    surf = pygame.surfarray.make_surface(image.swapaxes(0, 1))
+                    surf = pygame.transform.scale(surf, (cam_rect.width, cam_rect.height))
+                    self.screen.blit(surf, cam_rect)
+            except Exception as e:
+                print(f"Görüntü çizim hatası: {e}")
+        
+        text = self.font_md.render("Görüntü Testi (Çıkış için <)", True, COLORS['text_main'])
         self.screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT-60))
+        
+        self.draw_button(self.btn_back, "<", primary=False)
         
         self.update()
         
@@ -143,6 +175,53 @@ class Display:
         
         self.update()
 
+        self.update()
+
+    def show_test_menu(self):
+        """Donanım Test Menüsü"""
+        self.screen.fill(COLORS['bg_dark'])
+        
+        title = self.font_lg.render("Donanım Testi", True, COLORS['text_main'])
+        self.screen.blit(title, (40, 40))
+        
+        self.draw_button(self.btn_test_scale, "Tartı Testi", primary=False)
+        self.draw_button(self.btn_test_cam, "Kamera Testi", primary=False)
+        self.draw_button(self.btn_test_spk, "Hoparlör Testi", primary=False)
+        self.draw_button(self.btn_test_back, "Geri Dön", primary=True)
+        
+        self.update()
+        
+    def show_test_scale(self, weight):
+        """Tartı Test Ekranı"""
+        self.screen.fill(COLORS['bg_dark'])
+
+        self.draw_button(self.btn_back, "<", primary=False)
+        
+        title = self.font_lg.render("Tartı Testi", True, COLORS['text_main'])
+        self.screen.blit(title, (100, 20))
+        
+        # Büyük Ağırlık Göstergesi
+        w_text = self.font_xl.render(f"{weight} g", True, COLORS['primary'])
+        self.screen.blit(w_text, (SCREEN_WIDTH//2 - w_text.get_width()//2, SCREEN_HEIGHT//2 - 40))
+        
+        info = self.font_sm.render("Sensör üzerine nesne koyun", True, COLORS['text_sec'])
+        self.screen.blit(info, (SCREEN_WIDTH//2 - info.get_width()//2, SCREEN_HEIGHT//2 + 60))
+        
+        self.update()
+
+    def show_test_speaker(self):
+        """Hoparlör Test Ekranı"""
+        self.screen.fill(COLORS['bg_dark'])
+        
+        self.draw_button(self.btn_back, "<", primary=False)
+        
+        title = self.font_lg.render("Hoparlör Testi", True, COLORS['text_main'])
+        self.screen.blit(title, (100, 20))
+        
+        self.draw_button(self.btn_spk_play, "Ses Çal", primary=True)
+        
+        self.update()
+        
     def show_results(self, food_name, nutrition, bmi_status):
         """Sonuç Ekranı"""
         self.screen.fill(COLORS['bg_dark'])
@@ -190,6 +269,26 @@ class Display:
                 if self.state == UIState.DASHBOARD:
                     if self.btn_scan.collidepoint(pos):
                         return 'click_scan'
+                    elif self.btn_test_mode.collidepoint(pos):
+                        return 'click_test_mode'
+                
+                elif self.state == UIState.TEST_MENU:
+                    if self.btn_test_scale.collidepoint(pos):
+                        return 'test_scale'
+                    elif self.btn_test_cam.collidepoint(pos):
+                        return 'test_cam'
+                    elif self.btn_test_spk.collidepoint(pos):
+                        return 'test_spk'
+                    elif self.btn_test_back.collidepoint(pos):
+                        return 'click_back'
+                        
+                elif self.state in [UIState.TEST_SCALE, UIState.TEST_CAMERA, UIState.TEST_SPEAKER]:
+                    if self.btn_back.collidepoint(pos):
+                        return 'click_back'
+                    # Speaker özel durum
+                    if self.state == UIState.TEST_SPEAKER and self.btn_spk_play.collidepoint(pos):
+                        return 'click_play_sound'
+                        
                 elif self.state == UIState.RESULT:
                     if self.btn_retry.collidepoint(pos):
                         return 'click_retry'

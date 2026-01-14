@@ -67,6 +67,25 @@ class Nutriquant:
                 # 2. UI Durumuna Göre Çizim Yap
                 if self.display.state == UIState.DASHBOARD:
                     self.display.show_dashboard(weight, battery_percent)
+                
+                elif self.display.state == UIState.TEST_MENU:
+                    self.display.show_test_menu()
+                    
+                elif self.display.state == UIState.TEST_SCALE:
+                    self.display.show_test_scale(weight)
+                    
+                elif self.display.state == UIState.TEST_SPEAKER:
+                    self.display.show_test_speaker()
+                    
+                elif self.display.state == UIState.TEST_CAMERA:
+                    try:
+                        # Test modunda her döngüde görüntü al
+                        image = self.camera.capture_image()
+                        self.display.show_camera_feed(image)
+                    except Exception as e:
+                        print(f"Kamera test hatası: {e}")
+                        self.display.show_camera_feed()
+
                     
                 # 3. Olayları Dinle
                 event = self.display.handle_events()
@@ -84,6 +103,30 @@ class Nutriquant:
                 elif event == 'click_save':
                     self.save_result()
                     self.display.state = UIState.DASHBOARD
+                    self.speaker.play_success()
+                    
+                # Test Events
+                elif event == 'click_test_mode':
+                    self.display.state = UIState.TEST_MENU
+                    
+                elif event == 'test_scale':
+                    self.display.state = UIState.TEST_SCALE
+                    
+                elif event == 'test_cam':
+                    self.display.state = UIState.TEST_CAMERA
+                    
+                elif event == 'test_spk':
+                    self.display.state = UIState.TEST_SPEAKER
+                    
+                elif event == 'click_back':
+                    if self.display.state == UIState.TEST_MENU:
+                        self.display.state = UIState.DASHBOARD
+                    else:
+                        self.display.state = UIState.TEST_MENU
+                        
+                elif event == 'click_play_sound':
+                    self.speaker.play_beep()
+                    time.sleep(0.5)
                     self.speaker.play_success()
                 
         except KeyboardInterrupt:
