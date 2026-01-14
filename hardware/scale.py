@@ -24,24 +24,40 @@ from config import HX711_DOUT_PIN, HX711_SCK_PIN, HX711_REFERENCE_UNIT, TARE_SAM
 class Scale:
     def __init__(self):
         self.mode = MODE
+        self.offset = 0  # Tare offset
+        self.scale_ratio = HX711_REFERENCE_UNIT  # Kalibrasyon değeri
+        
         try:
             GPIO.setmode(GPIO.BCM)
-            self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
+            GPIO.setwarnings(False)  # Uyarıları kapat
             
-            # tatobari/hx711py API
-            self.hx.set_reading_format("MSB", "MSB")
-            self.hx.set_reference_unit(HX711_REFERENCE_UNIT)
+            self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
             self.hx.reset()
+            
+            # İlk tare
             self.tare()
+            
             print(f"[Scale] Başlatıldı (Mod: {self.mode})")
         except Exception as e:
             print(f"[Scale] Başlatma hatası: {e}")
             
     def tare(self):
-        """Tartıyı sıfırla"""
+        """Tartıyı sıfırla - offset hesapla"""
         try:
-            self.hx.tare(TARE_SAMPLES)
-            time.sleep(0.5)
+            # Birkaç okuma yapıp ortalama al
+            readings = []
+            for _ in range(10):
+                data = self.hx.get_raw_data()
+                if data:
+                    readings.append(data)
+                time.sleep(0.1)
+            
+            if readings:
+                self.offset = sum(readings) / len(readings)
+                print(f"[Scale] Tare: offset = {self.offset:.0f}")
+            else:
+                print("[Scale] Tare hatası: Veri okunamadı")
+                
         except Exception as e:
             print(f"[Scale] Tare hatası: {e}")
             
@@ -49,28 +65,59 @@ class Scale:
     def read_weight(self, samples=5):
         """Ağırlık oku (gram cinsinden)"""
         try:
-            # tatobari/hx711py API: get_weight_mean() kullanır
-            weight = self.hx.get_weight_mean(samples)
+            # Ham veri oku
+            readings = []
+            for _ in range(samples):
+                data = self.hx.get_raw_data()
+                if data:
+                    readings.append(data)
+                time.sleep(0.05)
+            
+            if not readings:
+                return 0
+            
+            # Ortalama al
+            avg_raw = sum(readings) / len(readings)
+            
+            # Offset çıkar ve scale ratio ile böl
+            weight = (avg_raw - self.offset) / self.scale_ratio
             
             # Negatif değerleri filtrele
             final_weight = max(0, int(weight))
             
-            # Mock modundaysak ve değer 0 ise, ara sıra rastgelelik ekle (kullanıcı test edebilsin diye)
-            if self.mode == "MOCK" and final_weight == 0:
-                pass 
-                
             return final_weight
+            
         except Exception as e:
             print(f"Tartı okuma hatası: {e}")
             return 0
     
     def calibrate(self, known_weight_grams):
         """Kalibrasyon yap - bilinen ağırlık ile"""
-        # tatobari/hx711py API: get_weight_mean() kullanır
-        raw_value = self.hx.get_weight_mean(10)
-        reference_unit = raw_value / known_weight_grams
-        self.hx.set_reference_unit(reference_unit)
-        return reference_unit
+        try:
+            # Ham değerleri oku
+            readings = []
+            for _ in range(10):
+                data = self.hx.get_raw_data()
+                if data:
+                    readings.append(data)
+                time.sleep(0.1)
+            
+            if not readings:
+                print("Kalibrasyon hatası: Veri okunamadı")
+                return self.scale_ratio
+            
+            avg_raw = sum(readings) / len(readings)
+            
+            # Scale ratio hesapla: (raw - offset) / weight = ratio
+            self.scale_ratio = (avg_raw - self.offset) / known_weight_grams
+            
+            print(f"[Scale] Yeni scale_ratio: {self.scale_ratio:.2f}")
+            
+            return self.scale_ratio
+            
+        except Exception as e:
+            print(f"Kalibrasyon hatası: {e}")
+            return self.scale_ratio
     
     def cleanup(self):
         """GPIO temizle"""
