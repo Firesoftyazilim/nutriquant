@@ -78,13 +78,8 @@ class Nutriquant:
                     self.display.show_test_speaker()
                     
                 elif self.display.state == UIState.TEST_CAMERA:
-                    try:
-                        # Test modunda her döngüde görüntü al
-                        image = self.camera.capture_image()
-                        self.display.show_camera_feed(image)
-                    except Exception as e:
-                        print(f"Kamera test hatası: {e}")
-                        self.display.show_camera_feed()
+                    # Kamera test modunda sadece UI göster, rpicam-vid arka planda çalışıyor
+                    self.display.show_camera_feed()
 
                     
                 # 3. Olayları Dinle
@@ -114,11 +109,17 @@ class Nutriquant:
                     
                 elif event == 'test_cam':
                     self.display.state = UIState.TEST_CAMERA
+                    # Kamera önizlemesini başlat
+                    self.camera.start_preview()
                     
                 elif event == 'test_spk':
                     self.display.state = UIState.TEST_SPEAKER
                     
                 elif event == 'click_back':
+                    # Kamera testinden çıkılıyorsa önizlemeyi durdur
+                    if self.display.state == UIState.TEST_CAMERA:
+                        self.camera.stop_preview()
+                    
                     if self.display.state == UIState.TEST_MENU:
                         self.display.state = UIState.DASHBOARD
                     else:

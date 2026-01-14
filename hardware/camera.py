@@ -13,6 +13,7 @@ class Camera:
         # Platform tespiti - Raspberry Pi dışında mock mod kullan
         self.is_raspberry_pi = self._detect_raspberry_pi()
         self.mock_mode = not self.is_raspberry_pi
+        self.preview_process = None  # rpicam-vid process for live preview
         
         if self.mock_mode:
             print("[Camera] Mock mod aktif (Raspberry Pi dışı platform)")
@@ -20,11 +21,13 @@ class Camera:
         else:
             # rpicam-still komutunun varlığını kontrol et
             self.cmd = "rpicam-still"
+            self.vid_cmd = "rpicam-vid"  # Video önizleme için
             try:
                 subprocess.run([self.cmd, "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
             except (FileNotFoundError, subprocess.CalledProcessError):
                 print(f"[Uyarı] '{self.cmd}' bulunamadı. 'libcamera-still' deneniyor...")
                 self.cmd = "libcamera-still"
+                self.vid_cmd = "libcamera-vid"
                 
             print(f"[Camera] CLI modu kullanılıyor ({self.cmd})")
             
@@ -140,8 +143,62 @@ class Camera:
         image.save(filepath)
         return filepath
     
+    def start_preview(self):
+        """Canlı kamera önizlemesi başlat (rpicam-vid)"""
+        if self.mock_mode:
+            print("[Camera] Mock modda önizleme yok")
+            return False
+        
+        if self.preview_process is not None:
+            print("[Camera] Önizleme zaten çalışıyor")
+            return True
+        
+        try:
+            # rpicam-vid -t 0 (sonsuz süre) --fullscreen
+            cmd_args = [
+                self.vid_cmd,
+                "-t", "0",  # Sonsuz süre (manuel durdurulana kadar)
+                "--width", str(CAMERA_RESOLUTION[0]),
+                "--height", str(CAMERA_RESOLUTION[1]),
+                "--fullscreen"
+            ]
+            
+            self.preview_process = subprocess.Popen(
+                cmd_args,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            print(f"[Camera] Önizleme başlatıldı (PID: {self.preview_process.pid})")
+            return True
+            
+        except Exception as e:
+            print(f"[Camera] Önizleme başlatma hatası: {e}")
+            self.preview_process = None
+            return False
+    
+    def stop_preview(self):
+        """Canlı kamera önizlemesini durdur"""
+        if self.preview_process is None:
+            return
+        
+        try:
+            self.preview_process.terminate()
+            self.preview_process.wait(timeout=2)
+            print("[Camera] Önizleme durduruldu")
+        except:
+            # Terminate çalışmazsa kill
+            try:
+                self.preview_process.kill()
+            except:
+                pass
+        finally:
+            self.preview_process = None
+    
     def cleanup(self):
         """Temizlik"""
+        # Önizleme varsa durdur
+        self.stop_preview()
+        
         if not self.mock_mode and self.temp_file and os.path.exists(self.temp_file):
             try:
                 os.remove(self.temp_file)
