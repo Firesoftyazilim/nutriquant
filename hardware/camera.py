@@ -3,27 +3,54 @@
 import os
 import subprocess
 import time
+import platform
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from config import CAMERA_RESOLUTION, CAMERA_FORMAT, CAMERA_ROTATION
 
 class Camera:
     def __init__(self):
-        # rpicam-still komutunun varlığını kontrol et (opsiyonel)
-        self.cmd = "rpicam-still"
-        try:
-            subprocess.run([self.cmd, "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except FileNotFoundError:
-            print(f"[Uyarı] '{self.cmd}' bulunamadı. 'libcamera-still' deneniyor...")
-            self.cmd = "libcamera-still"
-            
-        print(f"[Camera] CLI modu kullanılıyor ({self.cmd})")
+        # Platform tespiti - Raspberry Pi dışında mock mod kullan
+        self.is_raspberry_pi = self._detect_raspberry_pi()
+        self.mock_mode = not self.is_raspberry_pi
         
-        # Geçici dosya yolu
-        self.temp_file = "/tmp/nutriquant_cam_capture.jpg"
+        if self.mock_mode:
+            print("[Camera] Mock mod aktif (Raspberry Pi dışı platform)")
+            self.temp_file = None
+        else:
+            # rpicam-still komutunun varlığını kontrol et
+            self.cmd = "rpicam-still"
+            try:
+                subprocess.run([self.cmd, "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                print(f"[Uyarı] '{self.cmd}' bulunamadı. 'libcamera-still' deneniyor...")
+                self.cmd = "libcamera-still"
+                
+            print(f"[Camera] CLI modu kullanılıyor ({self.cmd})")
+            
+            # Geçici dosya yolu
+            self.temp_file = "/tmp/nutriquant_cam_capture.jpg"
+    
+    def _detect_raspberry_pi(self):
+        """Raspberry Pi platformunu tespit et"""
+        system = platform.system()
+        if system != "Linux":
+            return False
+        
+        # /proc/device-tree/model dosyasını kontrol et (Raspberry Pi'ye özgü)
+        try:
+            with open('/proc/device-tree/model', 'r') as f:
+                model = f.read()
+                return 'Raspberry Pi' in model
+        except:
+            return False
 
     def capture_image(self):
-        """rpicam-still ile görüntü yakala ve numpy array döndür"""
+        """Görüntü yakala ve numpy array döndür"""
+        # Mock modda gerçek kamera kullanma
+        if self.mock_mode:
+            return self._get_mock_image()
+        
         try:
             # Komut: rpicam-still -n (preview yok) -t 100 (100ms gecikme) --width W --height H -o output.jpg
             # --nopreview (-n) önemli, yoksa ekrana basmaya çalışır
@@ -62,8 +89,42 @@ class Camera:
             return self._get_mock_image()
 
     def _get_mock_image(self):
-        """Hata durumunda siyah/gürültülü görüntü döndür"""
-        return np.random.randint(0, 256, (CAMERA_RESOLUTION[1], CAMERA_RESOLUTION[0], 3), dtype=np.uint8)
+        """Mock kamera görüntüsü - Renkli test deseni"""
+        # Renkli gradient oluştur
+        width, height = CAMERA_RESOLUTION
+        image = Image.new('RGB', (width, height))
+        draw = ImageDraw.Draw(image)
+        
+        # Gradient arka plan (mavi-mor-pembe)
+        for y in range(height):
+            r = int(100 + (y / height) * 155)
+            g = int(50 + (y / height) * 100)
+            b = int(200 - (y / height) * 50)
+            draw.line([(0, y), (width, y)], fill=(r, g, b))
+        
+        # Metin ekle
+        try:
+            # Büyük font kullan
+            font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 48)
+        except:
+            font = ImageFont.load_default()
+        
+        text = "MOCK CAMERA"
+        # Metin boyutunu al
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
+        # Merkeze yerleştir
+        x = (width - text_width) // 2
+        y = (height - text_height) // 2
+        
+        # Gölge efekti
+        draw.text((x+2, y+2), text, fill=(0, 0, 0), font=font)
+        draw.text((x, y), text, fill=(255, 255, 255), font=font)
+        
+        # Numpy array'e çevir
+        return np.array(image)
     
     def capture_pil_image(self):
         """PIL Image formatında görüntü yakala"""
@@ -81,7 +142,7 @@ class Camera:
     
     def cleanup(self):
         """Temizlik"""
-        if os.path.exists(self.temp_file):
+        if not self.mock_mode and self.temp_file and os.path.exists(self.temp_file):
             try:
                 os.remove(self.temp_file)
             except:
