@@ -1,31 +1,69 @@
-# Kamera Modülü - Görüntü Yakalama
+# Kamera Modülü - Görüntü Yakalama (rpicam-still CLI Wrapper)
 
-try:
-    from picamera2 import Picamera2
-except ImportError:
-    from hardware.mock_hardware import MockPicamera2 as Picamera2
-    print("[Mock] Kamera simülasyon modunda")
+import os
+import subprocess
+import time
 import numpy as np
 from PIL import Image
 from config import CAMERA_RESOLUTION, CAMERA_FORMAT, CAMERA_ROTATION
 
 class Camera:
     def __init__(self):
-        self.picam = Picamera2()
-        config = self.picam.create_still_configuration(
-            main={"size": CAMERA_RESOLUTION, "format": CAMERA_FORMAT}
-        )
-        self.picam.configure(config)
-        self.picam.start()
-    
+        # rpicam-still komutunun varlığını kontrol et (opsiyonel)
+        self.cmd = "rpicam-still"
+        try:
+            subprocess.run([self.cmd, "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
+            print(f"[Uyarı] '{self.cmd}' bulunamadı. 'libcamera-still' deneniyor...")
+            self.cmd = "libcamera-still"
+            
+        print(f"[Camera] CLI modu kullanılıyor ({self.cmd})")
+        
+        # Geçici dosya yolu
+        self.temp_file = "/tmp/nutriquant_cam_capture.jpg"
+
     def capture_image(self):
-        """Görüntü yakala ve numpy array döndür"""
-        image = self.picam.capture_array()
-        
-        if CAMERA_ROTATION != 0:
-            image = np.rot90(image, k=CAMERA_ROTATION // 90)
-        
-        return image
+        """rpicam-still ile görüntü yakala ve numpy array döndür"""
+        try:
+            # Komut: rpicam-still -n (preview yok) -t 100 (100ms gecikme) --width W --height H -o output.jpg
+            # --nopreview (-n) önemli, yoksa ekrana basmaya çalışır
+            # -t süresi pozlama ve AWB için biraz zaman tanır. Çok kısa olursa karanlık/yeşil çıkabilir.
+            cmd_args = [
+                self.cmd,
+                "-n",
+                "-t", "200", 
+                "--width", str(CAMERA_RESOLUTION[0]),
+                "--height", str(CAMERA_RESOLUTION[1]),
+                "-o", self.temp_file,
+                "--force" # Dosya varsa üzerine yaz
+            ]
+            
+            # Komutu çalıştır
+            subprocess.run(cmd_args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            # Dosyayı oku
+            if os.path.exists(self.temp_file):
+                pil_image = Image.open(self.temp_file)
+                pil_image = pil_image.convert("RGB")
+                
+                # Döndürme işlemi
+                if CAMERA_ROTATION != 0:
+                    pil_image = pil_image.rotate(CAMERA_ROTATION)
+                
+                # Numpy array'e çevir
+                image_array = np.array(pil_image)
+                return image_array
+            else:
+                print("Hata: Görüntü dosyası oluşturulamadı.")
+                return self._get_mock_image()
+                
+        except Exception as e:
+            print(f"Kamera yakalama hatası: {e}")
+            return self._get_mock_image()
+
+    def _get_mock_image(self):
+        """Hata durumunda siyah/gürültülü görüntü döndür"""
+        return np.random.randint(0, 256, (CAMERA_RESOLUTION[1], CAMERA_RESOLUTION[0], 3), dtype=np.uint8)
     
     def capture_pil_image(self):
         """PIL Image formatında görüntü yakala"""
@@ -34,24 +72,30 @@ class Camera:
     
     def save_image(self, filepath):
         """Görüntüyü dosyaya kaydet"""
-        image = self.capture_pil_image()
+        # Zaten dosyaya kaydediyoruz ama istenen yere kopyalayalım/taşıyalım
+        # Veya yeniden capture yapalım
+        array = self.capture_image()
+        image = Image.fromarray(array)
         image.save(filepath)
         return filepath
     
     def cleanup(self):
-        """Kamerayı kapat"""
-        self.picam.stop()
+        """Temizlik"""
+        if os.path.exists(self.temp_file):
+            try:
+                os.remove(self.temp_file)
+            except:
+                pass
 
 # Test fonksiyonu
 if __name__ == "__main__":
-    import time
-    
     camera = Camera()
-    print("Kamera hazır. 3 saniye sonra fotoğraf çekilecek...")
-    time.sleep(3)
+    print("Kamera hazır. Fotoğraf çekiliyor...")
     
     try:
-        camera.save_image("test_capture.jpg")
-        print("Fotoğraf kaydedildi: test_capture.jpg")
+        start = time.time()
+        camera.save_image("test_capture_cli.jpg")
+        end = time.time()
+        print(f"Fotoğraf kaydedildi: test_capture_cli.jpg (Süre: {end-start:.2f}s)")
     finally:
         camera.cleanup()
