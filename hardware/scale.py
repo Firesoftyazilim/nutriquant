@@ -32,7 +32,20 @@ class Scale:
             GPIO.setwarnings(False)  # Uyarıları kapat
             
             self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
-            self.hx.reset()
+            
+            # Reset ile test et - eğer takılırsa timeout olsun
+            print("[Scale] Sensör bağlantısı test ediliyor...")
+            try:
+                # Basit bir okuma dene
+                test_data = self.hx.get_raw_data(times=1)
+                if test_data is False or test_data is None:
+                    raise Exception("Sensör yanıt vermiyor")
+                print(f"[Scale] Sensör OK - Ham veri: {test_data}")
+            except Exception as e:
+                print(f"[Scale] Sensör hatası: {e}")
+                print("[Scale] MOCK moda geçiliyor...")
+                self.mode = "MOCK"
+                return
             
             # İlk tare
             self.tare()
@@ -40,6 +53,8 @@ class Scale:
             print(f"[Scale] Başlatıldı (Mod: {self.mode})")
         except Exception as e:
             print(f"[Scale] Başlatma hatası: {e}")
+            print("[Scale] MOCK moda geçiliyor...")
+            self.mode = "MOCK"
             
     def tare(self):
         """Tartıyı sıfırla - offset hesapla"""
@@ -64,6 +79,10 @@ class Scale:
     
     def read_weight(self, samples=5):
         """Ağırlık oku (gram cinsinden)"""
+        # MOCK modda 0 döndür
+        if self.mode == "MOCK":
+            return 0
+            
         try:
             # Ham veri oku
             readings = []
