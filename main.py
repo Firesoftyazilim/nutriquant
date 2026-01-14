@@ -4,6 +4,7 @@
 
 import time
 import sys
+import pygame
 from hardware.scale import Scale
 from hardware.camera import Camera
 from hardware.battery import Battery
@@ -32,16 +33,48 @@ class Nutriquant:
         
         # UI Başlat
         self.display = Display()
-        self.state = UIState.DASHBOARD
         
         self.current_user = self.load_default_user()
         self.current_nutrition = None # Son ölçüm sonucu
+        
+        # Açılış animasyonu ve müzik
+        self.show_splash_animation()
         
         print("Sistem hazır!")
         self.speaker.play_ready()
         self.led.green()
         time.sleep(1)
         self.led.off()
+    
+    def show_splash_animation(self):
+        """Açılış ekranı animasyonu göster"""
+        # Müziği başlat
+        self.speaker.play_startup_music()
+        
+        # 2 saniye animasyon
+        animation_duration = 2.0  # saniye
+        start_time = time.time()
+        
+        while True:
+            elapsed = time.time() - start_time
+            progress = min(elapsed / animation_duration, 1.0)
+            
+            # Animasyonu göster
+            self.display.show_splash(progress)
+            
+            # Tamamlandıysa çık
+            if progress >= 1.0:
+                break
+            
+            # Çıkış tuşlarını kontrol et (opsiyonel)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                    return
+            
+            time.sleep(0.016)  # ~60 FPS
+        
+        # Dashboard'a geç
+        self.display.state = UIState.DASHBOARD
     
     def load_default_user(self):
         """Varsayılan kullanıcı yükle"""

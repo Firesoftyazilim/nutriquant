@@ -42,6 +42,19 @@ class Speaker:
         """Hazır sesi"""
         self.play_sound("ready.wav")
     
+    def play_startup_music(self):
+        """Açılış müziği - En yüksek ses ile"""
+        filepath = os.path.join(self.sounds_dir, "start.mp3")
+        if os.path.exists(filepath):
+            try:
+                pygame.mixer.music.set_volume(1.0)  # Maksimum ses
+                pygame.mixer.music.load(filepath)
+                pygame.mixer.music.play()
+            except Exception as e:
+                print(f"[Mock] Açılış müziği çalma: start.mp3")
+        else:
+            print(f"[Mock] Açılış müziği çalma: start.mp3")
+    
     def set_volume(self, volume):
         """Ses seviyesi ayarla (0-100)"""
         pygame.mixer.music.set_volume(volume / 100)

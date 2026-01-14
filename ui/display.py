@@ -20,6 +20,7 @@ COLORS = {
 }
 
 class UIState:
+    SPLASH = -1
     DASHBOARD = 0
     SCANNING = 1
     ANALYZING = 2
@@ -52,8 +53,15 @@ class Display:
             self.font_lg = pygame.font.Font(None, 60)
             self.font_md = pygame.font.Font(None, 40)
             self.font_sm = pygame.font.Font(None, 28)
+        
+        # Logo yükle
+        try:
+            self.logo = pygame.image.load("assets/images/icon.png")
+        except:
+            print("[Uyarı] Logo yüklenemedi, varsayılan kullanılacak")
+            self.logo = None
             
-        self.state = UIState.DASHBOARD
+        self.state = UIState.SPLASH
         
         # Buton tanımları (Rect objeleri)
         self.btn_scan = pygame.Rect(SCREEN_WIDTH//2 - 120, 280, 240, 80)
@@ -162,6 +170,38 @@ class Display:
         self.draw_button(self.btn_back, "<", primary=False)
         
         self.update()
+        
+    def show_splash(self, progress):
+        """Açılış ekranı - Logo animasyonu
+        progress: 0.0 - 1.0 arası animasyon ilerlemesi
+        """
+        self.screen.fill(COLORS['bg_dark'])
+        
+        if self.logo is None:
+            # Logo yoksa sadece metin göster
+            text = self.font_xl.render(APP_NAME, True, COLORS['primary'])
+            self.screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT//2 - 40))
+        else:
+            # Logo animasyonu - küçükten büyüğe
+            # Easing function: ease-out cubic
+            eased_progress = 1 - pow(1 - progress, 3)
+            
+            # Hedef boyut (ekranın %60'ı)
+            target_size = min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.6
+            current_size = int(target_size * eased_progress)
+            
+            if current_size > 0:
+                # Logo'yu ölçeklendir
+                scaled_logo = pygame.transform.smoothscale(self.logo, (current_size, current_size))
+                
+                # Merkeze yerleştir
+                x = (SCREEN_WIDTH - current_size) // 2
+                y = (SCREEN_HEIGHT - current_size) // 2
+                
+                self.screen.blit(scaled_logo, (x, y))
+        
+        self.update()
+
         
     def show_analysis(self):
         """Analiz Animasyonu"""
