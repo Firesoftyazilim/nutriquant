@@ -316,6 +316,16 @@ class Display:
         self.draw_button(self.btn_back, "<", primary=False)
         
         title = self.font_lg.render("Hoparlör Testi", True, COLORS['text_main'])
+        self.screen.blit(title, (100, 20))
+        
+        self.draw_button(self.btn_spk_play, "Ses Çal", primary=True)
+        
+        self.update()
+        
+    def show_settings(self):
+        """Ayarlar Ekranı - Wallpaper Seçimi"""
+        self.draw_background()
+        
         self.draw_button(self.btn_back, "<", primary=False)
         
         title = self.font_lg.render("Arka Plan Seçimi", True, COLORS['text_main'])
