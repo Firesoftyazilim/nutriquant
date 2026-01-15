@@ -469,12 +469,16 @@ class Display:
                     
                     if self.settings_page < total_pages - 1 and self.btn_next_page.collidepoint(pos):
                         self.settings_page += 1
+                        print(f"[Debug] Sayfa değiştirildi: {self.settings_page}")
                         return 'page_changed'
                         
                     # Wallpaper seçimlerini kontrol et (Sadece görünür olanlar)
                     for wp_name, rect in self.wallpaper_buttons:
                         if rect.collidepoint(pos):
+                            print(f"[Debug] Wallpaper tıklandı: {wp_name}")
                             return f"select_wallpaper_{wp_name}" if wp_name else "select_wallpaper_none"
+                    
+                    print(f"[Debug] Tıklama boş alana: {pos}")
                 
                 elif self.state == UIState.TEST_MENU:
                     if self.btn_test_scale.collidepoint(pos):

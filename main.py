@@ -159,10 +159,20 @@ class Nutriquant:
                     if self.display.state == UIState.TEST_CAMERA:
                         self.camera.stop_preview()
                     
-                    if self.display.state == UIState.TEST_MENU:
+                    if self.display.state == UIState.SETTINGS:
+                        self.display.state = UIState.DASHBOARD
+                    elif self.display.state == UIState.TEST_MENU:
                         self.display.state = UIState.DASHBOARD
                     else:
                         self.display.state = UIState.TEST_MENU
+                        
+                elif event and event.startswith('select_wallpaper_'):
+                    print(f"[Debug] Main event yakalandı: {event}")
+                    wp_name = event.replace('select_wallpaper_', '')
+                    if wp_name == 'none':
+                        self.display.set_wallpaper(None)
+                    else:
+                        self.display.set_wallpaper(wp_name)
                         
                 elif event == 'click_play_sound':
                     self.speaker.play_beep()
