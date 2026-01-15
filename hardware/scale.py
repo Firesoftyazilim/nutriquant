@@ -33,20 +33,15 @@ class Scale:
             
             self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
             
-            # Reset ile test et - eğer takılırsa timeout olsun
+            # Reset ve bağlantı testi - non-blocking
             print("[Scale] Sensör bağlantısı test ediliyor...")
-            try:
-                # Basit bir okuma dene
-                test_data = self.hx.get_raw_data(times=1)
-                if test_data is False or test_data is None:
-                    raise Exception("Sensör yanıt vermiyor")
-                print(f"[Scale] Sensör OK - Ham veri: {test_data}")
-            except Exception as e:
-                print(f"[Scale] Sensör hatası: {e}")
+            if not self._is_ready(timeout=2.0):
+                print("[Scale] Sensör yanıt vermiyor (Zaman aşımı)")
                 print("[Scale] MOCK moda geçiliyor...")
                 self.mode = "MOCK"
                 return
             
+            print(f"[Scale] Sensör OK.")
             # İlk tare
             self.tare()
             
@@ -55,17 +50,43 @@ class Scale:
             print(f"[Scale] Başlatma hatası: {e}")
             print("[Scale] MOCK moda geçiliyor...")
             self.mode = "MOCK"
+    
+    def _is_ready(self, timeout=1.0):
+        """Sensörün hazır olup olmadığını (DOUT pininin LOW olmasını) kontrol et"""
+        if self.mode == "MOCK":
+            return True
+        
+        start_time = time.time()
+        try:
+            # HX711 veri göndermeye hazır olduğunda DOUT pinini LOW'a çeker
+            while GPIO.input(HX711_DOUT_PIN) == 1:
+                if time.time() - start_time > timeout:
+                    return False
+                time.sleep(0.01)
+            return True
+        except:
+            return False
+
             
     def tare(self):
         """Tartıyı sıfırla - offset hesapla"""
+        if self.mode == "MOCK":
+            return
+            
         try:
+            # Sensör hazır mı kontrol et
+            if not self._is_ready():
+                print("[Scale] Tare hatası: Sensör hazır değil")
+                return
+                
             # Birkaç okuma yapıp ortalama al
             readings = []
             for _ in range(10):
+                if not self._is_ready(): continue
                 data = self.hx.get_raw_data()
                 if data:
                     readings.append(data)
-                time.sleep(0.1)
+                time.sleep(0.05)
             
             if readings:
                 self.offset = sum(readings) / len(readings)
@@ -87,10 +108,11 @@ class Scale:
             # Ham veri oku
             readings = []
             for _ in range(samples):
+                if not self._is_ready(timeout=0.1): continue
                 data = self.hx.get_raw_data()
                 if data:
                     readings.append(data)
-                time.sleep(0.05)
+                time.sleep(0.02)
             
             if not readings:
                 return 0

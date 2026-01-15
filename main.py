@@ -113,6 +113,9 @@ class Nutriquant:
                 elif self.display.state == UIState.TEST_CAMERA:
                     # Kamera test modunda sadece UI göster, rpicam-vid arka planda çalışıyor
                     self.display.show_camera_feed()
+                    
+                elif self.display.state == UIState.SETTINGS:
+                    self.display.show_settings()
 
                     
                 # 3. Olayları Dinle
@@ -136,6 +139,9 @@ class Nutriquant:
                 # Test Events
                 elif event == 'click_test_mode':
                     self.display.state = UIState.TEST_MENU
+                    
+                elif event == 'click_settings':
+                    self.display.state = UIState.SETTINGS
                     
                 elif event == 'test_scale':
                     self.display.state = UIState.TEST_SCALE

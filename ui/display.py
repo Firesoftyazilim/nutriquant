@@ -416,6 +416,16 @@ class Display:
                         return 'click_scan'
                     elif self.btn_test_mode.collidepoint(pos):
                         return 'click_test_mode'
+                    elif self.btn_settings.collidepoint(pos):
+                        return 'click_settings'
+                
+                elif self.state == UIState.SETTINGS:
+                    if self.btn_back.collidepoint(pos):
+                        return 'click_back'
+                    # Wallpaper seçimlerini kontrol et
+                    for wp_name, rect in self.wallpaper_buttons:
+                        if rect.collidepoint(pos):
+                            return f"select_wallpaper_{wp_name}" if wp_name else "select_wallpaper_none"
                 
                 elif self.state == UIState.TEST_MENU:
                     if self.btn_test_scale.collidepoint(pos):
