@@ -31,6 +31,16 @@ class Scale:
             GPIO.setmode(GPIO.BCM)
             GPIO.setwarnings(False)  # Uyarıları kapat
             
+            # --- HARD RESET & WAKE UP ---
+            # Bazen sensör takılı kalabiliyor, manuel reset atalım
+            print("[Scale] Sensör uyandırılıyor (Hard Reset)...")
+            GPIO.setup(HX711_SCK_PIN, GPIO.OUT)
+            GPIO.output(HX711_SCK_PIN, 1)  # Power Down
+            time.sleep(0.1)
+            GPIO.output(HX711_SCK_PIN, 0)  # Power Up
+            time.sleep(0.1)
+            # ---------------------------
+            
             self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
             
             # Reset ve bağlantı testi - non-blocking
