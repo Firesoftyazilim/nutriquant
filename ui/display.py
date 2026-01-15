@@ -89,8 +89,12 @@ class Display:
         
         self.btn_spk_play = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2 - 40, 200, 80)
         
+        
         # Wallpaper seçim butonları (dinamik olarak oluşturulacak)
         self.wallpaper_buttons = []
+        self.settings_page = 0
+        self.btn_prev_page = pygame.Rect(SCREEN_WIDTH//2 - 120, 420, 100, 50)
+        self.btn_next_page = pygame.Rect(SCREEN_WIDTH//2 + 20, 420, 100, 50)
 
     def draw_rounded_rect(self, surface, color, rect, radius=15):
         """Köşeleri yuvarlatılmış dikdörtgen çiz"""
@@ -331,49 +335,70 @@ class Display:
         title = self.font_lg.render("Arka Plan Seçimi", True, COLORS['text_main'])
         self.screen.blit(title, (100, 20))
         
-        # Wallpaper grid
+        # Wallpaper listesi hazırlama
+        # İlk eleman her zaman "None" (Yok) olsun
+        all_items = [None] + self.wallpaper_names
+        
+        # Sayfalama
+        items_per_page = 6
+        total_pages = (len(all_items) + items_per_page - 1) // items_per_page
+        
+        start_idx = self.settings_page * items_per_page
+        end_idx = min(start_idx + items_per_page, len(all_items))
+        current_items = all_items[start_idx:end_idx]
+        
+        # Grid ayarları
         start_y = 100
         col_width = 240
-        row_height = 160
+        row_height = 140  # Yüksekliği biraz azalttım
         cols = 3
         
-        # Butonları oluştur
         self.wallpaper_buttons = []
         
-        # "Wallpaper Yok" seçeneği
-        no_wp_rect = pygame.Rect(30, start_y, col_width - 20, row_height - 20)
-        self.wallpaper_buttons.append((None, no_wp_rect))
-        
-        # Wallpaper'ları göster
-        for idx, wp_name in enumerate(self.wallpaper_names, 1):
+        for idx, item in enumerate(current_items):
             row = idx // cols
             col = idx % cols
             x = 30 + col * col_width
             y = start_y + row * row_height
             
             rect = pygame.Rect(x, y, col_width - 20, row_height - 20)
-            self.wallpaper_buttons.append((wp_name, rect))
-        
-        # Butonları çiz
-        for wp_name, rect in self.wallpaper_buttons:
-            # Seçili mi kontrol et
-            is_selected = (wp_name == self.current_wallpaper)
+            self.wallpaper_buttons.append((item, rect))
+            
+            # Seçili mi?
+            is_selected = (item == self.current_wallpaper)
             border_color = COLORS['primary'] if is_selected else COLORS['border']
             
-            # Arka plan
-            if wp_name and wp_name in self.wallpapers:
-                # Thumbnail göster
-                thumbnail = pygame.transform.scale(self.wallpapers[wp_name], (rect.width, rect.height))
-                self.screen.blit(thumbnail, rect)
+            # Çizim
+            if item and item in self.wallpapers:
+                # Wallpaper Thumbnail
+                thumb = pygame.transform.scale(self.wallpapers[item], (rect.width, rect.height))
+                self.screen.blit(thumb, rect)
             else:
-                # "Wallpaper Yok" kutusu
+                # "Wallpaper Yok" Kutusu
                 pygame.draw.rect(self.screen, COLORS['card_bg'], rect, border_radius=10)
-                text = self.font_sm.render("Wallpaper Yok", True, COLORS['text_sec'])
+                text = self.font_sm.render("Varsayılan", True, COLORS['text_sec'])
                 text_rect = text.get_rect(center=rect.center)
                 self.screen.blit(text, text_rect)
-            
-            # Kenarlık
+                
+            # Çerçeve
             pygame.draw.rect(self.screen, border_color, rect, 3, border_radius=10)
+            
+            # İsim etiketi (küçük)
+            if item:
+                lbl = self.font_sm.render(item[:15], True, COLORS['text_main'])
+                self.screen.blit(lbl, (x, y + row_height - 25))
+
+        # Sayfalama Butonları
+        if total_pages > 1:
+            if self.settings_page > 0:
+                self.draw_button(self.btn_prev_page, "< Geri", primary=False)
+            
+            if self.settings_page < total_pages - 1:
+                self.draw_button(self.btn_next_page, "İleri >", primary=False)
+                
+            # Sayfa numarası
+            pg_text = self.font_sm.render(f"{self.settings_page + 1} / {total_pages}", True, COLORS['text_sec'])
+            self.screen.blit(pg_text, (SCREEN_WIDTH//2 - pg_text.get_width()//2, 435))
         
         self.update()
         
@@ -432,7 +457,21 @@ class Display:
                 elif self.state == UIState.SETTINGS:
                     if self.btn_back.collidepoint(pos):
                         return 'click_back'
-                    # Wallpaper seçimlerini kontrol et
+                    
+                    # Sayfalama butonları
+                    if self.settings_page > 0 and self.btn_prev_page.collidepoint(pos):
+                        self.settings_page -= 1
+                        return 'page_changed'
+                    
+                    # Toplam sayfa sayısını hesapla (basit bir yol, show_settings ile aynı mantık)
+                    all_items = [None] + self.wallpaper_names
+                    total_pages = (len(all_items) + 6 - 1) // 6
+                    
+                    if self.settings_page < total_pages - 1 and self.btn_next_page.collidepoint(pos):
+                        self.settings_page += 1
+                        return 'page_changed'
+                        
+                    # Wallpaper seçimlerini kontrol et (Sadece görünür olanlar)
                     for wp_name, rect in self.wallpaper_buttons:
                         if rect.collidepoint(pos):
                             return f"select_wallpaper_{wp_name}" if wp_name else "select_wallpaper_none"
