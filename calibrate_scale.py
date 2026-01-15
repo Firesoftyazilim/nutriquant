@@ -12,7 +12,13 @@ def cleanAndExit():
 print("Nutriquant - Tartı Kalibrasyonu")
 print("-------------------------------")
 
+scale = Scale()
 
+if scale.mode == "MOCK":
+    print("\n[UYARI] Sistem MOCK (Simülasyon) modunda çalışıyor!")
+    print("Gerçek donanım algılanamadı veya zaman aşımına uğradı.")
+    print("Bu modda kalibrasyon YAPILAMAZ.")
+    sys.exit()
 
 print("\n1. Lütfen tartının üzerini BOŞALTIN.")
 input("Devam etmek için Enter'a basın...")
