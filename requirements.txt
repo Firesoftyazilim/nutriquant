@@ -2,7 +2,7 @@
 
 # Kamera
 picamera2==0.3.12
-libcamera
+# libcamera (Sistem paketi olarak kurulu olmalı)
 
 # Görüntü İşleme ve AI
 tflite-runtime==2.14.0
@@ -16,7 +16,7 @@ RPi.GPIO==0.7.1
 
 # UI - Dokunmatik Ekran
 pygame==2.5.2
-tkinter
+# tkinter (Sistem paketi olarak kurulu olmalı)
 
 # Ses
 pygame-mixer
