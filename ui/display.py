@@ -30,6 +30,7 @@ class UIState:
     TEST_SCALE = 6
     TEST_CAMERA = 7
     TEST_SPEAKER = 8
+    SETTINGS = 9
 
 class Display:
     def __init__(self):
@@ -60,6 +61,12 @@ class Display:
         except:
             print("[Uyarı] Logo yüklenemedi, varsayılan kullanılacak")
             self.logo = None
+        
+        # Wallpaper'ları yükle
+        self.wallpapers = {}
+        self.wallpaper_names = []
+        self.current_wallpaper = None
+        self.load_wallpapers()
             
         self.state = UIState.SPLASH
         
@@ -68,6 +75,9 @@ class Display:
         self.btn_back = pygame.Rect(20, 20, 60, 40)
         self.btn_retry = pygame.Rect(SCREEN_WIDTH//2 - 140, 380, 130, 60)
         self.btn_save = pygame.Rect(SCREEN_WIDTH//2 + 10, 380, 130, 60)
+        
+        # Ayarlar butonu (sol üst)
+        self.btn_settings = pygame.Rect(20, 20, 50, 50)
         
         # Test Alanı Butonları
         self.btn_test_mode = pygame.Rect(SCREEN_WIDTH - 160, 20, 140, 50)
@@ -78,6 +88,9 @@ class Display:
         self.btn_test_back = pygame.Rect(SCREEN_WIDTH//2 + 20, 260, 220, 100)
         
         self.btn_spk_play = pygame.Rect(SCREEN_WIDTH//2 - 100, SCREEN_HEIGHT//2 - 40, 200, 80)
+        
+        # Wallpaper seçim butonları (dinamik olarak oluşturulacak)
+        self.wallpaper_buttons = []
 
     def draw_rounded_rect(self, surface, color, rect, radius=15):
         """Köşeleri yuvarlatılmış dikdörtgen çiz"""
@@ -112,14 +125,61 @@ class Display:
         text_surf = self.font_md.render(text, True, COLORS['text_main'])
         text_rect = text_surf.get_rect(center=rect.center)
         self.screen.blit(text_surf, text_rect)
+    
+    def load_wallpapers(self):
+        """Wallpaper'ları yükle"""
+        import os
+        from config import WALLPAPERS_DIR
+        
+        if not os.path.exists(WALLPAPERS_DIR):
+            print(f"[Uyarı] Wallpaper klasörü bulunamadı: {WALLPAPERS_DIR}")
+            return
+        
+        try:
+            files = os.listdir(WALLPAPERS_DIR)
+            for filename in files:
+                if filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    filepath = os.path.join(WALLPAPERS_DIR, filename)
+                    try:
+                        img = pygame.image.load(filepath)
+                        # Ekran boyutuna ölçeklendir
+                        img = pygame.transform.scale(img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+                        self.wallpapers[filename] = img
+                        self.wallpaper_names.append(filename)
+                    except Exception as e:
+                        print(f"[Uyarı] Wallpaper yüklenemedi {filename}: {e}")
+            
+            print(f"[Display] {len(self.wallpapers)} wallpaper yüklendi")
+        except Exception as e:
+            print(f"[Uyarı] Wallpaper yükleme hatası: {e}")
+    
+    def draw_background(self):
+        """Arka plan çiz (wallpaper veya düz renk)"""
+        if self.current_wallpaper and self.current_wallpaper in self.wallpapers:
+            self.screen.blit(self.wallpapers[self.current_wallpaper], (0, 0))
+        else:
+            self.screen.fill(COLORS['bg_dark'])
+    
+    def set_wallpaper(self, wallpaper_name):
+        """Wallpaper değiştir"""
+        if wallpaper_name in self.wallpapers:
+            self.current_wallpaper = wallpaper_name
+            print(f"[Display] Wallpaper değiştirildi: {wallpaper_name}")
+        elif wallpaper_name is None:
+            self.current_wallpaper = None
+            print("[Display] Wallpaper kaldırıldı")
+
 
     def show_dashboard(self, weight, battery):
         """Ana Dashboard Ekranı"""
-        self.screen.fill(COLORS['bg_dark'])
+        self.draw_background()
         
         # Başlık
         title = self.font_lg.render(f"Merhaba, {APP_NAME}", True, COLORS['text_main'])
-        self.screen.blit(title, (30, 40))
+        self.screen.blit(title, (90, 40))
+        
+        # Ayarlar butonu (sol üst - dişli ikonu)
+        self.draw_button(self.btn_settings, "⚙", primary=False)
         
         # Üst Bilgi Kartları
         self.draw_card(30, 120, 220, 120, "Anlık Ağırlık", f"{weight}g")
@@ -256,9 +316,54 @@ class Display:
         self.draw_button(self.btn_back, "<", primary=False)
         
         title = self.font_lg.render("Hoparlör Testi", True, COLORS['text_main'])
+        self.draw_button(self.btn_back, "<", primary=False)
+        
+        title = self.font_lg.render("Arka Plan Seçimi", True, COLORS['text_main'])
         self.screen.blit(title, (100, 20))
         
-        self.draw_button(self.btn_spk_play, "Ses Çal", primary=True)
+        # Wallpaper grid
+        start_y = 100
+        col_width = 240
+        row_height = 160
+        cols = 3
+        
+        # Butonları oluştur
+        self.wallpaper_buttons = []
+        
+        # "Wallpaper Yok" seçeneği
+        no_wp_rect = pygame.Rect(30, start_y, col_width - 20, row_height - 20)
+        self.wallpaper_buttons.append((None, no_wp_rect))
+        
+        # Wallpaper'ları göster
+        for idx, wp_name in enumerate(self.wallpaper_names, 1):
+            row = idx // cols
+            col = idx % cols
+            x = 30 + col * col_width
+            y = start_y + row * row_height
+            
+            rect = pygame.Rect(x, y, col_width - 20, row_height - 20)
+            self.wallpaper_buttons.append((wp_name, rect))
+        
+        # Butonları çiz
+        for wp_name, rect in self.wallpaper_buttons:
+            # Seçili mi kontrol et
+            is_selected = (wp_name == self.current_wallpaper)
+            border_color = COLORS['primary'] if is_selected else COLORS['border']
+            
+            # Arka plan
+            if wp_name and wp_name in self.wallpapers:
+                # Thumbnail göster
+                thumbnail = pygame.transform.scale(self.wallpapers[wp_name], (rect.width, rect.height))
+                self.screen.blit(thumbnail, rect)
+            else:
+                # "Wallpaper Yok" kutusu
+                pygame.draw.rect(self.screen, COLORS['card_bg'], rect, border_radius=10)
+                text = self.font_sm.render("Wallpaper Yok", True, COLORS['text_sec'])
+                text_rect = text.get_rect(center=rect.center)
+                self.screen.blit(text, text_rect)
+            
+            # Kenarlık
+            pygame.draw.rect(self.screen, border_color, rect, 3, border_radius=10)
         
         self.update()
         

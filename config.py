@@ -59,3 +59,5 @@ AGE_BMI_RULES = {
 DATA_DIR = "data"
 ASSETS_DIR = "assets"
 MODELS_DIR = "models"
+WALLPAPERS_DIR = "assets/images/Wallpapers"
+
