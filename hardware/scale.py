@@ -34,9 +34,9 @@ class Scale:
             self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
             
             # Reset ve bağlantı testi - non-blocking
-            print("[Scale] Sensör bağlantısı test ediliyor...")
-            if not self._is_ready(timeout=2.0):
-                print("[Scale] Sensör yanıt vermiyor (Zaman aşımı)")
+            print("[Scale] Sensör bağlantısı test ediliyor (5sn beklenecek)...")
+            if not self._is_ready(timeout=5.0):
+                print("[Scale] Sensör yanıt vermiyor (Zaman aşımı - 5sn)")
                 print("[Scale] MOCK moda geçiliyor...")
                 self.mode = "MOCK"
                 return
