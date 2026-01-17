@@ -125,8 +125,11 @@ class Nutriquant:
                     # Kamera test modunda sadece UI göster, rpicam-vid arka planda çalışıyor
                     self.display.show_camera_feed()
                     
-                elif self.display.state == UIState.SETTINGS:
-                    self.display.show_settings()
+                elif self.display.state == UIState.SETTINGS_MENU:
+                    self.display.show_settings_menu()
+                
+                elif self.display.state == UIState.WALLPAPER_SELECT:
+                    self.display.show_wallpaper_select()
 
                     
                 # 4. Olayları Dinle
@@ -196,7 +199,16 @@ class Nutriquant:
                     self.display.state = UIState.TEST_MENU
                     
                 elif event == 'click_settings':
-                    self.display.state = UIState.SETTINGS
+                    self.display.state = UIState.SETTINGS_MENU
+                
+                elif event == 'settings_wallpaper':
+                    # Ayarlar menüsünden arka plan değiştir seçildi
+                    self.display.wallpaper_scroll_offset = 0
+                    self.display.state = UIState.WALLPAPER_SELECT
+                
+                elif event == 'settings_test':
+                    # Ayarlar menüsünden test modu seçildi
+                    self.display.state = UIState.TEST_MENU
                     
                 elif event == 'test_scale':
                     self.display.state = UIState.TEST_SCALE
@@ -217,8 +229,10 @@ class Nutriquant:
                     # Profil formlarından çıkış
                     if self.display.state in [UIState.PROFILE_ADD, UIState.PROFILE_EDIT]:
                         self.display.state = UIState.DASHBOARD
-                    elif self.display.state == UIState.SETTINGS:
+                    elif self.display.state == UIState.SETTINGS_MENU:
                         self.display.state = UIState.DASHBOARD
+                    elif self.display.state == UIState.WALLPAPER_SELECT:
+                        self.display.state = UIState.SETTINGS_MENU
                     elif self.display.state == UIState.TEST_MENU:
                         self.display.state = UIState.DASHBOARD
                     else:

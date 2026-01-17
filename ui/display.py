@@ -31,9 +31,10 @@ class UIState:
     TEST_SCALE = 6
     TEST_CAMERA = 7
     TEST_SPEAKER = 8
-    SETTINGS = 9
-    PROFILE_ADD = 10
-    PROFILE_EDIT = 11
+    SETTINGS_MENU = 9  # Ayarlar menüsü
+    WALLPAPER_SELECT = 10  # Arka plan seçimi
+    PROFILE_ADD = 11
+    PROFILE_EDIT = 12
 
 class Display:
     def __init__(self):
@@ -103,9 +104,8 @@ class Display:
         
         # Wallpaper seçim butonları (dinamik olarak oluşturulacak)
         self.wallpaper_buttons = []
-        self.settings_page = 0
-        self.btn_prev_page = pygame.Rect(SCREEN_WIDTH//2 - 120, 420, 100, 50)
-        self.btn_next_page = pygame.Rect(SCREEN_WIDTH//2 + 20, 420, 100, 50)
+        self.wallpaper_scroll_offset = 0  # Scroll pozisyonu
+        self.wallpaper_scroll_max = 0  # Maksimum scroll
         
         # Profil yönetimi
         self.profile_buttons = []
@@ -115,6 +115,10 @@ class Display:
         
         # Ekran klavyesi (dokunmatik ekran için)
         self.keyboard = OnScreenKeyboard(self.screen, self.font_md)
+        
+        # Dokunmatik scroll için
+        self.touch_start_y = None
+        self.touch_start_scroll = None
 
     def draw_rounded_rect(self, surface, color, rect, radius=15):
         """Köşeleri yuvarlatılmış dikdörtgen çiz"""
@@ -444,8 +448,55 @@ class Display:
         
         self.update()
         
-    def show_settings(self):
-        """Ayarlar Ekranı - Wallpaper Seçimi"""
+    def show_settings_menu(self):
+        """Ayarlar Menüsü - Ana Dialog"""
+        self.draw_background()
+        
+        self.draw_button(self.btn_back, "<", primary=False)
+        
+        title = self.font_lg.render("Ayarlar", True, COLORS['text_main'])
+        self.screen.blit(title, (100, 20))
+        
+        # Ayar seçenekleri
+        menu_items = [
+            ("Arka Plan Değiştir", "wallpaper"),
+            ("Test Modu", "test"),
+            # İleride eklenebilir: ("Ses Ayarları", "sound"), ("Ekran Parlaklığı", "brightness")
+        ]
+        
+        # Menü kartları
+        card_width = 700
+        card_height = 80
+        start_y = 120
+        spacing = 20
+        
+        self.settings_menu_buttons = []
+        
+        for idx, (label, action) in enumerate(menu_items):
+            y = start_y + idx * (card_height + spacing)
+            x = (SCREEN_WIDTH - card_width) // 2
+            
+            rect = pygame.Rect(x, y, card_width, card_height)
+            self.settings_menu_buttons.append((action, rect))
+            
+            # Kart arka planı
+            self.draw_rounded_rect(self.screen, COLORS['card_bg'], rect, 15)
+            pygame.draw.rect(self.screen, COLORS['border'], rect, 2, border_radius=15)
+            
+            # Metin
+            text = self.font_md.render(label, True, COLORS['text_main'])
+            text_rect = text.get_rect(midleft=(x + 30, rect.centery))
+            self.screen.blit(text, text_rect)
+            
+            # Ok işareti
+            arrow = self.font_md.render("→", True, COLORS['text_sec'])
+            arrow_rect = arrow.get_rect(midright=(rect.right - 30, rect.centery))
+            self.screen.blit(arrow, arrow_rect)
+        
+        self.update()
+    
+    def show_wallpaper_select(self):
+        """Arka Plan Seçimi - Scroll Destekli"""
         self.draw_background()
         
         self.draw_button(self.btn_back, "<", primary=False)
@@ -453,31 +504,42 @@ class Display:
         title = self.font_lg.render("Arka Plan Seçimi", True, COLORS['text_main'])
         self.screen.blit(title, (100, 20))
         
-        # Wallpaper listesi hazırlama
-        # İlk eleman her zaman "None" (Yok) olsun
+        # Wallpaper listesi
         all_items = [None] + self.wallpaper_names
-        
-        # Sayfalama
-        items_per_page = 6
-        total_pages = (len(all_items) + items_per_page - 1) // items_per_page
-        
-        start_idx = self.settings_page * items_per_page
-        end_idx = min(start_idx + items_per_page, len(all_items))
-        current_items = all_items[start_idx:end_idx]
         
         # Grid ayarları
         start_y = 100
         col_width = 240
-        row_height = 140  # Yüksekliği biraz azalttım
+        row_height = 120  # İsim olmadan daha küçük
         cols = 3
+        margin_x = 30
         
+        # Scroll alanı
+        scroll_area_y = 80
+        scroll_area_height = SCREEN_HEIGHT - scroll_area_y
+        
+        # Toplam içerik yüksekliği
+        total_rows = (len(all_items) + cols - 1) // cols
+        total_content_height = total_rows * row_height
+        
+        # Maksimum scroll
+        self.wallpaper_scroll_max = max(0, total_content_height - scroll_area_height + 100)
+        
+        # Scroll sınırla
+        self.wallpaper_scroll_offset = max(0, min(self.wallpaper_scroll_offset, self.wallpaper_scroll_max))
+        
+        # Wallpaper butonları
         self.wallpaper_buttons = []
         
-        for idx, item in enumerate(current_items):
+        for idx, item in enumerate(all_items):
             row = idx // cols
             col = idx % cols
-            x = 30 + col * col_width
-            y = start_y + row * row_height
+            x = margin_x + col * col_width
+            y = start_y + row * row_height - self.wallpaper_scroll_offset
+            
+            # Ekran dışındaysa çizme
+            if y + row_height < scroll_area_y or y > SCREEN_HEIGHT:
+                continue
             
             rect = pygame.Rect(x, y, col_width - 20, row_height - 20)
             self.wallpaper_buttons.append((item, rect))
@@ -485,6 +547,7 @@ class Display:
             # Seçili mi?
             is_selected = (item == self.current_wallpaper)
             border_color = COLORS['primary'] if is_selected else COLORS['border']
+            border_width = 4 if is_selected else 2
             
             # Çizim
             if item and item in self.wallpapers:
@@ -492,31 +555,30 @@ class Display:
                 thumb = pygame.transform.scale(self.wallpapers[item], (rect.width, rect.height))
                 self.screen.blit(thumb, rect)
             else:
-                # "Wallpaper Yok" Kutusu
+                # "Varsayılan" Kutusu
                 pygame.draw.rect(self.screen, COLORS['card_bg'], rect, border_radius=10)
                 text = self.font_sm.render("Varsayılan", True, COLORS['text_sec'])
                 text_rect = text.get_rect(center=rect.center)
                 self.screen.blit(text, text_rect)
-                
+            
             # Çerçeve
-            pygame.draw.rect(self.screen, border_color, rect, 3, border_radius=10)
+            pygame.draw.rect(self.screen, border_color, rect, border_width, border_radius=10)
+        
+        # Scroll göstergesi (sağ tarafta)
+        if self.wallpaper_scroll_max > 0:
+            scrollbar_height = 200
+            scrollbar_y = scroll_area_y + 20
+            scrollbar_x = SCREEN_WIDTH - 15
             
-            # İsim etiketi (küçük)
-            if item:
-                lbl = self.font_sm.render(item[:15], True, COLORS['text_main'])
-                self.screen.blit(lbl, (x, y + row_height - 25))
-
-        # Sayfalama Butonları
-        if total_pages > 1:
-            if self.settings_page > 0:
-                self.draw_button(self.btn_prev_page, "< Geri", primary=False)
+            # Scrollbar arka plan
+            pygame.draw.rect(self.screen, COLORS['border'], 
+                           (scrollbar_x, scrollbar_y, 8, scrollbar_height), border_radius=4)
             
-            if self.settings_page < total_pages - 1:
-                self.draw_button(self.btn_next_page, "İleri >", primary=False)
-                
-            # Sayfa numarası
-            pg_text = self.font_sm.render(f"{self.settings_page + 1} / {total_pages}", True, COLORS['text_sec'])
-            self.screen.blit(pg_text, (SCREEN_WIDTH//2 - pg_text.get_width()//2, 435))
+            # Scrollbar thumb
+            thumb_height = max(30, scrollbar_height * scroll_area_height / total_content_height)
+            thumb_y = scrollbar_y + (scrollbar_height - thumb_height) * (self.wallpaper_scroll_offset / self.wallpaper_scroll_max)
+            pygame.draw.rect(self.screen, COLORS['primary'], 
+                           (scrollbar_x, thumb_y, 8, thumb_height), border_radius=4)
         
         self.update()
         
@@ -677,6 +739,12 @@ class Display:
                     
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = event.pos
+                
+                # Dokunmatik scroll başlangıcı (wallpaper seçiminde)
+                if self.state == UIState.WALLPAPER_SELECT:
+                    self.touch_start_y = pos[1]
+                    self.touch_start_scroll = self.wallpaper_scroll_offset
+                
                 if self.state == UIState.DASHBOARD:
                     # + Butonu (Profil ekle)
                     if self.btn_add_profile.collidepoint(pos):
@@ -744,31 +812,47 @@ class Display:
                             self.keyboard.hide()
                             return 'delete_profile'
                 
-                elif self.state == UIState.SETTINGS:
+                elif self.state == UIState.SETTINGS_MENU:
+                    # Geri butonu
                     if self.btn_back.collidepoint(pos):
                         return 'click_back'
                     
-                    # Sayfalama butonları
-                    if self.settings_page > 0 and self.btn_prev_page.collidepoint(pos):
-                        self.settings_page -= 1
-                        return 'page_changed'
+                    # Menü seçenekleri
+                    if hasattr(self, 'settings_menu_buttons'):
+                        for action, rect in self.settings_menu_buttons:
+                            if rect.collidepoint(pos):
+                                return f'settings_{action}'
+                
+                elif self.state == UIState.WALLPAPER_SELECT:
+                    # Geri butonu
+                    if self.btn_back.collidepoint(pos):
+                        return 'click_back'
                     
-                    # Toplam sayfa sayısını hesapla (basit bir yol, show_settings ile aynı mantık)
-                    all_items = [None] + self.wallpaper_names
-                    total_pages = (len(all_items) + 6 - 1) // 6
-                    
-                    if self.settings_page < total_pages - 1 and self.btn_next_page.collidepoint(pos):
-                        self.settings_page += 1
-                        print(f"[Debug] Sayfa değiştirildi: {self.settings_page}")
-                        return 'page_changed'
-                        
-                    # Wallpaper seçimlerini kontrol et (Sadece görünür olanlar)
+                    # Wallpaper seçimi
                     for wp_name, rect in self.wallpaper_buttons:
                         if rect.collidepoint(pos):
-                            print(f"[Debug] Wallpaper tıklandı: {wp_name}")
                             return f"select_wallpaper_{wp_name}" if wp_name else "select_wallpaper_none"
-                    
-                    print(f"[Debug] Tıklama boş alana: {pos}")
+            
+            elif event.type == pygame.MOUSEMOTION:
+                # Dokunmatik sürükleme (scroll)
+                if self.state == UIState.WALLPAPER_SELECT and self.touch_start_y is not None:
+                    pos = event.pos
+                    delta_y = self.touch_start_y - pos[1]
+                    self.wallpaper_scroll_offset = self.touch_start_scroll + delta_y
+                    self.wallpaper_scroll_offset = max(0, min(self.wallpaper_scroll_offset, self.wallpaper_scroll_max))
+            
+            elif event.type == pygame.MOUSEBUTTONUP:
+                # Dokunmatik scroll bitişi
+                if self.state == UIState.WALLPAPER_SELECT:
+                    self.touch_start_y = None
+                    self.touch_start_scroll = None
+            
+            elif event.type == pygame.MOUSEWHEEL:
+                # Scroll desteği (wallpaper seçiminde - mouse wheel için)
+                if self.state == UIState.WALLPAPER_SELECT:
+                    scroll_amount = event.y * 30  # Scroll hızı
+                    self.wallpaper_scroll_offset -= scroll_amount
+                    self.wallpaper_scroll_offset = max(0, min(self.wallpaper_scroll_offset, self.wallpaper_scroll_max))
                 
                 elif self.state == UIState.TEST_MENU:
                     if self.btn_test_scale.collidepoint(pos):
