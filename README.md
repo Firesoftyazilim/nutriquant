@@ -48,7 +48,10 @@ project/
 │
 ├── data/                 # Veri dosyaları
 │   ├── foods.json       # Yemek besin değerleri (18 yemek)
-│   └── users.json       # Kullanıcı bilgileri
+│   ├── users.json       # Kullanıcı bilgileri
+│   ├── profiles.json    # Kullanıcı profilleri (isim, boy, kilo, cinsiyet)
+│   ├── settings.json    # Uygulama ayarları (arka plan, ses, vb.)
+│   └── measurements.json # Ölçüm geçmişi
 │
 ├── models/               # AI modelleri
 │   ├── food_classifier.tflite  # TFLite model (eklenecek)
@@ -212,6 +215,33 @@ print(f"Reference Unit: {reference_unit}")
   }
 }
 ```
+
+### profiles.json
+```json
+{
+  "profiles": [
+    {
+      "id": 1,
+      "name": "Ahmet",
+      "gender": "Erkek",
+      "height": 175,
+      "weight": 70,
+      "created_at": "2026-01-18T02:00:00"
+    }
+  ]
+}
+```
+
+### settings.json
+```json
+{
+  "wallpaper": "nature.jpg",
+  "sound_enabled": true,
+  "brightness": 100
+}
+```
+
+**Not:** Arka plan seçimi (`wallpaper`) otomatik olarak kaydedilir ve uygulama yeniden başlatıldığında korunur.
 
 ## Sorun Giderme
 

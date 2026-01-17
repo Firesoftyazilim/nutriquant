@@ -37,7 +37,7 @@ class UIState:
     PROFILE_EDIT = 12
 
 class Display:
-    def __init__(self):
+    def __init__(self, database=None):
         pygame.init()
         
         flags = pygame.FULLSCREEN if FULLSCREEN else 0
@@ -45,6 +45,7 @@ class Display:
         pygame.display.set_caption(APP_NAME)
         
         self.clock = pygame.time.Clock()
+        self.db = database  # Database referansı
         
         # Fontlar
         try:
@@ -178,6 +179,16 @@ class Display:
                         print(f"[Uyarı] Wallpaper yüklenemedi {filename}: {e}")
             
             print(f"[Display] {len(self.wallpapers)} wallpaper yüklendi")
+            
+            # Kayıtlı arka planı yükle
+            if self.db:
+                saved_wallpaper = self.db.get_wallpaper()
+                if saved_wallpaper and saved_wallpaper in self.wallpapers:
+                    self.current_wallpaper = saved_wallpaper
+                    print(f"[Display] Kayıtlı arka plan yüklendi: {saved_wallpaper}")
+                elif saved_wallpaper is None:
+                    self.current_wallpaper = None
+                    print("[Display] Varsayılan arka plan kullanılıyor")
         except Exception as e:
             print(f"[Uyarı] Wallpaper yükleme hatası: {e}")
     
@@ -189,13 +200,18 @@ class Display:
             self.screen.fill(COLORS['bg_dark'])
     
     def set_wallpaper(self, wallpaper_name):
-        """Wallpaper değiştir"""
+        """Wallpaper değiştir ve veritabanına kaydet"""
         if wallpaper_name in self.wallpapers:
             self.current_wallpaper = wallpaper_name
             print(f"[Display] Wallpaper değiştirildi: {wallpaper_name}")
         elif wallpaper_name is None:
             self.current_wallpaper = None
-            print("[Display] Wallpaper kaldırıldı")
+            print("[Display] Wallpaper kaldırıldı (varsayılan)")
+        
+        # Veritabanına kaydet
+        if self.db:
+            self.db.save_wallpaper(wallpaper_name)
+            print(f"[Display] Wallpaper tercihi kaydedildi: {wallpaper_name}")
 
 
     def show_dashboard(self, battery, profiles, selected_profile_id=None):

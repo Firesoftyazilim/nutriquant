@@ -31,8 +31,8 @@ class Nutriquant:
         self.bmi_calc = BMICalculator()
         self.db = Database()
         
-        # UI Başlat
-        self.display = Display()
+        # UI Başlat (database ile)
+        self.display = Display(database=self.db)
         
         self.current_user = self.load_default_user()
         self.current_nutrition = None # Son ölçüm sonucu

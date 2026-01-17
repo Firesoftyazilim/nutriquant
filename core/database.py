@@ -120,6 +120,30 @@ class Database:
         profiles = self.load_json("profiles.json", {"profiles": []})
         profiles["profiles"] = [p for p in profiles["profiles"] if p["id"] != profile_id]
         return self.save_json("profiles.json", profiles)
+    
+    def get_settings(self):
+        """Uygulama ayarlarını getir"""
+        default_settings = {
+            "wallpaper": None,  # Seçili arka plan (None = varsayılan)
+            "sound_enabled": True,
+            "brightness": 100
+        }
+        return self.load_json("settings.json", default_settings)
+    
+    def save_setting(self, key, value):
+        """Tek bir ayarı kaydet"""
+        settings = self.get_settings()
+        settings[key] = value
+        return self.save_json("settings.json", settings)
+    
+    def get_wallpaper(self):
+        """Kayıtlı arka planı getir"""
+        settings = self.get_settings()
+        return settings.get("wallpaper")
+    
+    def save_wallpaper(self, wallpaper_name):
+        """Arka plan seçimini kaydet"""
+        return self.save_setting("wallpaper", wallpaper_name)
 
 # Test fonksiyonu
 if __name__ == "__main__":
