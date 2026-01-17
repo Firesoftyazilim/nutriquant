@@ -261,7 +261,7 @@ class Display:
             
             if current_size > 0:
                 # Logo'yu ölçeklendir
-                scaled_logo = pygame.transform.smoothscale(self.logo, (current_size, current_size))
+                scaled_logo = pygame.transform.smoothscale(self.logo, (600, current_size))
                 
                 # Fade efekti
                 alpha = int(255 * eased_progress)
@@ -273,20 +273,7 @@ class Display:
                 
                 self.screen.blit(scaled_logo, (x, y))
                 
-                # Uygulama adı (logo altında)
-                if progress > 0.5:  # Logo %50 tamamlandıktan sonra metin görünsün
-                    text_alpha = int(255 * min(1.0, (progress - 0.5) * 2))
-                    
-                    # Ana başlık
-                    title = self.font_xl.render(APP_NAME, True, COLORS['primary'])
-                    title.set_alpha(text_alpha)
-                    title_y = y + current_size + 30
-                    self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, title_y))
-                    
-                    # Alt başlık
-                    subtitle = self.font_md.render("Akıllı Yemek Tartısı", True, COLORS['text_sec'])
-                    subtitle.set_alpha(text_alpha)
-                    self.screen.blit(subtitle, (SCREEN_WIDTH//2 - subtitle.get_width()//2, title_y + 70))
+            
         
         self.update()
 
