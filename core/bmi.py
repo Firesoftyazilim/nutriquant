@@ -1,7 +1,5 @@
 # VKİ (Vücut Kitle İndeksi) Hesaplama
 
-from config import AGE_BMI_RULES
-
 class BMICalculator:
     def __init__(self):
         pass

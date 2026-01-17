@@ -236,7 +236,7 @@ class Display:
         self.update()
         
     def show_splash(self, progress):
-        """Açılış ekranı - Logo animasyonu
+        """Açılış ekranı - Logo animasyonu (800x480 için optimize edilmiş)
         progress: 0.0 - 1.0 arası animasyon ilerlemesi
         """
         self.screen.fill(COLORS['bg_dark'])
@@ -244,25 +244,49 @@ class Display:
         if self.logo is None:
             # Logo yoksa sadece metin göster
             text = self.font_xl.render(APP_NAME, True, COLORS['primary'])
-            self.screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT//2 - 40))
+            self.screen.blit(text, (SCREEN_WIDTH//2 - text.get_width()//2, SCREEN_HEIGHT//2 - 60))
+            
+            # Alt metin
+            sub_text = self.font_md.render("Akıllı Yemek Tartısı", True, COLORS['text_sec'])
+            self.screen.blit(sub_text, (SCREEN_WIDTH//2 - sub_text.get_width()//2, SCREEN_HEIGHT//2 + 20))
         else:
-            # Logo animasyonu - küçükten büyüğe
+            # Logo animasyonu - fade in + scale
             # Easing function: ease-out cubic
             eased_progress = 1 - pow(1 - progress, 3)
             
-            # Hedef boyut (ekranın %60'ı)
-            target_size = min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.6
-            current_size = int(target_size * eased_progress)
+            # 800x480 için optimize edilmiş boyut
+            # Logo boyutu: 280x280 (yüksekliğin %58'i, genişliğin %35'i)
+            target_size = 280
+            current_size = int(target_size * (0.7 + 0.3 * eased_progress))  # 70%'den başla, 100%'e git
             
             if current_size > 0:
                 # Logo'yu ölçeklendir
                 scaled_logo = pygame.transform.smoothscale(self.logo, (current_size, current_size))
                 
-                # Merkeze yerleştir
+                # Fade efekti
+                alpha = int(255 * eased_progress)
+                scaled_logo.set_alpha(alpha)
+                
+                # Logo'yu üst-orta bölgeye yerleştir (biraz yukarıda)
                 x = (SCREEN_WIDTH - current_size) // 2
-                y = (SCREEN_HEIGHT - current_size) // 2
+                y = 80  # Yukarıdan 80px
                 
                 self.screen.blit(scaled_logo, (x, y))
+                
+                # Uygulama adı (logo altında)
+                if progress > 0.5:  # Logo %50 tamamlandıktan sonra metin görünsün
+                    text_alpha = int(255 * min(1.0, (progress - 0.5) * 2))
+                    
+                    # Ana başlık
+                    title = self.font_xl.render(APP_NAME, True, COLORS['primary'])
+                    title.set_alpha(text_alpha)
+                    title_y = y + current_size + 30
+                    self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, title_y))
+                    
+                    # Alt başlık
+                    subtitle = self.font_md.render("Akıllı Yemek Tartısı", True, COLORS['text_sec'])
+                    subtitle.set_alpha(text_alpha)
+                    self.screen.blit(subtitle, (SCREEN_WIDTH//2 - subtitle.get_width()//2, title_y + 70))
         
         self.update()
 

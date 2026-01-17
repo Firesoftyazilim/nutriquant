@@ -45,15 +45,7 @@ BATTERY_LOW_THRESHOLD = 20
 BATTERY_CRITICAL_THRESHOLD = 10
 
 # Ölçüm Limitleri
-MEASUREMENT_LIMIT = 50
 MIN_WEIGHT_THRESHOLD = 10  # gram
-
-# VKİ Yaş Grupları
-AGE_BMI_RULES = {
-    "child": (5, 18),
-    "adult": (19, 64),
-    "senior": (65, 120)
-}
 
 # Veri Yolları
 DATA_DIR = "data"

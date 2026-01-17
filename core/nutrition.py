@@ -42,24 +42,6 @@ class NutritionCalculator:
         }
         
         return result
-    
-    def search_food(self, query):
-        """Yemek ara"""
-        results = []
-        query_lower = query.lower()
-        
-        for key, food in self.food_db.items():
-            if query_lower in food['name'].lower() or query_lower in key:
-                results.append({
-                    'key': key,
-                    'name': food['name']
-                })
-        
-        return results
-    
-    def get_all_foods(self):
-        """Tüm yemekleri listele"""
-        return [{'key': k, 'name': v['name']} for k, v in self.food_db.items()]
 
 # Test fonksiyonu
 if __name__ == "__main__":

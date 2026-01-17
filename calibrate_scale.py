@@ -5,10 +5,6 @@ import sys
 from hardware.scale import Scale
 from config import HX711_REFERENCE_UNIT
 
-def cleanAndExit():
-    print("Temizleniyor...")
-    sys.exit()
-
 print("Nutriquant - Tartı Kalibrasyonu")
 print("-------------------------------")
 
@@ -58,4 +54,5 @@ try:
         print(f"Okunan: {val}g")
         time.sleep(0.5)
 except KeyboardInterrupt:
-    cleanAndExit()
+    print("\nTemizleniyor...")
+    sys.exit()

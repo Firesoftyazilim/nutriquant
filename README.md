@@ -256,6 +256,12 @@ python3 hardware/battery.py
 python3 ui/display.py
 ```
 
+### Kalibrasyon
+Tartı kalibrasyonu için:
+```bash
+python3 calibrate_scale.py
+```
+
 ## Teknik Özellikler
 
 - **İşlemci**: Raspberry Pi 4B (1.5GHz quad-core)
