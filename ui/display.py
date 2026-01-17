@@ -254,22 +254,25 @@ class Display:
             # Easing function: ease-out cubic
             eased_progress = 1 - pow(1 - progress, 3)
             
-            # 800x480 için optimize edilmiş boyut
-            # Logo boyutu: 280x280 (yüksekliğin %58'i, genişliğin %35'i)
-            target_size = 280
-            current_size = int(target_size * (0.7 + 0.3 * eased_progress))  # 70%'den başla, 100%'e git
+            # 800x480 için optimize edilmiş dikdörtgen logo boyutu
+            # Genişlik: 600px, Yükseklik: 200px (3:1 oran)
+            target_width = 600
+            target_height = 200
             
-            if current_size > 0:
-                # Logo'yu ölçeklendir
-                scaled_logo = pygame.transform.smoothscale(self.logo, (600, current_size))
+            current_width = int(target_width * (0.7 + 0.3 * eased_progress))  # 70%'den başla, 100%'e git
+            current_height = int(target_height * (0.7 + 0.3 * eased_progress))
+            
+            if current_width > 0 and current_height > 0:
+                # Logo'yu dikdörtgen formatta ölçeklendir
+                scaled_logo = pygame.transform.smoothscale(self.logo, (current_width, current_height))
                 
                 # Fade efekti
                 alpha = int(255 * eased_progress)
                 scaled_logo.set_alpha(alpha)
                 
-                # Logo'yu üst-orta bölgeye yerleştir (biraz yukarıda)
-                x = (SCREEN_WIDTH - current_size) // 2
-                y = 80  # Yukarıdan 80px
+                # Logo'yu merkeze yerleştir (dikey olarak ortala)
+                x = (SCREEN_WIDTH - current_width) // 2
+                y = (SCREEN_HEIGHT - current_height) // 2
                 
                 self.screen.blit(scaled_logo, (x, y))
                 
