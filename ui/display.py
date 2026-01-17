@@ -5,6 +5,7 @@ import pygame
 import sys
 import time
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, FULLSCREEN, FPS, APP_NAME
+from ui.keyboard import OnScreenKeyboard
 
 # Renk Paleti (Modern & Premium)
 COLORS = {
@@ -111,6 +112,9 @@ class Display:
         self.profile_form_data = {"name": "", "gender": "Erkek", "height": "", "weight": ""}
         self.active_input = None  # Hangi input aktif
         self.editing_profile_id = None  # Düzenlenen profil ID'si
+        
+        # Ekran klavyesi (dokunmatik ekran için)
+        self.keyboard = OnScreenKeyboard(self.screen, self.font_md)
 
     def draw_rounded_rect(self, surface, color, rect, radius=15):
         """Köşeleri yuvarlatılmış dikdörtgen çiz"""
@@ -619,6 +623,18 @@ class Display:
         if is_edit:
             self.form_buttons['delete'] = delete_btn
         
+        # Ekran klavyesini göster (aktif input varsa)
+        if self.active_input:
+            if self.active_input in ['height', 'weight']:
+                self.keyboard.show('number')
+            else:
+                self.keyboard.show('text')
+        else:
+            self.keyboard.hide()
+        
+        # Klavyeyi çiz
+        self.keyboard.draw()
+        
         self.update()
     
     def draw_input_field(self, rect, label, value, is_active):
@@ -657,20 +673,7 @@ class Display:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return 'quit'
-                
-                # Profil formu klavye girişi
-                if self.state in [UIState.PROFILE_ADD, UIState.PROFILE_EDIT] and self.active_input:
-                    if event.key == pygame.K_BACKSPACE:
-                        self.profile_form_data[self.active_input] = self.profile_form_data[self.active_input][:-1]
-                    elif event.key == pygame.K_RETURN:
-                        self.active_input = None
-                    elif event.unicode.isprintable():
-                        # Sadece sayı girişi (boy ve kilo için)
-                        if self.active_input in ['height', 'weight']:
-                            if event.unicode.isdigit():
-                                self.profile_form_data[self.active_input] += event.unicode
-                        else:
-                            self.profile_form_data[self.active_input] += event.unicode
+                # Fiziksel klavye desteği kaldırıldı - Dokunmatik ekran klavyesi kullanılıyor
                     
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = event.pos
@@ -695,8 +698,31 @@ class Display:
                                     return ('edit_profile', profile['id'])
                 
                 elif self.state in [UIState.PROFILE_ADD, UIState.PROFILE_EDIT]:
+                    # Önce klavye tıklamasını kontrol et
+                    if self.keyboard.visible:
+                        key = self.keyboard.handle_click(pos)
+                        if key:
+                            if key == '✓':
+                                # Klavyeyi kapat
+                                self.active_input = None
+                                self.keyboard.hide()
+                            elif key == '←':
+                                # Backspace
+                                if self.active_input:
+                                    self.profile_form_data[self.active_input] = self.profile_form_data[self.active_input][:-1]
+                            elif key == ' ':
+                                # Boşluk
+                                if self.active_input:
+                                    self.profile_form_data[self.active_input] += ' '
+                            else:
+                                # Normal karakter
+                                if self.active_input:
+                                    self.profile_form_data[self.active_input] += key
+                            return None  # Klavye işlendi, başka işlem yapma
+                    
                     # Geri butonu
                     if self.btn_back.collidepoint(pos):
+                        self.keyboard.hide()
                         return 'click_back'
                     
                     # Form butonları
@@ -712,8 +738,10 @@ class Display:
                         elif self.form_buttons['female'].collidepoint(pos):
                             self.profile_form_data['gender'] = 'Kadın'
                         elif self.form_buttons['save'].collidepoint(pos):
+                            self.keyboard.hide()
                             return 'save_profile'
                         elif 'delete' in self.form_buttons and self.form_buttons['delete'].collidepoint(pos):
+                            self.keyboard.hide()
                             return 'delete_profile'
                 
                 elif self.state == UIState.SETTINGS:
