@@ -74,6 +74,52 @@ class Database:
         users = self.load_json("users.json", {"users": {}})
         users["users"][str(user_id)] = user_data
         return self.save_json("users.json", users)
+    
+    def get_all_profiles(self):
+        """Tüm profilleri getir"""
+        profiles = self.load_json("profiles.json", {"profiles": []})
+        return profiles["profiles"]
+    
+    def add_profile(self, name, gender, height, weight):
+        """Yeni profil ekle"""
+        profiles = self.load_json("profiles.json", {"profiles": []})
+        
+        # Yeni ID oluştur
+        new_id = max([p.get("id", 0) for p in profiles["profiles"]], default=0) + 1
+        
+        profile = {
+            "id": new_id,
+            "name": name,
+            "gender": gender,
+            "height": height,
+            "weight": weight,
+            "created_at": datetime.now().isoformat()
+        }
+        
+        profiles["profiles"].append(profile)
+        self.save_json("profiles.json", profiles)
+        return profile
+    
+    def update_profile(self, profile_id, name, gender, height, weight):
+        """Profil güncelle"""
+        profiles = self.load_json("profiles.json", {"profiles": []})
+        
+        for profile in profiles["profiles"]:
+            if profile["id"] == profile_id:
+                profile["name"] = name
+                profile["gender"] = gender
+                profile["height"] = height
+                profile["weight"] = weight
+                profile["updated_at"] = datetime.now().isoformat()
+                break
+        
+        return self.save_json("profiles.json", profiles)
+    
+    def delete_profile(self, profile_id):
+        """Profil sil"""
+        profiles = self.load_json("profiles.json", {"profiles": []})
+        profiles["profiles"] = [p for p in profiles["profiles"] if p["id"] != profile_id]
+        return self.save_json("profiles.json", profiles)
 
 # Test fonksiyonu
 if __name__ == "__main__":

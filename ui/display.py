@@ -31,6 +31,8 @@ class UIState:
     TEST_CAMERA = 7
     TEST_SPEAKER = 8
     SETTINGS = 9
+    PROFILE_ADD = 10
+    PROFILE_EDIT = 11
 
 class Display:
     def __init__(self):
@@ -62,6 +64,14 @@ class Display:
             print("[Uyarı] Logo yüklenemedi, varsayılan kullanılacak")
             self.logo = None
         
+        # Settings icon yükle
+        try:
+            self.settings_icon = pygame.image.load("assets/images/icons/settings.png")
+            self.settings_icon = pygame.transform.scale(self.settings_icon, (40, 40))
+        except:
+            print("[Uyarı] Settings icon yüklenemedi")
+            self.settings_icon = None
+        
         # Wallpaper'ları yükle
         self.wallpapers = {}
         self.wallpaper_names = []
@@ -71,13 +81,13 @@ class Display:
         self.state = UIState.SPLASH
         
         # Buton tanımları (Rect objeleri)
-        self.btn_scan = pygame.Rect(SCREEN_WIDTH//2 - 120, 280, 240, 80)
         self.btn_back = pygame.Rect(20, 20, 60, 40)
         self.btn_retry = pygame.Rect(SCREEN_WIDTH//2 - 140, 380, 130, 60)
         self.btn_save = pygame.Rect(SCREEN_WIDTH//2 + 10, 380, 130, 60)
         
-        # Ayarlar butonu (sol üst)
-        self.btn_settings = pygame.Rect(20, 20, 50, 50)
+        # Dashboard butonları
+        self.btn_settings = pygame.Rect(20, 20, 50, 50)  # Sol üst - ayarlar
+        self.btn_add_profile = pygame.Rect(SCREEN_WIDTH//2 - 80, SCREEN_HEIGHT//2 - 80, 160, 160)  # Ortada + butonu
         
         # Test Alanı Butonları
         self.btn_test_mode = pygame.Rect(SCREEN_WIDTH - 160, 20, 140, 50)
@@ -95,6 +105,12 @@ class Display:
         self.settings_page = 0
         self.btn_prev_page = pygame.Rect(SCREEN_WIDTH//2 - 120, 420, 100, 50)
         self.btn_next_page = pygame.Rect(SCREEN_WIDTH//2 + 20, 420, 100, 50)
+        
+        # Profil yönetimi
+        self.profile_buttons = []
+        self.profile_form_data = {"name": "", "gender": "Erkek", "height": "", "weight": ""}
+        self.active_input = None  # Hangi input aktif
+        self.editing_profile_id = None  # Düzenlenen profil ID'si
 
     def draw_rounded_rect(self, surface, color, rect, radius=15):
         """Köşeleri yuvarlatılmış dikdörtgen çiz"""
@@ -174,35 +190,119 @@ class Display:
             print("[Display] Wallpaper kaldırıldı")
 
 
-    def show_dashboard(self, weight, battery):
-        """Ana Dashboard Ekranı"""
+    def show_dashboard(self, battery, profiles, selected_profile_id=None):
+        """Ana Dashboard Ekranı - Yeni Tasarım"""
         self.draw_background()
         
-        # Başlık
-        title = self.font_lg.render(f"Merhaba, {APP_NAME}", True, COLORS['text_main'])
-        self.screen.blit(title, (90, 40))
+        # Sol üst - Settings ikonu
+        if self.settings_icon:
+            self.screen.blit(self.settings_icon, (25, 25))
+        else:
+            self.draw_button(self.btn_settings, "⚙", primary=False)
         
-        # Ayarlar butonu (sol üst - dişli ikonu)
-        self.draw_button(self.btn_settings, "⚙", primary=False)
+        # Sağ üst - Pil durumu (küçük)
+        battery_color = COLORS['success'] if battery > 20 else COLORS['accent']
+        battery_text = self.font_sm.render(f"🔋 %{battery}", True, COLORS['text_main'])
+        self.screen.blit(battery_text, (SCREEN_WIDTH - 120, 30))
         
-        # Üst Bilgi Kartları
-        self.draw_card(30, 120, 220, 120, "Anlık Ağırlık", f"{weight}g")
+        # Ortada + Butonu (Profil Ekle)
+        plus_rect = self.btn_add_profile
+        self.draw_rounded_rect(self.screen, COLORS['card_bg'], plus_rect, 20)
         
-        # Pil Durumu (Basit grafik)
-        pil_color = COLORS['success'] if battery > 20 else COLORS['accent']
-        self.draw_card(270, 120, 220, 120, "Pil Durumu", f"%{battery}")
-        pygame.draw.rect(self.screen, COLORS['bg_dark'], (430, 140, 40, 20), border_radius=3)
-        pygame.draw.rect(self.screen, pil_color, (432, 142, 36 * (battery/100), 16), border_radius=2)
-
-        # Büyük Tara Butonu
-        self.draw_button(self.btn_scan, "Yemeği Tara", primary=True)
+        # Hover efekti
+        mouse_pos = pygame.mouse.get_pos()
+        if plus_rect.collidepoint(mouse_pos):
+            pygame.draw.rect(self.screen, COLORS['primary'], plus_rect, 4, border_radius=20)
+        else:
+            pygame.draw.rect(self.screen, COLORS['border'], plus_rect, 2, border_radius=20)
         
-        # Test Modu Butonu (Sağ Üst)
-        self.draw_button(self.btn_test_mode, "Test Modu", primary=False)
+        # + işareti
+        plus_text = self.font_xl.render("+", True, COLORS['primary'])
+        plus_text_rect = plus_text.get_rect(center=plus_rect.center)
+        self.screen.blit(plus_text, plus_text_rect)
         
-        # Alt Bilgi
-        info = self.font_sm.render("Tabağı yerleştirin ve tarama başlatın", True, COLORS['text_sec'])
-        self.screen.blit(info, (SCREEN_WIDTH//2 - info.get_width()//2, 400))
+        # Profil Listesi (+ butonunun yanında)
+        self.profile_buttons = []
+        if profiles:
+            # Profilleri yatay olarak göster (+ butonunun sağında ve solunda)
+            profile_size = 140
+            spacing = 20
+            start_x = plus_rect.right + spacing
+            
+            # Sağ taraftaki profiller
+            for i, profile in enumerate(profiles[:3]):  # İlk 3 profil sağda
+                x = start_x + i * (profile_size + spacing)
+                y = plus_rect.y
+                
+                if x + profile_size > SCREEN_WIDTH - 20:
+                    break
+                
+                rect = pygame.Rect(x, y, profile_size, profile_size)
+                self.profile_buttons.append((profile, rect))
+                
+                # Seçili profil vurgusu
+                is_selected = (profile['id'] == selected_profile_id)
+                border_color = COLORS['primary'] if is_selected else COLORS['border']
+                border_width = 4 if is_selected else 2
+                
+                self.draw_rounded_rect(self.screen, COLORS['card_bg'], rect, 15)
+                pygame.draw.rect(self.screen, border_color, rect, border_width, border_radius=15)
+                
+                # Profil bilgileri
+                name_text = self.font_md.render(profile['name'][:8], True, COLORS['text_main'])
+                name_rect = name_text.get_rect(center=(rect.centerx, rect.centery - 20))
+                self.screen.blit(name_text, name_rect)
+                
+                # Cinsiyet ikonu
+                gender_icon = "♂" if profile['gender'] == 'Erkek' else "♀"
+                gender_text = self.font_lg.render(gender_icon, True, COLORS['primary'])
+                gender_rect = gender_text.get_rect(center=(rect.centerx, rect.centery + 20))
+                self.screen.blit(gender_text, gender_rect)
+            
+            # Sol taraftaki profiller
+            if len(profiles) > 3:
+                for i, profile in enumerate(profiles[3:6]):  # 4-6. profiller solda
+                    x = plus_rect.left - (i + 1) * (profile_size + spacing)
+                    y = plus_rect.y
+                    
+                    if x < 20:
+                        break
+                    
+                    rect = pygame.Rect(x, y, profile_size, profile_size)
+                    self.profile_buttons.append((profile, rect))
+                    
+                    is_selected = (profile['id'] == selected_profile_id)
+                    border_color = COLORS['primary'] if is_selected else COLORS['border']
+                    border_width = 4 if is_selected else 2
+                    
+                    self.draw_rounded_rect(self.screen, COLORS['card_bg'], rect, 15)
+                    pygame.draw.rect(self.screen, border_color, rect, border_width, border_radius=15)
+                    
+                    name_text = self.font_md.render(profile['name'][:8], True, COLORS['text_main'])
+                    name_rect = name_text.get_rect(center=(rect.centerx, rect.centery - 20))
+                    self.screen.blit(name_text, name_rect)
+                    
+                    gender_icon = "♂" if profile['gender'] == 'Erkek' else "♀"
+                    gender_text = self.font_lg.render(gender_icon, True, COLORS['primary'])
+                    gender_rect = gender_text.get_rect(center=(rect.centerx, rect.centery + 20))
+                    self.screen.blit(gender_text, gender_rect)
+        
+        # Tarama butonu (profil seçiliyse)
+        if selected_profile_id:
+            scan_btn = pygame.Rect(SCREEN_WIDTH//2 - 120, SCREEN_HEIGHT - 120, 240, 70)
+            self.draw_button(scan_btn, "Yemeği Tara", primary=True)
+            self.btn_scan = scan_btn
+        
+        # Alt bilgi
+        if not profiles:
+            info = self.font_sm.render("Başlamak için profil ekleyin", True, COLORS['text_sec'])
+            self.screen.blit(info, (SCREEN_WIDTH//2 - info.get_width()//2, SCREEN_HEIGHT - 60))
+        elif not selected_profile_id:
+            info = self.font_sm.render("Profil seçin veya yeni profil ekleyin", True, COLORS['text_sec'])
+            self.screen.blit(info, (SCREEN_WIDTH//2 - info.get_width()//2, SCREEN_HEIGHT - 60))
+        else:
+            info = self.font_sm.render("Uzun basarak profil düzenleyin", True, COLORS['text_sec'])
+            self.screen.blit(info, (SCREEN_WIDTH//2 - info.get_width()//2, SCREEN_HEIGHT - 40))
         
         self.update()
 
@@ -443,6 +543,105 @@ class Display:
         self.draw_button(self.btn_save, "Kaydet", primary=True)
         
         self.update()
+    
+    def show_profile_form(self, is_edit=False):
+        """Profil Ekleme/Düzenleme Formu"""
+        self.screen.fill(COLORS['bg_dark'])
+        
+        # Geri butonu
+        self.draw_button(self.btn_back, "<", primary=False)
+        
+        # Başlık
+        title_text = "Profil Düzenle" if is_edit else "Yeni Profil"
+        title = self.font_lg.render(title_text, True, COLORS['text_main'])
+        self.screen.blit(title, (100, 20))
+        
+        # Form alanları
+        form_x = 150
+        form_y = 100
+        field_height = 60
+        field_spacing = 70
+        
+        # İsim
+        name_rect = pygame.Rect(form_x, form_y, 500, field_height)
+        self.draw_input_field(name_rect, "İsim", self.profile_form_data['name'], self.active_input == 'name')
+        
+        # Cinsiyet (Butonlar)
+        gender_y = form_y + field_spacing
+        gender_label = self.font_md.render("Cinsiyet:", True, COLORS['text_sec'])
+        self.screen.blit(gender_label, (form_x, gender_y + 15))
+        
+        btn_male = pygame.Rect(form_x + 150, gender_y, 150, field_height)
+        btn_female = pygame.Rect(form_x + 320, gender_y, 150, field_height)
+        
+        # Erkek butonu
+        is_male = self.profile_form_data['gender'] == 'Erkek'
+        self.draw_rounded_rect(self.screen, COLORS['primary'] if is_male else COLORS['card_bg'], btn_male, 15)
+        male_text = self.font_md.render("♂ Erkek", True, COLORS['text_main'])
+        male_rect = male_text.get_rect(center=btn_male.center)
+        self.screen.blit(male_text, male_rect)
+        
+        # Kadın butonu
+        is_female = self.profile_form_data['gender'] == 'Kadın'
+        self.draw_rounded_rect(self.screen, COLORS['primary'] if is_female else COLORS['card_bg'], btn_female, 15)
+        female_text = self.font_md.render("♀ Kadın", True, COLORS['text_main'])
+        female_rect = female_text.get_rect(center=btn_female.center)
+        self.screen.blit(female_text, female_rect)
+        
+        # Boy
+        height_y = gender_y + field_spacing
+        height_rect = pygame.Rect(form_x, height_y, 240, field_height)
+        self.draw_input_field(height_rect, "Boy (cm)", self.profile_form_data['height'], self.active_input == 'height')
+        
+        # Kilo
+        weight_rect = pygame.Rect(form_x + 260, height_y, 240, field_height)
+        self.draw_input_field(weight_rect, "Kilo (kg)", self.profile_form_data['weight'], self.active_input == 'weight')
+        
+        # Kaydet butonu
+        save_btn = pygame.Rect(SCREEN_WIDTH//2 - 100, height_y + 90, 200, 60)
+        self.draw_button(save_btn, "Kaydet", primary=True)
+        
+        # Sil butonu (sadece düzenleme modunda)
+        if is_edit:
+            delete_btn = pygame.Rect(SCREEN_WIDTH//2 - 100, height_y + 160, 200, 50)
+            self.draw_button(delete_btn, "Sil", primary=False)
+        
+        # Butonları sakla (event handling için)
+        self.form_buttons = {
+            'name': name_rect,
+            'height': height_rect,
+            'weight': weight_rect,
+            'male': btn_male,
+            'female': btn_female,
+            'save': save_btn
+        }
+        
+        if is_edit:
+            self.form_buttons['delete'] = delete_btn
+        
+        self.update()
+    
+    def draw_input_field(self, rect, label, value, is_active):
+        """Input alanı çiz"""
+        # Arka plan
+        bg_color = COLORS['primary'] if is_active else COLORS['card_bg']
+        self.draw_rounded_rect(self.screen, bg_color, rect, 10)
+        
+        if not is_active:
+            pygame.draw.rect(self.screen, COLORS['border'], rect, 2, border_radius=10)
+        
+        # Label (küçük, üstte)
+        label_text = self.font_sm.render(label, True, COLORS['text_sec'])
+        self.screen.blit(label_text, (rect.x + 15, rect.y + 8))
+        
+        # Value (büyük, altta)
+        value_text = self.font_md.render(value if value else "", True, COLORS['text_main'])
+        self.screen.blit(value_text, (rect.x + 15, rect.y + 30))
+        
+        # Cursor (aktif ise)
+        if is_active:
+            cursor_x = rect.x + 15 + value_text.get_width() + 5
+            pygame.draw.line(self.screen, COLORS['text_main'], (cursor_x, rect.y + 30), (cursor_x, rect.y + 50), 2)
 
     def clear(self):
         self.screen.fill(COLORS['bg_dark'])
@@ -458,15 +657,64 @@ class Display:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return 'quit'
+                
+                # Profil formu klavye girişi
+                if self.state in [UIState.PROFILE_ADD, UIState.PROFILE_EDIT] and self.active_input:
+                    if event.key == pygame.K_BACKSPACE:
+                        self.profile_form_data[self.active_input] = self.profile_form_data[self.active_input][:-1]
+                    elif event.key == pygame.K_RETURN:
+                        self.active_input = None
+                    elif event.unicode.isprintable():
+                        # Sadece sayı girişi (boy ve kilo için)
+                        if self.active_input in ['height', 'weight']:
+                            if event.unicode.isdigit():
+                                self.profile_form_data[self.active_input] += event.unicode
+                        else:
+                            self.profile_form_data[self.active_input] += event.unicode
+                    
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = event.pos
                 if self.state == UIState.DASHBOARD:
-                    if self.btn_scan.collidepoint(pos):
-                        return 'click_scan'
-                    elif self.btn_test_mode.collidepoint(pos):
-                        return 'click_test_mode'
+                    # + Butonu (Profil ekle)
+                    if self.btn_add_profile.collidepoint(pos):
+                        return 'click_add_profile'
+                    # Settings butonu
                     elif self.btn_settings.collidepoint(pos):
                         return 'click_settings'
+                    # Scan butonu (profil seçiliyse)
+                    elif hasattr(self, 'btn_scan') and self.btn_scan.collidepoint(pos):
+                        return 'click_scan'
+                    # Profil seçimi
+                    else:
+                        for profile, rect in self.profile_buttons:
+                            if rect.collidepoint(pos):
+                                # Sol tık: seçim, Sağ tık: düzenleme
+                                if event.button == 1:  # Sol tık
+                                    return ('select_profile', profile['id'])
+                                elif event.button == 3:  # Sağ tık
+                                    return ('edit_profile', profile['id'])
+                
+                elif self.state in [UIState.PROFILE_ADD, UIState.PROFILE_EDIT]:
+                    # Geri butonu
+                    if self.btn_back.collidepoint(pos):
+                        return 'click_back'
+                    
+                    # Form butonları
+                    if hasattr(self, 'form_buttons'):
+                        if self.form_buttons['name'].collidepoint(pos):
+                            self.active_input = 'name'
+                        elif self.form_buttons['height'].collidepoint(pos):
+                            self.active_input = 'height'
+                        elif self.form_buttons['weight'].collidepoint(pos):
+                            self.active_input = 'weight'
+                        elif self.form_buttons['male'].collidepoint(pos):
+                            self.profile_form_data['gender'] = 'Erkek'
+                        elif self.form_buttons['female'].collidepoint(pos):
+                            self.profile_form_data['gender'] = 'Kadın'
+                        elif self.form_buttons['save'].collidepoint(pos):
+                            return 'save_profile'
+                        elif 'delete' in self.form_buttons and self.form_buttons['delete'].collidepoint(pos):
+                            return 'delete_profile'
                 
                 elif self.state == UIState.SETTINGS:
                     if self.btn_back.collidepoint(pos):
