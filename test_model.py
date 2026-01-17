@@ -1,8 +1,13 @@
 import numpy as np
 import json
 from PIL import Image
-import tflite_runtime.interpreter as tflite  # Raspberry Pi için optimize
-
+try:
+    import tflite_runtime.interpreter as tflite
+except ImportError:
+    try:
+        import tensorflow.lite as tflite
+    except ImportError:
+        tflite = None
 class RaspberryPiPredictor:
     def __init__(self):
         # Float16 model (önerilen)
