@@ -1,0 +1,53 @@
+{
+  "name": "nutriquant-frontend",
+  "version": "2.0.0",
+  "description": "Nutriquant - Modern Akıllı Yemek Tartısı UI",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder"
+  },
+  "keywords": ["nutriquant", "electron", "react", "raspberry-pi"],
+  "author": "Nutriquant Team",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "framer-motion": "^11.15.0",
+    "lucide-react": "^0.468.0",
+    "axios": "^1.7.9",
+    "zustand": "^5.0.2",
+    "recharts": "^2.15.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.5",
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.4.49",
+    "autoprefixer": "^10.4.20",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "concurrently": "^9.1.2",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.nutriquant.app",
+    "productName": "Nutriquant",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Utility"
+    }
+  }
+}
