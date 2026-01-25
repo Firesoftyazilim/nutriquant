@@ -16,6 +16,14 @@ echo "============================================"
 # Backend başlat (arka planda)
 echo "🐍 Backend başlatılıyor..."
 cd "$BACKEND_DIR"
+
+# Virtual environment kontrolü
+if [ ! -d "venv" ]; then
+    echo "❌ Backend venv bulunamadı!"
+    echo "   Lütfen önce ./start.sh çalıştırın (ilk kurulum için)"
+    exit 1
+fi
+
 source venv/bin/activate
 python main.py > backend.log 2>&1 &
 BACKEND_PID=$!
@@ -28,6 +36,28 @@ sleep 5
 # Frontend başlat (tam ekran)
 echo "🎨 Frontend başlatılıyor (TAM EKRAN)..."
 cd "$FRONTEND_DIR"
+
+# Node.js kontrolü ve otomatik kurulum
+if ! command -v node &> /dev/null; then
+    echo "⚙️  Node.js bulunamadı, kuruluyor..."
+    echo "   Node.js 18.x repository ekleniyor..."
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    echo "   Node.js kuruluyor..."
+    sudo apt install -y nodejs
+    
+    if ! command -v node &> /dev/null; then
+        echo "❌ Node.js kurulumu başarısız!"
+        kill $BACKEND_PID 2>/dev/null
+        exit 1
+    fi
+    echo "✅ Node.js kuruldu: $(node --version)"
+fi
+
+# npm bağımlılıkları kontrolü
+if [ ! -d "node_modules" ]; then
+    echo "⚙️  Frontend kütüphaneleri yükleniyor..."
+    npm install
+fi
 
 # X11 display ayarla
 export DISPLAY=:0

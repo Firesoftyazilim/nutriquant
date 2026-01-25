@@ -75,11 +75,34 @@ echo ""
 
 cd "$FRONTEND_DIR"
 
-# Node.js kontrolü
+# Node.js kontrolü ve otomatik kurulum
 if ! command -v node &> /dev/null; then
-    echo -e "${RED}❌ Node.js bulunamadı!${NC}"
-    echo -e "${YELLOW}   Lütfen Node.js yükleyin: https://nodejs.org${NC}"
-    exit 1
+    echo -e "${YELLOW}⚙️  Node.js bulunamadı, kuruluyor...${NC}"
+    
+    # Platform tespiti
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        # Linux (Raspberry Pi / Ubuntu / Debian)
+        echo -e "${YELLOW}   Node.js 18.x repository ekleniyor...${NC}"
+        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+        echo -e "${YELLOW}   Node.js kuruluyor...${NC}"
+        sudo apt install -y nodejs
+        echo -e "${GREEN}✅ Node.js kuruldu!${NC}"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        if command -v brew &> /dev/null; then
+            echo -e "${YELLOW}   Homebrew ile Node.js kuruluyor...${NC}"
+            brew install node
+            echo -e "${GREEN}✅ Node.js kuruldu!${NC}"
+        else
+            echo -e "${RED}❌ Homebrew bulunamadı!${NC}"
+            echo -e "${YELLOW}   Manuel kurulum: https://nodejs.org${NC}"
+            exit 1
+        fi
+    else
+        echo -e "${RED}❌ Desteklenmeyen platform!${NC}"
+        echo -e "${YELLOW}   Manuel kurulum: https://nodejs.org${NC}"
+        exit 1
+    fi
 fi
 
 echo -e "${GREEN}✅ Node.js bulundu: $(node --version)${NC}"
