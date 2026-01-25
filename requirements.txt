@@ -5,7 +5,7 @@ picamera2==0.3.12
 # libcamera (Sistem paketi olarak kurulu olmalı)
 
 # Görüntü İşleme ve AI
-opencv-python==4.8.1.78
+opencv-python-headless==4.8.1.78
 pillow==10.1.0
 numpy==1.24.3
 
@@ -34,7 +34,7 @@ python-json-logger==2.0.7
 # Yardımcı
 python-dotenv==1.0.0
 
-tensorflow>=2.16.0
+tflite-runtime
 
 
 # Backend / API
@@ -42,7 +42,3 @@ fastapi>=0.104.0
 uvicorn>=0.23.0
 python-multipart>=0.0.6
 
-tensorflow>=2.16.0
-opencv-python>=4.8.0
-Pillow>=10.1.0  # Python 3.13 ile uyumlu versiyon
-numpy>=1.24.3,<2.0.0 
