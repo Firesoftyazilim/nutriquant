@@ -18,7 +18,7 @@ pygame==2.5.2
 # tkinter (Sistem paketi olarak kurulu olmalı)
 
 # Ses
-pygame-mixer
+
 pydub==0.25.1
 
 # UPS HAT - Pil Yönetimi
