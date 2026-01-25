@@ -2,7 +2,11 @@
 TFLite model test scripti
 """
 import numpy as np
+print(f"DEBUG: Installed NumPy Version: {np.__version__}")
+if np.__version__.startswith('2'):
+    print("⚠️ UYARI: NumPy 2.x tespit edildi! Bu sürüm tflite-runtime ile uyumsuz olabilir.")
 import json
+
 from PIL import Image
 
 try:
