@@ -13,21 +13,32 @@ echo "============================================"
 echo "🍓 Nutriquant Raspberry Pi Modu"
 echo "============================================"
 
+
 # Backend başlat (arka planda)
 echo "🐍 Backend başlatılıyor..."
-cd "$BACKEND_DIR"
 
-# Virtual environment kontrolü
-if [ ! -d "venv" ]; then
-    echo "❌ Backend venv bulunamadı!"
-    echo "   Lütfen önce ./start.sh çalıştırın (ilk kurulum için)"
-    exit 1
+# Venv yolunu belirle (backend içinde veya root'ta)
+if [ -f "$BACKEND_DIR/venv/bin/activate" ]; then
+    source "$BACKEND_DIR/venv/bin/activate"
+elif [ -f "$PROJECT_DIR/venv/bin/activate" ]; then
+    source "$PROJECT_DIR/venv/bin/activate"
+else
+    echo "❌ venv bulunamadı! Oluşturuluyor..."
+    python3 -m venv "$PROJECT_DIR/venv"
+    source "$PROJECT_DIR/venv/bin/activate"
 fi
 
-source venv/bin/activate
+# Bağımlılıkları kontrol et ve yükle
+echo "📦 Bağımlılıklar güncelleniyor..."
+if [ -f "$PROJECT_DIR/requirements.txt" ]; then
+    pip install -r "$PROJECT_DIR/requirements.txt" > /dev/null
+fi
+
+cd "$BACKEND_DIR"
 python main.py > backend.log 2>&1 &
 BACKEND_PID=$!
 echo "✅ Backend başlatıldı (PID: $BACKEND_PID)"
+
 
 # Backend hazır olsun
 echo "⏳ Backend hazırlanıyor..."
