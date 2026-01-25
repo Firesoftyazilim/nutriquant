@@ -44,5 +44,5 @@ python-multipart>=0.0.6
 
 tensorflow>=2.16.0
 opencv-python>=4.8.0
-Pillow>=10.2.0  # Python 3.13 ile uyumlu versiyon
+Pillow>=10.1.0  # Python 3.13 ile uyumlu versiyon
 numpy>=1.26.0 
