@@ -151,13 +151,8 @@ if [ "$1" == "--dev" ]; then
     NODE_ENV=development npm run electron:dev
 else
     echo -e "${GREEN}🚀 Production modu (Tam ekran)${NC}"
-    # Önce build yap
-    if [ ! -d "dist" ]; then
-        echo -e "${YELLOW}⚙️  Frontend build ediliyor...${NC}"
-        npm run build > /dev/null 2>&1
-        echo -e "${GREEN}✅ Build tamamlandı${NC}"
-    fi
-    NODE_ENV=production npm run electron
+    # Build yap (npm run electron zaten build yapar)
+    npm run electron
 fi
 
 # ==================== CLEANUP ====================

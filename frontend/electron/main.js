@@ -6,6 +6,10 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
+// Raspberry Pi GPU hataları için flag'ler
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+
 // Geliştirme modu kontrolü
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 

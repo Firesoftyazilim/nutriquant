@@ -62,8 +62,8 @@ fi
 # X11 display ayarla
 export DISPLAY=:0
 
-# Electron'u tam ekran başlat
-NODE_ENV=production npm run electron
+# Electron'u tam ekran başlat (build dahil)
+npm run electron
 
 # Cleanup
 echo "🛑 Kapatılıyor..."
