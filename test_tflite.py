@@ -4,7 +4,13 @@ TFLite model test scripti
 import numpy as np
 import json
 from PIL import Image
-import tensorflow as tf
+
+try:
+    import tflite_runtime.interpreter as tflite
+except ImportError:
+    print("⚠️ tflite_runtime bulunamadı, tensorflow kullanılıyor...")
+    import tensorflow.lite as tflite
+
 import os
 
 
@@ -18,7 +24,8 @@ class TFLitePredictor:
             class_indices_path: Sınıf indeksleri JSON dosyası
         """
         # TFLite interpreter yükle
-        self.interpreter = tf.lite.Interpreter(model_path=tflite_path)
+        self.interpreter = tflite.Interpreter(model_path=tflite_path)
+
         self.interpreter.allocate_tensors()
         
         # Giriş/çıkış detayları
