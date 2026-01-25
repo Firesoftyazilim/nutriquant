@@ -23,7 +23,6 @@ pydub==0.25.1
 
 # UPS HAT - Pil Yönetimi
 smbus2==0.4.3
-ina219
 
 # LED Kontrol
 rpi-ws281x==5.0.0
