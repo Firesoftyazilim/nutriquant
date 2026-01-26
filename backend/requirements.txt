@@ -9,7 +9,7 @@ websockets==16.0
 # Görüntü İşleme ve AI
 opencv-python-headless>=4.8.0
 Pillow>=10.2.0
-numpy>=1.26.0
+numpy>=1.26.0,<2.0.0  # NumPy 1.x - TensorFlow 2.x ile uyumlu
 # TensorFlow Lite - Raspberry Pi için hafif versiyon
 tflite-runtime>=2.14.0; platform_system == "Linux" and platform_machine == "armv7l"
 # TensorFlow - Diğer platformlar için (Mac, x86_64 Linux)
