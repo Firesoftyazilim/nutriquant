@@ -92,6 +92,11 @@ export const testModel = async (imageBlob) => {
   return response.data;
 };
 
+export const scanComplete = async () => {
+  const response = await api.post('/api/scan-complete');
+  return response.data;
+};
+
 // ==================== PROFILES ====================
 
 export const getProfiles = async () => {

@@ -493,6 +493,136 @@ async def capture_and_analyze():
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Capture and analyze hatası: {error_detail}")
 
+@app.post("/api/scan-complete")
+async def scan_complete():
+    """
+    Tam tarama işlemi: Ağırlık ölç + Fotoğraf çek + Model tahmini + Besin değerleri hesapla
+    
+    Returns:
+        Ağırlık, tahmin edilen yemek, ve hesaplanmış besin değerleri
+    """
+    try:
+        # 1. Ağırlık ölç
+        weight = scale.read_weight()
+        print(f"📊 Ölçülen ağırlık: {weight}g")
+        
+        if weight < 5:
+            raise HTTPException(status_code=400, detail="Tartıda yeterli ağırlık yok (minimum 5g)")
+        
+        # 2. Fotoğraf çek ve model tahmini yap
+        print(f"📸 Fotoğraf çekiliyor ve analiz ediliyor...")
+        
+        # TFLite model kontrolü
+        if tflite_predictor is None:
+            raise HTTPException(status_code=503, detail="TFLite model yüklenmedi")
+        
+        # Fotoğraf dosya yolu
+        photo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "foto.jpg")
+        
+        # rpicam-still komutu ile fotoğraf çek
+        cmd = [
+            "rpicam-still",
+            "--mode", "3280:2464",
+            "--roi", "0,0,1,1",
+            "-o", photo_path
+        ]
+        
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10, check=True)
+            print(f"✅ Fotoğraf çekildi: {photo_path}")
+        except subprocess.TimeoutExpired:
+            raise HTTPException(status_code=500, detail="Kamera zaman aşımı")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ rpicam-still hatası: {e.stderr}")
+            raise HTTPException(status_code=500, detail=f"Kamera hatası: {e.stderr}")
+        except FileNotFoundError:
+            print("⚠️ rpicam-still bulunamadı, mock mode")
+            img = Image.new('RGB', (224, 224), color='gray')
+            img.save(photo_path)
+        
+        # Fotoğrafın var olduğunu kontrol et
+        if not os.path.exists(photo_path):
+            raise HTTPException(status_code=500, detail="Fotoğraf oluşturulamadı")
+        
+        # 3. Model ile tahmin yap
+        predictions = tflite_predictor.predict(photo_path, top_k=5)
+        
+        if not predictions:
+            raise HTTPException(status_code=500, detail="Model tahmin yapamadı")
+        
+        top_prediction = predictions[0]
+        food_name = top_prediction['class']
+        confidence = top_prediction['confidence']
+        
+        print(f"🍽️ Tahmin edilen yemek: {food_name} (%{top_prediction['percentage']:.1f})")
+        
+        # 4. Besin değerlerini yükle (datas.json)
+        nutrition_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "datas.json")
+        
+        with open(nutrition_db_path, 'r', encoding='utf-8') as f:
+            nutrition_db = json.load(f)
+        
+        # 5. Yemek için besin değerlerini bul
+        if food_name not in nutrition_db:
+            print(f"⚠️ {food_name} için besin değeri bulunamadı, varsayılan değerler kullanılıyor")
+            base_nutrition = {
+                "name": food_name,
+                "calorie": 150,
+                "protein": 5.0,
+                "carbohydrate": 20.0,
+                "sugar": 5.0
+            }
+        else:
+            base_nutrition = nutrition_db[food_name]
+        
+        # 6. Ağırlığa göre besin değerlerini hesapla (100g bazında)
+        weight_ratio = weight / 100.0
+        
+        calculated_nutrition = {
+            "name": food_name,
+            "weight": weight,
+            "calorie": round(base_nutrition["calorie"] * weight_ratio, 1),
+            "protein": round(base_nutrition["protein"] * weight_ratio, 1),
+            "carbohydrate": round(base_nutrition["carbohydrate"] * weight_ratio, 1),
+            "sugar": round(base_nutrition.get("sugar", 0) * weight_ratio, 1),
+            "base_values_per_100g": base_nutrition
+        }
+        
+        print(f"📊 Hesaplanan besin değerleri:")
+        print(f"   Kalori: {calculated_nutrition['calorie']} kcal")
+        print(f"   Protein: {calculated_nutrition['protein']}g")
+        print(f"   Karbonhidrat: {calculated_nutrition['carbohydrate']}g")
+        
+        # 7. Tüm tahminleri formatla
+        all_predictions = []
+        for pred in predictions:
+            all_predictions.append({
+                "food_name": pred['class'],
+                "confidence": pred['confidence'],
+                "percentage": pred['percentage']
+            })
+        
+        return {
+            "status": "success",
+            "weight": weight,
+            "food_name": food_name,
+            "confidence": confidence,
+            "percentage": top_prediction['percentage'],
+            "nutrition": calculated_nutrition,
+            "predictions": all_predictions,
+            "photo_path": photo_path,
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"{type(e).__name__}: {str(e)}"
+        print(f"❌ Scan complete hatası: {error_detail}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Scan complete hatası: {error_detail}")
+
 # ==================== PROFILES ====================
 
 @app.get("/api/profiles")

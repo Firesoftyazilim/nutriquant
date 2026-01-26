@@ -1,20 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Camera, Loader2, ArrowLeft } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
-import { captureImage, connectWeightStream, testModel } from '../services/api';
+import { connectWeightStream, scanComplete } from '../services/api';
 
 export default function Scanning() {
   const navigate = useNavigate();
   const { selectedProfile, currentWeight, setCurrentWeight, setLastResult } = useAppStore();
   
-  const [status, setStatus] = useState('preview'); // preview, capturing, analyzing
-  const [cameraImage, setCameraImage] = useState(null);
+  const [status, setStatus] = useState('ready'); // ready, measuring, capturing, analyzing
   const [progress, setProgress] = useState(0);
   const [ws, setWs] = useState(null);
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
 
   // WebSocket ile gerçek zamanlı ağırlık
   useEffect(() => {
@@ -28,93 +25,45 @@ export default function Scanning() {
     };
   }, [setCurrentWeight]);
 
-  // Kamera önizlemesi başlat
+  // Otomatik tarama başlat
   useEffect(() => {
-    startCameraPreview();
-    return () => {
-      stopCameraPreview();
-    };
+    startScanning();
   }, []);
-
-  const startCameraPreview = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-      }
-    } catch (error) {
-      console.error('Kamera erişim hatası:', error);
-      alert('Kamera erişimi reddedildi veya kullanılamıyor');
-    }
-  };
-
-  const stopCameraPreview = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-  };
-
-  const captureFromCamera = async () => {
-    if (!videoRef.current) return null;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(videoRef.current, 0, 0);
-
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        resolve(blob);
-      }, 'image/jpeg', 0.95);
-    });
-  };
 
   const startScanning = async () => {
     try {
-      // 1. Fotoğraf çek
-      setStatus('capturing');
+      // 1. Ağırlık ölçümü
+      setStatus('measuring');
       setProgress(20);
       
-      const imageBlob = await captureFromCamera();
-      if (!imageBlob) {
-        throw new Error('Fotoğraf çekilemedi');
-      }
-
-      // Önizleme için URL oluştur
-      const imageUrl = URL.createObjectURL(imageBlob);
-      setCameraImage(imageUrl);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Kamera önizlemesini durdur
-      stopCameraPreview();
+      // 2. Fotoğraf çekme ve analiz
+      setStatus('capturing');
+      setProgress(40);
       
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // 2. Model ile analiz yap
       setStatus('analyzing');
       setProgress(60);
       
-      const modelResult = await testModel(imageBlob);
+      // 3. Backend'den tam tarama yap
+      const result = await scanComplete();
       
       setProgress(100);
       
-      if (modelResult.status === 'success' && modelResult.predictions.length > 0) {
-        // En yüksek tahmin
-        const topPrediction = modelResult.top_match;
-        
+      if (result.status === 'success') {
         // Sonucu kaydet
         setLastResult({
           status: 'success',
-          food_name: topPrediction.food_name,
-          confidence: topPrediction.confidence,
-          percentage: topPrediction.percentage,
-          weight: currentWeight,
-          predictions: modelResult.predictions,
-          image: imageUrl,
-          profile: selectedProfile
+          food_name: result.food_name,
+          confidence: result.confidence,
+          percentage: result.percentage,
+          weight: result.weight,
+          nutrition: result.nutrition,
+          predictions: result.predictions,
+          profile: selectedProfile,
+          timestamp: result.timestamp
         });
         
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -145,7 +94,8 @@ export default function Scanning() {
         </motion.button>
 
         <h1 className="text-3xl font-bold text-white">
-          {status === 'preview' && 'Kamera Önizlemesi'}
+          {status === 'ready' && 'Hazırlanıyor...'}
+          {status === 'measuring' && 'Ağırlık Ölçülüyor...'}
           {status === 'capturing' && 'Fotoğraf Çekiliyor...'}
           {status === 'analyzing' && 'Analiz Ediliyor...'}
         </h1>
@@ -153,63 +103,40 @@ export default function Scanning() {
         <div className="w-12" /> {/* Spacer */}
       </div>
 
-      {/* Camera Preview */}
+      {/* Scanning Animation */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="flex-1 glass rounded-3xl overflow-hidden relative"
+        className="flex-1 glass rounded-3xl overflow-hidden relative flex items-center justify-center"
       >
-        {cameraImage ? (
-          <img 
-            src={cameraImage} 
-            alt="Captured" 
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        )}
-
-        {/* Scanning overlay */}
-        {status !== 'preview' && (
+        <div className="text-center">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            className="inline-block mb-8"
           >
-            <div className="text-center">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="inline-block mb-4"
-              >
-                <Loader2 size={60} className="text-white" />
-              </motion.div>
-              <p className="text-2xl text-white font-semibold">
-                {status === 'capturing' && 'Görüntü yakalanıyor...'}
-                {status === 'analyzing' && 'AI analiz yapıyor...'}
-              </p>
-            </div>
+            <Camera size={120} className="text-white/60" />
           </motion.div>
-        )}
-
-        {/* Capture Button - Only show in preview mode */}
-        {status === 'preview' && (
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={startScanning}
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-white text-purple-600 rounded-full p-6 shadow-2xl"
+          
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            className="inline-block mb-6"
           >
-            <Camera size={40} />
-          </motion.button>
-        )}
+            <Loader2 size={60} className="text-white" />
+          </motion.div>
+          
+          <p className="text-3xl text-white font-semibold mb-4">
+            {status === 'ready' && 'Sistem hazırlanıyor...'}
+            {status === 'measuring' && 'Ağırlık ölçülüyor...'}
+            {status === 'capturing' && 'Fotoğraf çekiliyor...'}
+            {status === 'analyzing' && 'AI analiz yapıyor...'}
+          </p>
+          
+          <p className="text-xl text-white/70">
+            Lütfen bekleyin
+          </p>
+        </div>
       </motion.div>
 
       {/* Progress Bar */}
