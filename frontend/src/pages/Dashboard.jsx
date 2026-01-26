@@ -6,11 +6,15 @@ import { useAppStore } from '../store/appStore';
 import { getProfiles, getBattery, connectWeightStream, getWeight, playSound } from '../services/api';
 
 export default function Dashboard() {
+  console.log('🎯 Dashboard component rendering...');
+  
   const navigate = useNavigate();
   const { selectedProfile, setSelectedProfile, currentWeight, setCurrentWeight, batteryPercent, setBatteryPercent } = useAppStore();
   
   const [profiles, setProfiles] = useState([]);
   const [ws, setWs] = useState(null);
+  
+  console.log('🎯 Dashboard state:', { selectedProfile, currentWeight, batteryPercent, profilesCount: profiles.length });
 
   // Profilleri yükle
   useEffect(() => {
@@ -83,6 +87,8 @@ export default function Dashboard() {
     navigate('/scanning');
   };
 
+  console.log('🎨 Dashboard rendering JSX...');
+  
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 p-4 overflow-hidden flex flex-col">
       {/* Header */}
