@@ -3,15 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Camera, Loader2, ArrowLeft } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
-import { analyzeFood, captureImage } from '../services/api';
+import { analyzeFood, captureImage, connectWeightStream } from '../services/api';
 
 export default function Scanning() {
   const navigate = useNavigate();
-  const { selectedProfile, currentWeight, setLastResult } = useAppStore();
+  const { selectedProfile, currentWeight, setCurrentWeight, setLastResult } = useAppStore();
   
   const [status, setStatus] = useState('ready'); // ready, capturing, analyzing
   const [cameraImage, setCameraImage] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [ws, setWs] = useState(null);
+
+  // WebSocket ile gerçek zamanlı ağırlık
+  useEffect(() => {
+    const websocket = connectWeightStream((weight) => {
+      setCurrentWeight(weight);
+    });
+    setWs(websocket);
+
+    return () => {
+      if (websocket) websocket.close();
+    };
+  }, [setCurrentWeight]);
 
   useEffect(() => {
     // Otomatik başlat

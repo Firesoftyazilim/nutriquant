@@ -1,14 +1,15 @@
-# HX711 Tartı Modülü - Ağırlık Ölçümü
+# HX711 Tartı Modülü - Ağırlık Ölçümü (hx711v0_5_1)
 
 import time
 import sys
+import threading
 
 # Import denemesi ve hata ayıklama
 try:
-    from hx711 import HX711
+    from hx711v0_5_1 import HX711
     import RPi.GPIO as GPIO
     MODE = "REAL"
-    print("[Scale] Gerçek donanım sürücüleri yüklendi.")
+    print("[Scale] Gerçek donanım sürücüleri yüklendi (hx711v0_5_1).")
 except ImportError as e:
     print(f"\n[DIKKAT] Donanım sürücü hatası: {e}")
     print("[DIKKAT] Sistem SIMULASYON moduna geçiyor. Rastgele değerler üretilecek.\n")
@@ -24,156 +25,124 @@ from config import HX711_DOUT_PIN, HX711_SCK_PIN, HX711_REFERENCE_UNIT, TARE_SAM
 class Scale:
     def __init__(self):
         self.mode = MODE
-        self.offset = 0  # Tare offset
-        self.scale_ratio = HX711_REFERENCE_UNIT  # Kalibrasyon değeri
+        self.current_weight = 0  # Son okunan ağırlık
+        self.lock = threading.Lock()  # Thread-safe erişim için
+        
+        if self.mode == "MOCK":
+            print("[Scale] MOCK modda başlatıldı")
+            return
         
         try:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setwarnings(False)  # Uyarıları kapat
+            # HX711 başlat (GPIO 5=DOUT, 6=SCK)
+            self.hx = HX711(HX711_DOUT_PIN, HX711_SCK_PIN)
             
-            # --- HARD RESET & WAKE UP ---
-            # Bazen sensör takılı kalabiliyor, manuel reset atalım
-            print("[Scale] Sensör uyandırılıyor (Hard Reset)...")
-            GPIO.setup(HX711_SCK_PIN, GPIO.OUT)
-            GPIO.output(HX711_SCK_PIN, 1)  # Power Down
-            time.sleep(0.1)
-            GPIO.output(HX711_SCK_PIN, 0)  # Power Up
-            time.sleep(0.1)
-            # ---------------------------
+            # Reading format ayarla (MSB, MSB)
+            self.hx.setReadingFormat("MSB", "MSB")
             
-            self.hx = HX711(dout_pin=HX711_DOUT_PIN, pd_sck_pin=HX711_SCK_PIN)
+            # Otomatik offset ayarla
+            print("[Scale] Otomatik offset ayarlanıyor...")
+            self.hx.autosetOffset()
+            offset_value = self.hx.getOffset()
+            print(f"[Scale] Offset ayarlandı: {offset_value}")
             
-            # Reset ve bağlantı testi - non-blocking
-            print("[Scale] Sensör bağlantısı test ediliyor (5sn beklenecek)...")
-            if not self._is_ready(timeout=5.0):
-                print("[Scale] Sensör yanıt vermiyor (Zaman aşımı - 5sn)")
-                print("[Scale] MOCK moda geçiliyor...")
-                self.mode = "MOCK"
-                return
+            # Reference unit ayarla (kalibrasyon değeri)
+            print(f"[Scale] Reference unit ayarlanıyor: {HX711_REFERENCE_UNIT}")
+            self.hx.setReferenceUnit(HX711_REFERENCE_UNIT)
             
-            print(f"[Scale] Sensör OK.")
-            # İlk tare
-            self.tare()
+            # Interrupt-based callback aktifleştir
+            print("[Scale] Interrupt-based okuma aktifleştiriliyor...")
+            self.hx.enableReadyCallback(self._weight_callback)
             
-            print(f"[Scale] Başlatıldı (Mod: {self.mode})")
+            print(f"[Scale] Başlatıldı (Mod: {self.mode}, Interrupt-based)")
+            
         except Exception as e:
             print(f"[Scale] Başlatma hatası: {e}")
             print("[Scale] MOCK moda geçiliyor...")
             self.mode = "MOCK"
     
-    def _is_ready(self, timeout=1.0):
-        """Sensörün hazır olup olmadığını (DOUT pininin LOW olmasını) kontrol et"""
+    def _weight_callback(self, rawBytes):
+        """HX711 interrupt callback - her yeni veri geldiğinde çağrılır"""
+        try:
+            weight_grams = self.hx.rawBytesToWeight(rawBytes)
+            with self.lock:
+                # Negatif değerleri filtrele
+                self.current_weight = max(0, int(weight_grams))
+        except Exception as e:
+            print(f"[Scale] Callback hatası: {e}")
+    
+    def read_weight(self):
+        """Anlık ağırlık değerini döndür (gram)"""
         if self.mode == "MOCK":
-            return True
+            return 0
         
-        start_time = time.time()
-        try:
-            # HX711 veri göndermeye hazır olduğunda DOUT pinini LOW'a çeker
-            while GPIO.input(HX711_DOUT_PIN) == 1:
-                if time.time() - start_time > timeout:
-                    return False
-                time.sleep(0.01)
-            return True
-        except:
-            return False
-
-            
+        with self.lock:
+            return self.current_weight
+    
     def tare(self):
-        """Tartıyı sıfırla - offset hesapla"""
+        """Tartıyı sıfırla - offset'i yeniden ayarla"""
         if self.mode == "MOCK":
+            print("[Scale] MOCK modda tare yapılamaz")
             return
-            
+        
         try:
-            # Sensör hazır mı kontrol et
-            if not self._is_ready():
-                print("[Scale] Tare hatası: Sensör hazır değil")
-                return
-                
-            # Birkaç okuma yapıp ortalama al
-            readings = []
-            for _ in range(10):
-                if not self._is_ready(): continue
-                data = self.hx.get_raw_data()
-                if data:
-                    readings.append(data)
-                time.sleep(0.05)
-            
-            if readings:
-                self.offset = sum(readings) / len(readings)
-                print(f"[Scale] Tare: offset = {self.offset:.0f}")
-            else:
-                print("[Scale] Tare hatası: Veri okunamadı")
-                
+            print("[Scale] Tare yapılıyor...")
+            self.hx.autosetOffset()
+            offset_value = self.hx.getOffset()
+            print(f"[Scale] Yeni offset: {offset_value}")
+            with self.lock:
+                self.current_weight = 0
         except Exception as e:
             print(f"[Scale] Tare hatası: {e}")
-            
-    
-    def read_weight(self, samples=5):
-        """Ağırlık oku (gram cinsinden)"""
-        # MOCK modda 0 döndür
-        if self.mode == "MOCK":
-            return 0
-            
-        try:
-            # Ham veri oku
-            readings = []
-            for _ in range(samples):
-                if not self._is_ready(timeout=0.1): continue
-                data = self.hx.get_raw_data()
-                if data:
-                    readings.append(data)
-                time.sleep(0.02)
-            
-            if not readings:
-                return 0
-            
-            # Ortalama al
-            avg_raw = sum(readings) / len(readings)
-            
-            # Offset çıkar ve scale ratio ile böl
-            weight = (avg_raw - self.offset) / self.scale_ratio
-            
-            # Negatif değerleri filtrele
-            final_weight = max(0, int(weight))
-            
-            return final_weight
-            
-        except Exception as e:
-            print(f"Tartı okuma hatası: {e}")
-            return 0
     
     def calibrate(self, known_weight_grams):
-        """Kalibrasyon yap - bilinen ağırlık ile"""
+        """
+        Kalibrasyon yap - bilinen ağırlık ile reference unit hesapla
+        
+        Kullanım:
+        1. Tartıyı sıfırla (tare)
+        2. Bilinen ağırlığı koy (örn: 1000g)
+        3. Bu fonksiyonu çağır: scale.calibrate(1000)
+        """
+        if self.mode == "MOCK":
+            print("[Scale] MOCK modda kalibrasyon yapılamaz")
+            return HX711_REFERENCE_UNIT
+        
         try:
-            # Ham değerleri oku
-            readings = []
-            for _ in range(10):
-                data = self.hx.get_raw_data()
-                if data:
-                    readings.append(data)
-                time.sleep(0.1)
+            print(f"[Scale] Kalibrasyon başlıyor ({known_weight_grams}g ile)...")
+            print("[Scale] Lütfen birkaç saniye bekleyin...")
             
-            if not readings:
-                print("Kalibrasyon hatası: Veri okunamadı")
-                return self.scale_ratio
+            # Birkaç okuma yap
+            time.sleep(2)
             
-            avg_raw = sum(readings) / len(readings)
+            # Raw bytes al
+            rawBytes = self.hx.getRawBytes()
+            longValue = self.hx.rawBytesToLong(rawBytes)
+            longWithOffset = self.hx.rawBytesToLongWithOffset(rawBytes)
             
-            # Scale ratio hesapla: (raw - offset) / weight = ratio
-            self.scale_ratio = (avg_raw - self.offset) / known_weight_grams
+            # Reference unit hesapla
+            new_reference_unit = longWithOffset / known_weight_grams
             
-            print(f"[Scale] Yeni scale_ratio: {self.scale_ratio:.2f}")
+            print(f"[Scale] Long value: {longValue}")
+            print(f"[Scale] Long with offset: {longWithOffset}")
+            print(f"[Scale] Yeni reference unit: {new_reference_unit}")
             
-            return self.scale_ratio
+            # Yeni reference unit'i ayarla
+            self.hx.setReferenceUnit(new_reference_unit)
+            
+            print(f"[Scale] Kalibrasyon tamamlandı!")
+            print(f"[Scale] config.py dosyasında HX711_REFERENCE_UNIT = {int(new_reference_unit)} olarak güncelleyin")
+            
+            return new_reference_unit
             
         except Exception as e:
-            print(f"Kalibrasyon hatası: {e}")
-            return self.scale_ratio
+            print(f"[Scale] Kalibrasyon hatası: {e}")
+            return HX711_REFERENCE_UNIT
     
     def cleanup(self):
         """GPIO temizle"""
         try:
-            GPIO.cleanup()
+            if self.mode != "MOCK":
+                GPIO.cleanup()
         except:
             pass
 
