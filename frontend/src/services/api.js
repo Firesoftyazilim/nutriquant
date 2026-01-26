@@ -80,6 +80,18 @@ export const analyzeFood = async (weight, profileId = null) => {
   return response.data;
 };
 
+export const testModel = async (imageBlob) => {
+  const formData = new FormData();
+  formData.append('file', imageBlob, 'captured.jpg');
+  
+  const response = await api.post('/api/model-test', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
 // ==================== PROFILES ====================
 
 export const getProfiles = async () => {
