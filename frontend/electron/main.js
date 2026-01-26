@@ -57,6 +57,8 @@ function createWindow() {
     mainWindow.loadFile(indexPath).catch(err => {
       console.error('❌ Failed to load index.html:', err);
     });
+    // Production'da da DevTools aç (debug için)
+    mainWindow.webContents.openDevTools();
   }
 
   // Web içeriği yüklendiğinde
