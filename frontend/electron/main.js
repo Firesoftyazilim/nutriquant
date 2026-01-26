@@ -11,7 +11,12 @@ app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-software-rasterizer');
 
 // Geliştirme modu kontrolü
-const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+const isDev = process.env.NODE_ENV === 'development';
+
+console.log('🔍 Environment check:');
+console.log('   NODE_ENV:', process.env.NODE_ENV);
+console.log('   isPackaged:', app.isPackaged);
+console.log('   isDev:', isDev);
 
 let mainWindow;
 

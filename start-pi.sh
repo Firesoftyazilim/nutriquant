@@ -97,12 +97,15 @@ echo "✅ Frontend build başarılı"
 # X11 display ayarla
 export DISPLAY=:0
 
-# NODE_ENV production olarak ayarla
+# NODE_ENV production olarak ayarla (ZORUNLU)
 export NODE_ENV=production
 
 # Electron'u production mode'da başlat
 echo "🚀 Electron başlatılıyor (Production Mode)..."
-npm run electron 2>&1 | tee electron.log
+echo "   NODE_ENV=$NODE_ENV"
+
+# Electron'u doğrudan production modda çalıştır
+NODE_ENV=production electron . 2>&1 | tee electron.log
 
 # Cleanup
 echo "🛑 Kapatılıyor..."
