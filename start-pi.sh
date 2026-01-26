@@ -72,7 +72,27 @@ fi
 
 # Frontend'i build et (production)
 echo "🔨 Frontend build ediliyor..."
-npm run build
+if ! npm run build; then
+    echo "❌ Frontend build hatası!"
+    echo "📋 Build log'u kontrol edin"
+    kill $BACKEND_PID 2>/dev/null
+    exit 1
+fi
+
+# Build kontrolü
+if [ ! -d "dist" ]; then
+    echo "❌ dist klasörü oluşmadı!"
+    kill $BACKEND_PID 2>/dev/null
+    exit 1
+fi
+
+if [ ! -f "dist/index.html" ]; then
+    echo "❌ dist/index.html bulunamadı!"
+    kill $BACKEND_PID 2>/dev/null
+    exit 1
+fi
+
+echo "✅ Frontend build başarılı"
 
 # X11 display ayarla
 export DISPLAY=:0
@@ -82,7 +102,7 @@ export NODE_ENV=production
 
 # Electron'u production mode'da başlat
 echo "🚀 Electron başlatılıyor (Production Mode)..."
-npm run electron
+npm run electron 2>&1 | tee electron.log
 
 # Cleanup
 echo "🛑 Kapatılıyor..."

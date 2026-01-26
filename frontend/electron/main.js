@@ -36,12 +36,32 @@ function createWindow() {
   // URL yükle
   if (isDev) {
     // Geliştirme: Vite dev server
+    console.log('🔧 Development mode: Loading from Vite dev server');
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools(); // DevTools aç
   } else {
     // Production: Build edilmiş dosyalar
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+    const indexPath = path.join(__dirname, '../dist/index.html');
+    console.log('🚀 Production mode: Loading from', indexPath);
+    mainWindow.loadFile(indexPath).catch(err => {
+      console.error('❌ Failed to load index.html:', err);
+    });
   }
+
+  // Web içeriği yüklendiğinde
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('✅ Page loaded successfully');
+  });
+
+  // Yükleme hatası
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    console.error('❌ Page failed to load:', errorCode, errorDescription);
+  });
+
+  // Console mesajlarını yakala
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    console.log(`[Renderer] ${message}`);
+  });
 
   // Pencere kapatıldığında
   mainWindow.on('closed', () => {
