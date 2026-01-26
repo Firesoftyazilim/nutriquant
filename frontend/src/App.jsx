@@ -38,11 +38,13 @@ function App() {
   }, [setLoading]);
 
   if (isLoading) {
+    console.log('📺 Rendering: SplashScreen');
     return <SplashScreen />;
   }
 
   // Backend bağlantı hatası varsa göster
   if (backendError) {
+    console.log('📺 Rendering: Backend Error Screen');
     return (
       <div className="h-screen w-screen bg-gradient-to-br from-red-600 via-orange-600 to-yellow-500 flex items-center justify-center p-8">
         <div className="glass rounded-3xl p-8 max-w-2xl text-center">
@@ -60,6 +62,10 @@ function App() {
     );
   }
 
+  console.log('📺 Rendering: Router (Main App)');
+  console.log('   isLoading:', isLoading);
+  console.log('   backendError:', backendError);
+  
   return (
     <Router>
       <Routes>
