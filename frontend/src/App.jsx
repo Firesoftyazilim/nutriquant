@@ -26,7 +26,9 @@ function App() {
         setBackendError(error.message);
       } finally {
         // Başlangıç yüklemesi
+        console.log('⏳ Splash screen 2 saniye gösteriliyor...');
         setTimeout(() => {
+          console.log('✅ Splash screen tamamlandı, Dashboard yükleniyor...');
           setLoading(false);
         }, 2000);
       }

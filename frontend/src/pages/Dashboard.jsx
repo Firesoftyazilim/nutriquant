@@ -14,16 +14,25 @@ export default function Dashboard() {
 
   // Profilleri yükle
   useEffect(() => {
-    loadProfiles();
-    loadBattery();
+    console.log('🔄 Dashboard mounting - loading data...');
+    loadProfiles().catch(err => console.error('Profile load failed:', err));
+    loadBattery().catch(err => console.error('Battery load failed:', err));
   }, []);
 
   // WebSocket ile gerçek zamanlı ağırlık
   useEffect(() => {
-    const websocket = connectWeightStream((weight) => {
-      setCurrentWeight(weight);
-    });
-    setWs(websocket);
+    console.log('🔌 Connecting to weight WebSocket...');
+    let websocket = null;
+    
+    try {
+      websocket = connectWeightStream((weight) => {
+        setCurrentWeight(weight);
+      });
+      setWs(websocket);
+      console.log('✅ WebSocket connected');
+    } catch (error) {
+      console.error('❌ WebSocket connection failed:', error);
+    }
 
     // Fallback: Her saniye ağırlık güncelle (WebSocket bağlantısı kesilirse)
     const pollInterval = setInterval(async () => {
@@ -36,7 +45,13 @@ export default function Dashboard() {
     }, 1000);
 
     return () => {
-      if (websocket) websocket.close();
+      if (websocket) {
+        try {
+          websocket.close();
+        } catch (e) {
+          console.error('WebSocket close error:', e);
+        }
+      }
       clearInterval(pollInterval);
     };
   }, [setCurrentWeight]);
