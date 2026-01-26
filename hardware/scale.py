@@ -1,4 +1,4 @@
-# HX711 Tartı Modülü - Ağırlık Ölçümü (hx711v0_5_1)
+# HX711 Tartı Modülü - Ağırlık Ölçümü
 
 import time
 import sys
@@ -6,10 +6,10 @@ import threading
 
 # Import denemesi ve hata ayıklama
 try:
-    from hx711v0_5_1 import HX711
+    from hardware.hx711 import HX711
     import RPi.GPIO as GPIO
     MODE = "REAL"
-    print("[Scale] Gerçek donanım sürücüleri yüklendi (hx711v0_5_1).")
+    print("[Scale] Gerçek donanım sürücüleri yüklendi (HX711).")
 except ImportError as e:
     print(f"\n[DIKKAT] Donanım sürücü hatası: {e}")
     print("[DIKKAT] Sistem SIMULASYON moduna geçiyor. Rastgele değerler üretilecek.\n")
@@ -27,6 +27,8 @@ class Scale:
         self.mode = MODE
         self.current_weight = 0  # Son okunan ağırlık
         self.lock = threading.Lock()  # Thread-safe erişim için
+        self.reading_thread = None
+        self.running = False
         
         if self.mode == "MOCK":
             print("[Scale] MOCK modda başlatıldı")
@@ -37,38 +39,45 @@ class Scale:
             self.hx = HX711(HX711_DOUT_PIN, HX711_SCK_PIN)
             
             # Reading format ayarla (MSB, MSB)
-            self.hx.setReadingFormat("MSB", "MSB")
-            
-            # Otomatik offset ayarla
-            print("[Scale] Otomatik offset ayarlanıyor...")
-            self.hx.autosetOffset()
-            offset_value = self.hx.getOffset()
-            print(f"[Scale] Offset ayarlandı: {offset_value}")
+            self.hx.set_reading_format("MSB", "MSB")
             
             # Reference unit ayarla (kalibrasyon değeri)
             print(f"[Scale] Reference unit ayarlanıyor: {HX711_REFERENCE_UNIT}")
-            self.hx.setReferenceUnit(HX711_REFERENCE_UNIT)
+            self.hx.set_reference_unit(HX711_REFERENCE_UNIT)
             
-            # Interrupt-based callback aktifleştir
-            print("[Scale] Interrupt-based okuma aktifleştiriliyor...")
-            self.hx.enableReadyCallback(self._weight_callback)
+            # Tare yap (offset ayarla)
+            print("[Scale] Tare yapılıyor...")
+            self.hx.tare(TARE_SAMPLES)
             
-            print(f"[Scale] Başlatıldı (Mod: {self.mode}, Interrupt-based)")
+            # Sürekli okuma thread'i başlat
+            self.running = True
+            self.reading_thread = threading.Thread(target=self._continuous_reading, daemon=True)
+            self.reading_thread.start()
+            
+            print(f"[Scale] Başlatıldı (Mod: {self.mode}, Continuous reading)")
             
         except Exception as e:
             print(f"[Scale] Başlatma hatası: {e}")
             print("[Scale] MOCK moda geçiliyor...")
             self.mode = "MOCK"
     
-    def _weight_callback(self, rawBytes):
-        """HX711 interrupt callback - her yeni veri geldiğinde çağrılır"""
-        try:
-            weight_grams = self.hx.rawBytesToWeight(rawBytes)
-            with self.lock:
-                # Negatif değerleri filtrele
-                self.current_weight = max(0, int(weight_grams))
-        except Exception as e:
-            print(f"[Scale] Callback hatası: {e}")
+    def _continuous_reading(self):
+        """Arka planda sürekli ağırlık oku"""
+        while self.running:
+            try:
+                # HX711'den ağırlık oku (3 örnek ortalaması)
+                weight = self.hx.get_weight(3)
+                
+                with self.lock:
+                    # Negatif değerleri filtrele, gram cinsine çevir
+                    self.current_weight = max(0, int(weight))
+                
+                # Kısa bekleme (CPU kullanımını azaltmak için)
+                time.sleep(0.1)
+                
+            except Exception as e:
+                print(f"[Scale] Okuma hatası: {e}")
+                time.sleep(0.5)
     
     def read_weight(self):
         """Anlık ağırlık değerini döndür (gram)"""
@@ -86,9 +95,8 @@ class Scale:
         
         try:
             print("[Scale] Tare yapılıyor...")
-            self.hx.autosetOffset()
-            offset_value = self.hx.getOffset()
-            print(f"[Scale] Yeni offset: {offset_value}")
+            self.hx.tare(TARE_SAMPLES)
+            print(f"[Scale] Tare tamamlandı")
             with self.lock:
                 self.current_weight = 0
         except Exception as e:
@@ -111,23 +119,18 @@ class Scale:
             print(f"[Scale] Kalibrasyon başlıyor ({known_weight_grams}g ile)...")
             print("[Scale] Lütfen birkaç saniye bekleyin...")
             
-            # Birkaç okuma yap
-            time.sleep(2)
-            
-            # Raw bytes al
-            rawBytes = self.hx.getRawBytes()
-            longValue = self.hx.rawBytesToLong(rawBytes)
-            longWithOffset = self.hx.rawBytesToLongWithOffset(rawBytes)
+            # Birkaç okuma yap ve ortalama al
+            time.sleep(1)
+            value = self.hx.get_value(10)
             
             # Reference unit hesapla
-            new_reference_unit = longWithOffset / known_weight_grams
+            new_reference_unit = value / known_weight_grams
             
-            print(f"[Scale] Long value: {longValue}")
-            print(f"[Scale] Long with offset: {longWithOffset}")
+            print(f"[Scale] Okunan değer: {value}")
             print(f"[Scale] Yeni reference unit: {new_reference_unit}")
             
             # Yeni reference unit'i ayarla
-            self.hx.setReferenceUnit(new_reference_unit)
+            self.hx.set_reference_unit(new_reference_unit)
             
             print(f"[Scale] Kalibrasyon tamamlandı!")
             print(f"[Scale] config.py dosyasında HX711_REFERENCE_UNIT = {int(new_reference_unit)} olarak güncelleyin")
@@ -139,12 +142,18 @@ class Scale:
             return HX711_REFERENCE_UNIT
     
     def cleanup(self):
-        """GPIO temizle"""
+        """GPIO temizle ve thread'i durdur"""
         try:
+            # Thread'i durdur
+            self.running = False
+            if self.reading_thread:
+                self.reading_thread.join(timeout=2)
+            
+            # GPIO temizle
             if self.mode != "MOCK":
                 GPIO.cleanup()
-        except:
-            pass
+        except Exception as e:
+            print(f"[Scale] Cleanup hatası: {e}")
 
 # Test fonksiyonu
 if __name__ == "__main__":
