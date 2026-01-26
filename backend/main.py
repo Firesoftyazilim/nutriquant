@@ -3,7 +3,7 @@ Nutriquant Backend API
 FastAPI + WebSocket - Raspberry Pi Sensör Kontrolü
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
@@ -11,8 +11,11 @@ import asyncio
 import io
 import sys
 import os
+import json
+import numpy as np
 from typing import Optional, List
 from datetime import datetime
+from PIL import Image
 
 # Proje kök dizinini path'e ekle
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,6 +28,96 @@ from ai.food_recognition import FoodRecognizer
 from core.nutrition import NutritionCalculator
 from core.bmi import BMICalculator
 from core.database import Database
+
+try:
+    import tflite_runtime.interpreter as tflite
+except ImportError:
+    print("⚠️ tflite_runtime bulunamadı, tensorflow kullanılıyor...")
+    import tensorflow.lite as tflite
+
+# ==================== TFLITE PREDICTOR CLASS ====================
+
+class TFLitePredictor:
+    """TFLite model ile tahmin yapma"""
+    
+    def __init__(self, tflite_path, class_indices_path):
+        """
+        Args:
+            tflite_path: TFLite model dosya yolu
+            class_indices_path: Sınıf indeksleri JSON dosyası
+        """
+        # TFLite interpreter yükle
+        self.interpreter = tflite.Interpreter(model_path=tflite_path)
+        self.interpreter.allocate_tensors()
+        
+        # Giriş/çıkış detayları
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        
+        # Sınıf isimlerini yükle
+        with open(class_indices_path, 'r', encoding='utf-8') as f:
+            class_indices = json.load(f)
+        self.class_names = {v: k for k, v in class_indices.items()}
+        
+        print(f"✅ TFLite model yüklendi: {tflite_path}")
+        print(f"   Giriş boyutu: {self.input_details[0]['shape']}")
+        print(f"   Çıkış boyutu: {self.output_details[0]['shape']}")
+        print(f"   Kategori sayısı: {len(self.class_names)}")
+    
+    def preprocess_image(self, image_data):
+        """Görüntüyü model için hazırlar"""
+        # PIL Image'e çevir
+        if isinstance(image_data, bytes):
+            img = Image.open(io.BytesIO(image_data)).convert('RGB')
+        elif isinstance(image_data, str):
+            img = Image.open(image_data).convert('RGB')
+        else:
+            img = image_data.convert('RGB')
+        
+        img = img.resize((224, 224))
+        
+        # NumPy array'e çevir
+        img_array = np.array(img, dtype=np.float32)
+        
+        # Normalizasyon
+        img_array = img_array / 255.0
+        
+        # Batch dimension ekle
+        img_array = np.expand_dims(img_array, axis=0)
+        
+        return img_array
+    
+    def predict(self, image_data, top_k=5):
+        """
+        Görüntüden tahmin yapar
+        
+        Args:
+            image_data: Görüntü dosya yolu veya bytes
+            top_k: En yüksek K tahmin
+            
+        Returns:
+            Tahmin sonuçları
+        """
+        # Görüntüyü hazırla
+        img_array = self.preprocess_image(image_data)
+        
+        # Tahmin yap
+        self.interpreter.set_tensor(self.input_details[0]['index'], img_array)
+        self.interpreter.invoke()
+        predictions = self.interpreter.get_tensor(self.output_details[0]['index'])[0]
+        
+        # Top-K tahminleri al
+        top_indices = np.argsort(predictions)[-top_k:][::-1]
+        
+        results = []
+        for idx in top_indices:
+            results.append({
+                'class': self.class_names[idx],
+                'confidence': float(predictions[idx]),
+                'percentage': float(predictions[idx] * 100)
+            })
+        
+        return results
 
 # FastAPI App
 app = FastAPI(title="Nutriquant API", version="2.0.0")
@@ -47,6 +140,15 @@ recognizer = FoodRecognizer()
 nutrition_calc = NutritionCalculator()
 bmi_calc = BMICalculator()
 db = Database()
+
+# TFLite model predictor
+try:
+    model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "model_float16.tflite")
+    class_indices_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "class_indices.json")
+    tflite_predictor = TFLitePredictor(model_path, class_indices_path)
+except Exception as e:
+    print(f"⚠️ TFLite model yüklenemedi: {e}")
+    tflite_predictor = None
 
 # Pydantic Models
 class ProfileCreate(BaseModel):
@@ -213,6 +315,56 @@ async def analyze_food(request: AnalyzeRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/model-test")
+async def test_model(file: UploadFile = File(...)):
+    """
+    Model test endpoint - model_float16.tflite ile görüntü analizi
+    
+    Args:
+        file: Yüklenen görüntü dosyası (multipart/form-data)
+    
+    Returns:
+        Top 5 tahmin ve güven skorları (class_indices.json kullanarak)
+    """
+    try:
+        # TFLite model kontrolü
+        if tflite_predictor is None:
+            raise HTTPException(status_code=503, detail="TFLite model yüklenmedi")
+        
+        # Dosya içeriğini oku
+        contents = await file.read()
+        
+        # TFLite predictor ile tahmin yap (top 5)
+        predictions = tflite_predictor.predict(contents, top_k=5)
+        
+        if not predictions:
+            return {
+                "status": "error",
+                "message": "Model tahmin yapamadı",
+                "predictions": []
+            }
+        
+        # Sonuçları formatla
+        results = []
+        for pred in predictions:
+            results.append({
+                "food_name": pred['class'],
+                "confidence": pred['confidence'],
+                "percentage": pred['percentage']
+            })
+        
+        return {
+            "status": "success",
+            "model": "model_float16.tflite",
+            "predictions": results,
+            "top_match": results[0] if results else None
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Model test hatası: {str(e)}")
 
 # ==================== PROFILES ====================
 
