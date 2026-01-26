@@ -98,26 +98,35 @@ class TFLitePredictor:
         Returns:
             Tahmin sonuçları
         """
-        # Görüntüyü hazırla
-        img_array = self.preprocess_image(image_data)
-        
-        # Tahmin yap
-        self.interpreter.set_tensor(self.input_details[0]['index'], img_array)
-        self.interpreter.invoke()
-        predictions = self.interpreter.get_tensor(self.output_details[0]['index'])[0]
-        
-        # Top-K tahminleri al
-        top_indices = np.argsort(predictions)[-top_k:][::-1]
-        
-        results = []
-        for idx in top_indices:
-            results.append({
-                'class': self.class_names[idx],
-                'confidence': float(predictions[idx]),
-                'percentage': float(predictions[idx] * 100)
-            })
-        
-        return results
+        try:
+            # Görüntüyü hazırla
+            img_array = self.preprocess_image(image_data)
+            print(f"🔍 Preprocessed image shape: {img_array.shape}")
+            
+            # Tahmin yap
+            self.interpreter.set_tensor(self.input_details[0]['index'], img_array)
+            self.interpreter.invoke()
+            predictions = self.interpreter.get_tensor(self.output_details[0]['index'])[0]
+            print(f"📊 Predictions shape: {predictions.shape}, min: {predictions.min():.4f}, max: {predictions.max():.4f}")
+            
+            # Top-K tahminleri al
+            top_indices = np.argsort(predictions)[-top_k:][::-1]
+            
+            results = []
+            for idx in top_indices:
+                if idx not in self.class_names:
+                    print(f"⚠️ Index {idx} not found in class_names")
+                    continue
+                results.append({
+                    'class': self.class_names[idx],
+                    'confidence': float(predictions[idx]),
+                    'percentage': float(predictions[idx] * 100)
+                })
+            
+            return results
+        except Exception as e:
+            print(f"❌ TFLitePredictor.predict error: {type(e).__name__}: {str(e)}")
+            raise
 
 # FastAPI App
 app = FastAPI(title="Nutriquant API", version="2.0.0")
@@ -334,6 +343,7 @@ async def test_model(file: UploadFile = File(...)):
         
         # Dosya içeriğini oku
         contents = await file.read()
+        print(f"📸 Görüntü yüklendi: {len(contents)} bytes, dosya: {file.filename}")
         
         # TFLite predictor ile tahmin yap (top 5)
         predictions = tflite_predictor.predict(contents, top_k=5)
@@ -364,7 +374,11 @@ async def test_model(file: UploadFile = File(...)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Model test hatası: {str(e)}")
+        import traceback
+        error_detail = f"{type(e).__name__}: {str(e)}"
+        print(f"❌ Model test hatası: {error_detail}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Model test hatası: {error_detail}")
 
 # ==================== PROFILES ====================
 
