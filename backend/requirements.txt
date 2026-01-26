@@ -1,10 +1,10 @@
 # Backend Dependencies - Python FastAPI
 
 # Web Framework
-fastapi==0.115.0
-uvicorn[standard]==0.32.0
-python-multipart==0.0.12
-websockets==13.1
+fastapi==0.128.0
+uvicorn[standard]==0.40.0
+python-multipart==0.0.22
+websockets==16.0
 
 # Görüntü İşleme ve AI
 opencv-python-headless>=4.8.0
@@ -15,15 +15,15 @@ tflite-runtime
 # Raspberry Pi Sensörler (sadece Pi'de çalışır)
 hx711==1.1.2.3
 RPi.GPIO==0.7.1
-smbus2==0.4.3
-pi-ina219==1.4.0
+smbus2==0.6.0
+pi-ina219==1.4.1
 
 # Ses
 pydub==0.25.1
 
 # Veritabanı ve Logging
-python-json-logger==2.0.7
-python-dotenv==1.0.0
+python-json-logger==4.0.0
+python-dotenv==1.2.1
 
 # Yardımcı
-pydantic==2.10.0
+pydantic==2.12.5
