@@ -20,7 +20,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from hardware.scale import Scale
 from hardware.camera import Camera
 from hardware.battery import Battery
-from hardware.led_ring import LEDRing
 from hardware.speaker import Speaker
 from ai.food_recognition import FoodRecognizer
 from core.nutrition import NutritionCalculator
@@ -43,7 +42,6 @@ app.add_middleware(
 scale = Scale()
 camera = Camera()
 battery = Battery()
-led = LEDRing()
 speaker = Speaker()
 recognizer = FoodRecognizer()
 nutrition_calc = NutritionCalculator()
@@ -166,8 +164,7 @@ async def stop_camera_preview():
 async def analyze_food(request: AnalyzeRequest):
     """Yemek analizi yap (AI + Besin Hesaplama)"""
     try:
-        # LED ve ses efekti
-        led.blue()
+        # Ses efekti
         speaker.play_beep()
         
         # Fotoğraf çek
@@ -177,7 +174,6 @@ async def analyze_food(request: AnalyzeRequest):
         food_key, confidence = recognizer.recognize(image)
         
         if not food_key:
-            led.yellow()
             speaker.play_warning()
             return {
                 "status": "not_recognized",
@@ -189,7 +185,6 @@ async def analyze_food(request: AnalyzeRequest):
         nutrition = nutrition_calc.calculate(food_key, max(request.weight, 100))
         
         if not nutrition:
-            led.red()
             return {
                 "status": "error",
                 "message": "Besin değerleri bulunamadı"
@@ -206,7 +201,6 @@ async def analyze_food(request: AnalyzeRequest):
                 bmi_data = {"bmi": bmi, "comment": bmi_comment}
         
         # Başarı efekti
-        led.green()
         speaker.play_success()
         
         return {
@@ -218,12 +212,7 @@ async def analyze_food(request: AnalyzeRequest):
         }
     
     except Exception as e:
-        led.red()
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        # LED'i 2 saniye sonra kapat
-        await asyncio.sleep(2)
-        led.off()
 
 # ==================== PROFILES ====================
 
@@ -301,23 +290,7 @@ async def set_wallpaper(wallpaper: dict):
 
 # ==================== HARDWARE CONTROL ====================
 
-@app.post("/api/led/{color}")
-async def control_led(color: str):
-    """LED rengini değiştir"""
-    colors = {
-        "red": led.red,
-        "green": led.green,
-        "blue": led.blue,
-        "yellow": led.yellow,
-        "white": led.white,
-        "off": led.off
-    }
-    
-    if color in colors:
-        colors[color]()
-        return {"status": "success", "color": color}
-    else:
-        raise HTTPException(status_code=400, detail="Geçersiz renk")
+
 
 @app.post("/api/speaker/{sound}")
 async def play_sound(sound: str):
@@ -353,15 +326,11 @@ async def startup_event():
     print("🚀 Nutriquant Backend başlatıldı")
     print(f"   Scale Mode: {scale.mode}")
     print(f"   Camera Mode: {'Mock' if camera.mock_mode else 'Real'}")
-    led.green()
-    await asyncio.sleep(1)
-    led.off()
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Uygulama kapanışı"""
     print("🛑 Nutriquant Backend kapatılıyor...")
-    led.off()
     scale.cleanup()
     camera.cleanup()
 

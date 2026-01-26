@@ -17,8 +17,6 @@ hx711==1.1.2.3
 RPi.GPIO==0.7.1
 smbus2==0.4.3
 pi-ina219==1.4.0
-rpi-ws281x==5.0.0
-adafruit-circuitpython-neopixel==6.3.11
 
 # Ses
 pydub==0.25.1
