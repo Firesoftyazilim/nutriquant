@@ -27,11 +27,15 @@ else
     source "$PROJECT_DIR/venv/bin/activate"
 fi
 
-# Bağımlılıkları kontrol et
-echo "📦 Bağımlılıklar güncelleniyor..."
-if [ -f "$BACKEND_DIR/requirements.txt" ]; then
-    pip install -r "$BACKEND_DIR/requirements.txt" > /dev/null
-fi
+# Mac için sadece gerekli bağımlılıkları yükle (Pi donanım kütüphaneleri hariç)
+echo "📦 Mac için bağımlılıklar yükleniyor..."
+pip install --quiet fastapi==0.115.0 uvicorn[standard]==0.32.0 python-multipart==0.0.12 \
+    websockets==13.1 opencv-python-headless>=4.8.0 Pillow>=10.2.0 numpy>=1.26.0 \
+    pydantic==2.10.0 python-json-logger==2.0.7 python-dotenv==1.0.0 pydub==0.25.1
+
+# TensorFlow Lite için tensorflow yükle (Mac'te tflite-runtime yok)
+echo "📦 TensorFlow yükleniyor (AI için)..."
+pip install --quiet tensorflow>=2.16.0
 
 cd "$BACKEND_DIR"
 python main.py > backend.log 2>&1 &

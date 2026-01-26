@@ -29,8 +29,8 @@ fi
 
 # Bağımlılıkları kontrol et
 echo "📦 Bağımlılıklar güncelleniyor..."
-if [ -f "$PROJECT_DIR/requirements.txt" ]; then
-    pip install -r "$PROJECT_DIR/requirements.txt" > /dev/null
+if [ -f "$BACKEND_DIR/requirements.txt" ]; then
+    pip install -r "$BACKEND_DIR/requirements.txt" > /dev/null
 fi
 
 cd "$BACKEND_DIR"
