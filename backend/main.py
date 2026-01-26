@@ -13,6 +13,7 @@ import sys
 import os
 import json
 import numpy as np
+import subprocess
 from typing import Optional, List
 from datetime import datetime
 from PIL import Image
@@ -379,6 +380,96 @@ async def test_model(file: UploadFile = File(...)):
         print(f"❌ Model test hatası: {error_detail}")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Model test hatası: {error_detail}")
+
+@app.post("/api/capture-and-analyze")
+async def capture_and_analyze():
+    """
+    Raspberry Pi kamerasıyla fotoğraf çek ve model ile analiz et
+    
+    Returns:
+        Model tahminleri ve güven skorları
+    """
+    try:
+        # TFLite model kontrolü
+        if tflite_predictor is None:
+            raise HTTPException(status_code=503, detail="TFLite model yüklenmedi")
+        
+        # Fotoğraf dosya yolu
+        photo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "foto.jpg")
+        
+        # rpicam-still komutu ile fotoğraf çek
+        print(f"📸 Fotoğraf çekiliyor: {photo_path}")
+        
+        cmd = [
+            "rpicam-still",
+            "--mode", "3280:2464",
+            "--roi", "0,0,1,1",
+            "-o", photo_path
+        ]
+        
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=True
+            )
+            print(f"✅ Fotoğraf çekildi: {photo_path}")
+            print(f"   Çıktı: {result.stdout}")
+        except subprocess.TimeoutExpired:
+            raise HTTPException(status_code=500, detail="Kamera zaman aşımı (10 saniye)")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ rpicam-still hatası: {e.stderr}")
+            raise HTTPException(status_code=500, detail=f"Kamera hatası: {e.stderr}")
+        except FileNotFoundError:
+            print("⚠️ rpicam-still bulunamadı, mock mode")
+            # Mock mode - test için boş bir görsel oluştur
+            img = Image.new('RGB', (224, 224), color='gray')
+            img.save(photo_path)
+        
+        # Fotoğrafın var olduğunu kontrol et
+        if not os.path.exists(photo_path):
+            raise HTTPException(status_code=500, detail="Fotoğraf oluşturulamadı")
+        
+        # Model ile tahmin yap
+        print(f"🔍 Model analizi yapılıyor...")
+        predictions = tflite_predictor.predict(photo_path, top_k=5)
+        
+        if not predictions:
+            return {
+                "status": "error",
+                "message": "Model tahmin yapamadı",
+                "predictions": []
+            }
+        
+        # Sonuçları formatla
+        results = []
+        for pred in predictions:
+            results.append({
+                "food_name": pred['class'],
+                "confidence": pred['confidence'],
+                "percentage": pred['percentage']
+            })
+        
+        print(f"✅ Analiz tamamlandı. En yüksek tahmin: {results[0]['food_name']} (%{results[0]['percentage']:.1f})")
+        
+        return {
+            "status": "success",
+            "model": "model_float16.tflite",
+            "photo_path": photo_path,
+            "predictions": results,
+            "top_match": results[0] if results else None
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"{type(e).__name__}: {str(e)}"
+        print(f"❌ Capture and analyze hatası: {error_detail}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Capture and analyze hatası: {error_detail}")
 
 # ==================== PROFILES ====================
 
