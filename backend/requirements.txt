@@ -10,16 +10,17 @@ websockets==16.0
 opencv-python-headless>=4.8.0
 Pillow>=10.2.0
 numpy>=1.26.0
-tflite-runtime
+tensorflow>=2.15.0; platform_system != "Linux" or platform_machine != "armv7l"
 
-# Raspberry Pi Sensörler (sadece Pi'de çalışır)
-hx711==1.1.2.3
-RPi.GPIO==0.7.1
-smbus2==0.6.0
-pi-ina219==1.4.1
+# Raspberry Pi Sensörler (sadece Pi'de çalışır - Mac'te yüklenmez)
+# hx711==1.1.2.3
+# RPi.GPIO==0.7.1
+# smbus2==0.6.0
+# pi-ina219==1.4.1
 
 # Ses
 pydub==0.25.1
+pygame>=2.5.0
 
 # Veritabanı ve Logging
 python-json-logger==4.0.0

@@ -1,0 +1,166 @@
+{
+  "measurements": [
+    {
+      "timestamp": "2026-01-07T14:44:18.043557",
+      "user_id": 1,
+      "food": "Lahmacun",
+      "weight": 481,
+      "nutrition": {
+        "name": "Lahmacun",
+        "weight": 481,
+        "calorie": 1202.5,
+        "protein": 43.3,
+        "carb": 134.7,
+        "fat": 52.9
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-07T14:44:28.063729",
+      "user_id": 1,
+      "food": "Dana Izgara",
+      "weight": 447,
+      "nutrition": {
+        "name": "Dana Izgara",
+        "weight": 447,
+        "calorie": 970.0,
+        "protein": 116.2,
+        "carb": 0.0,
+        "fat": 53.6
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-07T14:44:38.084816",
+      "user_id": 1,
+      "food": "Beyaz Peynir",
+      "weight": 252,
+      "nutrition": {
+        "name": "Beyaz Peynir",
+        "weight": 252,
+        "calorie": 665.3,
+        "protein": 35.3,
+        "carb": 5.0,
+        "fat": 52.9
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-13T23:16:37.261448",
+      "user_id": 1,
+      "food": "Lahmacun",
+      "weight": 195,
+      "nutrition": {
+        "name": "Lahmacun",
+        "weight": 195,
+        "calorie": 487.5,
+        "protein": 17.6,
+        "carb": 54.6,
+        "fat": 21.4
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-13T23:16:47.293307",
+      "user_id": 1,
+      "food": "Makarna (Haşlanmış)",
+      "weight": 291,
+      "nutrition": {
+        "name": "Makarna (Haşlanmış)",
+        "weight": 291,
+        "calorie": 381.2,
+        "protein": 14.6,
+        "carb": 72.8,
+        "fat": 3.2
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-13T23:16:57.321254",
+      "user_id": 1,
+      "food": "Somon Izgara",
+      "weight": 62,
+      "nutrition": {
+        "name": "Somon Izgara",
+        "weight": 62,
+        "calorie": 129.0,
+        "protein": 12.4,
+        "carb": 0.0,
+        "fat": 8.1
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-13T23:18:07.401029",
+      "user_id": 1,
+      "food": "Mantı",
+      "weight": 398,
+      "nutrition": {
+        "name": "Mantı",
+        "weight": 398,
+        "calorie": 835.8,
+        "protein": 35.8,
+        "carb": 111.4,
+        "fat": 27.9
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-13T23:18:17.433198",
+      "user_id": 1,
+      "food": "Pizza Margherita",
+      "weight": 294,
+      "nutrition": {
+        "name": "Pizza Margherita",
+        "weight": 294,
+        "calorie": 782.0,
+        "protein": 32.3,
+        "carb": 97.0,
+        "fat": 29.4
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    },
+    {
+      "timestamp": "2026-01-13T23:18:27.468456",
+      "user_id": 1,
+      "food": "Beyaz Peynir",
+      "weight": 214,
+      "nutrition": {
+        "name": "Beyaz Peynir",
+        "weight": 214,
+        "calorie": 565.0,
+        "protein": 30.0,
+        "carb": 4.3,
+        "fat": 44.9
+      },
+      "bmi": {
+        "bmi": 22.86,
+        "comment": "Normal"
+      }
+    }
+  ]
+}
