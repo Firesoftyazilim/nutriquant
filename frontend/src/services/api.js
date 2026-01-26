@@ -6,7 +6,7 @@
 import axios from 'axios';
 
 // Backend API URL - Raspberry Pi'de aynı makinede çalışıyor
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'http://192.168.1.7:8000';//'http://127.0.0.1:8000';
 
 // Axios instance
 const api = axios.create({

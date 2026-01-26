@@ -19,42 +19,42 @@ export default function Dashboard() {
     loadBattery().catch(err => console.error('Battery load failed:', err));
   }, []);
 
-  // WebSocket ile gerçek zamanlı ağırlık
-  useEffect(() => {
-    console.log('🔌 Connecting to weight WebSocket...');
-    let websocket = null;
-    
-    try {
-      websocket = connectWeightStream((weight) => {
-        setCurrentWeight(weight);
-      });
-      setWs(websocket);
-      console.log('✅ WebSocket connected');
-    } catch (error) {
-      console.error('❌ WebSocket connection failed:', error);
-    }
-
-    // Fallback: Her saniye ağırlık güncelle (WebSocket bağlantısı kesilirse)
-    const pollInterval = setInterval(async () => {
-      try {
-        const weight = await getWeight();
-        setCurrentWeight(weight);
-      } catch (error) {
-        console.error('Ağırlık polling hatası:', error);
-      }
-    }, 1000);
-
-    return () => {
-      if (websocket) {
-        try {
-          websocket.close();
-        } catch (e) {
-          console.error('WebSocket close error:', e);
-        }
-      }
-      clearInterval(pollInterval);
-    };
-  }, [setCurrentWeight]);
+  // Ağırlık gösterimi kaldırıldı - WebSocket ve polling artık gerekli değil
+  // useEffect(() => {
+  //   console.log('🔌 Connecting to weight WebSocket...');
+  //   let websocket = null;
+  //   
+  //   try {
+  //     websocket = connectWeightStream((weight) => {
+  //       setCurrentWeight(weight);
+  //     });
+  //     setWs(websocket);
+  //     console.log('✅ WebSocket connected');
+  //   } catch (error) {
+  //     console.error('❌ WebSocket connection failed:', error);
+  //   }
+  //
+  //   // Fallback: Her saniye ağırlık güncelle (WebSocket bağlantısı kesilirse)
+  //   const pollInterval = setInterval(async () => {
+  //     try {
+  //       const weight = await getWeight();
+  //       setCurrentWeight(weight);
+  //     } catch (error) {
+  //       console.error('Ağırlık polling hatası:', error);
+  //     }
+  //   }, 1000);
+  //
+  //   return () => {
+  //     if (websocket) {
+  //       try {
+  //         websocket.close();
+  //       } catch (e) {
+  //         console.error('WebSocket close error:', e);
+  //       }
+  //     }
+  //     clearInterval(pollInterval);
+  //   };
+  // }, [setCurrentWeight]);
 
   const loadProfiles = async () => {
     try {
@@ -109,42 +109,36 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="grid grid-cols-2 gap-4 flex-1 min-h-0">
-        {/* Left: Weight Display */}
+        {/* Left: Scan Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="glass rounded-2xl p-4 flex flex-col items-center justify-center"
         >
-          <Scale size={40} className="text-white/60 mb-2" />
-          <motion.div
-            animate={{ scale: currentWeight > 0 ? 1.05 : 1 }}
-            transition={{ duration: 0.3 }}
-            className="text-center"
-          >
-            <h2 className="text-6xl font-bold text-white mb-1">
-              {currentWeight.toFixed(0)}
-            </h2>
-            <p className="text-xl text-white/80">gram</p>
-          </motion.div>
-
+          <Scale size={64} className="text-white/60 mb-6" />
+          
           {/* Scan Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleScan}
-            disabled={!selectedProfile || currentWeight < 10}
-            className={`mt-4 w-full py-4 rounded-xl text-lg font-bold transition-all ${
-              selectedProfile && currentWeight >= 10
+            disabled={!selectedProfile}
+            className={`w-full py-6 rounded-xl text-xl font-bold transition-all ${
+              selectedProfile
                 ? 'bg-white text-purple-600 shadow-2xl'
                 : 'bg-white/20 text-white/50 cursor-not-allowed'
             }`}
           >
-            <div className="flex items-center justify-center gap-2">
-              <Camera size={24} />
+            <div className="flex items-center justify-center gap-3">
+              <Camera size={28} />
               <span>Tara ve Analiz Et</span>
             </div>
           </motion.button>
+          
+          {!selectedProfile && (
+            <p className="text-white/60 text-sm mt-4">Lütfen bir profil seçin</p>
+          )}
         </motion.div>
 
         {/* Right: Profiles */}
