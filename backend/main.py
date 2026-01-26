@@ -133,11 +133,11 @@ class TFLitePredictor:
 # FastAPI App
 app = FastAPI(title="Nutriquant API", version="2.0.0")
 
-# CORS - Electron'dan erişim için
+# CORS - Tüm origin'lerden erişim için
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=["*"],  # Tüm origin'lere izin ver
+    allow_credentials=False,  # Wildcard origin kullanırken False olmalı
     allow_methods=["*"],
     allow_headers=["*"],
 )
