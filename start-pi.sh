@@ -104,17 +104,18 @@ fi
 
 echo "✅ Frontend build başarılı"
 
-# X11 display ayarla
+# X11 display ve environment ayarla (Electron başlamadan önce)
 export DISPLAY=:0
-
-# NODE_ENV production olarak ayarla (ZORUNLU)
 export NODE_ENV=production
 
-# Electron'u production mode'da başlat
 echo "🚀 Electron başlatılıyor (Production Mode)..."
+echo "   DISPLAY=$DISPLAY"
 echo "   NODE_ENV=$NODE_ENV"
+echo "   PWD=$PWD"
+echo "   Checking dist folder..."
+ls -la dist/ | head -10
 
-# Electron'u npx ile çalıştır (global kurulum gerekmez)
+# Electron'u başlat - package.json'daki main entry point kullanılır
 NODE_ENV=production npx electron . 2>&1 | tee electron.log
 
 # Cleanup
