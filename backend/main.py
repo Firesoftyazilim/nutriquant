@@ -210,9 +210,31 @@ async def health_check():
 
 @app.get("/api/scale/weight")
 async def get_weight():
-    """Anlık ağırlık oku"""
-    weight = scale.read_weight()
-    return {"weight": weight, "unit": "g"}
+    """
+    Ağırlık sensöründen anlık veri oku
+    
+    Returns:
+        weight: Ağırlık değeri (gram)
+        unit: Birim (g)
+        timestamp: Okuma zamanı
+        status: Sensör durumu
+    """
+    try:
+        weight = scale.read_weight()
+        
+        # Ağırlık durumu kontrolü
+        status = "empty" if weight < 5 else "measuring"
+        
+        return {
+            "weight": weight,
+            "unit": "g",
+            "timestamp": datetime.now().isoformat(),
+            "status": status,
+            "scale_mode": scale.mode
+        }
+    except Exception as e:
+        print(f"❌ Ağırlık okuma hatası: {e}")
+        raise HTTPException(status_code=500, detail=f"Ağırlık okuma hatası: {str(e)}")
 
 @app.post("/api/scale/tare")
 async def tare_scale():
