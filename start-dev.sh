@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ============================================
-# Nutriquant Raspberry Pi Başlatma Scripti
-# Production Mode - Tam Ekran Kiosk
+# Nutriquant Development Mode
+# Vite Dev Server + Electron
 # ============================================
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -10,14 +10,13 @@ BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
 
 echo "============================================"
-echo "🍓 Nutriquant Raspberry Pi Modu"
+echo "🔧 Nutriquant Development Mode"
 echo "============================================"
-
 
 # Backend başlat (arka planda)
 echo "🐍 Backend başlatılıyor..."
 
-# Venv yolunu belirle (backend içinde veya root'ta)
+# Venv yolunu belirle
 if [ -f "$BACKEND_DIR/venv/bin/activate" ]; then
     source "$BACKEND_DIR/venv/bin/activate"
 elif [ -f "$PROJECT_DIR/venv/bin/activate" ]; then
@@ -28,7 +27,7 @@ else
     source "$PROJECT_DIR/venv/bin/activate"
 fi
 
-# Bağımlılıkları kontrol et ve yükle
+# Bağımlılıkları kontrol et
 echo "📦 Bağımlılıklar güncelleniyor..."
 if [ -f "$PROJECT_DIR/requirements.txt" ]; then
     pip install -r "$PROJECT_DIR/requirements.txt" > /dev/null
@@ -39,30 +38,13 @@ python main.py > backend.log 2>&1 &
 BACKEND_PID=$!
 echo "✅ Backend başlatıldı (PID: $BACKEND_PID)"
 
-
 # Backend hazır olsun
 echo "⏳ Backend hazırlanıyor..."
-sleep 5
+sleep 3
 
-# Frontend başlat (tam ekran)
-echo "🎨 Frontend başlatılıyor (TAM EKRAN)..."
+# Frontend başlat (development mode)
+echo "🎨 Frontend başlatılıyor (Development Mode)..."
 cd "$FRONTEND_DIR"
-
-# Node.js kontrolü ve otomatik kurulum
-if ! command -v node &> /dev/null; then
-    echo "⚙️  Node.js bulunamadı, kuruluyor..."
-    echo "   Node.js 18.x repository ekleniyor..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    echo "   Node.js kuruluyor..."
-    sudo apt install -y nodejs
-    
-    if ! command -v node &> /dev/null; then
-        echo "❌ Node.js kurulumu başarısız!"
-        kill $BACKEND_PID 2>/dev/null
-        exit 1
-    fi
-    echo "✅ Node.js kuruldu: $(node --version)"
-fi
 
 # npm bağımlılıkları kontrolü
 if [ ! -d "node_modules" ]; then
@@ -70,19 +52,15 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-# Frontend'i build et (production)
-echo "🔨 Frontend build ediliyor..."
-npm run build
-
-# X11 display ayarla
+# X11 display ayarla (Linux için)
 export DISPLAY=:0
 
-# NODE_ENV production olarak ayarla
-export NODE_ENV=production
+# NODE_ENV development olarak ayarla
+export NODE_ENV=development
 
-# Electron'u production mode'da başlat
-echo "🚀 Electron başlatılıyor (Production Mode)..."
-npm run electron
+# Vite dev server + Electron'u başlat
+echo "🚀 Vite + Electron başlatılıyor..."
+npm run electron:dev
 
 # Cleanup
 echo "🛑 Kapatılıyor..."
