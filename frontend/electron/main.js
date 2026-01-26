@@ -24,11 +24,12 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 480,
-    fullscreen: true,           // Tam ekran
+    fullscreen: !isDev,         // Tam ekran (sadece production'da)
     kiosk: !isDev,              // Kiosk mode (sadece production'da)
     frame: false,               // Pencere çerçevesi yok
     autoHideMenuBar: true,      // Menu bar gizli
     backgroundColor: '#1a1a2e', // Arka plan rengi
+    resizable: isDev,           // Sadece dev modda resize edilebilir
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

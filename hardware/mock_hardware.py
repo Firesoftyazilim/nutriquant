@@ -8,6 +8,9 @@ class MockHX711:
     def __init__(self, dout_pin, pd_sck_pin):
         self.reference_unit = 210
         self.tare_value = 0
+        self.base_weight = 0  # Temel ağırlık
+        self.last_change_time = time.time()
+        self.change_interval = 5  # 5 saniyede bir ağırlık değiştir
     
     def set_reading_format(self, byte1, byte2):
         pass
@@ -20,9 +23,18 @@ class MockHX711:
     
     def tare(self, samples=10):
         self.tare_value = random.randint(-100, 100)
+        self.base_weight = 0
     
     def get_weight(self, samples=5):
-        return random.randint(0, 500)
+        # Her 5 saniyede bir ağırlığı değiştir
+        current_time = time.time()
+        if current_time - self.last_change_time > self.change_interval:
+            self.base_weight = random.randint(0, 500)
+            self.last_change_time = current_time
+        
+        # Küçük varyasyon ekle (daha gerçekçi)
+        noise = random.uniform(-2, 2)
+        return max(0, self.base_weight + noise)
     
     def power_down(self):
         pass

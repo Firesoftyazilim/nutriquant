@@ -35,14 +35,24 @@ if [ -f "$PROJECT_DIR/requirements.txt" ]; then
 fi
 
 cd "$BACKEND_DIR"
-python main.py > backend.log 2>&1 &
+nohup python main.py > backend.log 2>&1 &
 BACKEND_PID=$!
 echo "✅ Backend başlatıldı (PID: $BACKEND_PID)"
 
-
-# Backend hazır olsun
+# Backend hazır olsun - daha uzun bekleme ve health check
 echo "⏳ Backend hazırlanıyor..."
-sleep 5
+sleep 3
+
+# Backend'in hazır olduğunu kontrol et
+echo "🔍 Backend health check yapılıyor..."
+for i in {1..10}; do
+    if curl -s http://localhost:8000/api/health > /dev/null 2>&1; then
+        echo "✅ Backend hazır!"
+        break
+    fi
+    echo "   Deneme $i/10..."
+    sleep 1
+done
 
 # Frontend başlat (tam ekran)
 echo "🎨 Frontend başlatılıyor (TAM EKRAN)..."

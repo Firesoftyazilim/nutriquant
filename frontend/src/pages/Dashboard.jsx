@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Scale, Camera, Users, Settings as SettingsIcon, Battery, Zap } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
-import { getProfiles, getBattery, connectWeightStream, playSound } from '../services/api';
+import { getProfiles, getBattery, connectWeightStream, getWeight, playSound } from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -25,8 +25,19 @@ export default function Dashboard() {
     });
     setWs(websocket);
 
+    // Fallback: Her saniye ağırlık güncelle (WebSocket bağlantısı kesilirse)
+    const pollInterval = setInterval(async () => {
+      try {
+        const weight = await getWeight();
+        setCurrentWeight(weight);
+      } catch (error) {
+        console.error('Ağırlık polling hatası:', error);
+      }
+    }, 1000);
+
     return () => {
       if (websocket) websocket.close();
+      clearInterval(pollInterval);
     };
   }, [setCurrentWeight]);
 
@@ -58,48 +69,48 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 p-8 overflow-hidden">
+    <div className="h-screen w-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 p-4 overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-4">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3"
+          className="flex items-center gap-2"
         >
-          <Scale size={40} className="text-white" />
-          <h1 className="text-4xl font-bold text-white">Nutriquant</h1>
+          <Scale size={28} className="text-white" />
+          <h1 className="text-2xl font-bold text-white">Nutriquant</h1>
         </motion.div>
 
         {/* Battery */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="glass rounded-full px-6 py-3 flex items-center gap-2"
+          className="glass rounded-full px-4 py-2 flex items-center gap-2"
         >
-          <Battery size={24} className="text-white" />
-          <span className="text-white font-semibold">{batteryPercent}%</span>
+          <Battery size={18} className="text-white" />
+          <span className="text-white font-semibold text-sm">{batteryPercent}%</span>
         </motion.div>
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-2 gap-6 h-[calc(100vh-200px)]">
+      <div className="grid grid-cols-2 gap-4 flex-1 min-h-0">
         {/* Left: Weight Display */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass rounded-3xl p-8 flex flex-col items-center justify-center"
+          className="glass rounded-2xl p-4 flex flex-col items-center justify-center"
         >
-          <Scale size={60} className="text-white/60 mb-4" />
+          <Scale size={40} className="text-white/60 mb-2" />
           <motion.div
             animate={{ scale: currentWeight > 0 ? 1.05 : 1 }}
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <h2 className="text-8xl font-bold text-white mb-2">
+            <h2 className="text-6xl font-bold text-white mb-1">
               {currentWeight.toFixed(0)}
             </h2>
-            <p className="text-3xl text-white/80">gram</p>
+            <p className="text-xl text-white/80">gram</p>
           </motion.div>
 
           {/* Scan Button */}
@@ -108,14 +119,14 @@ export default function Dashboard() {
             whileTap={{ scale: 0.95 }}
             onClick={handleScan}
             disabled={!selectedProfile || currentWeight < 10}
-            className={`mt-8 w-full py-6 rounded-2xl text-2xl font-bold transition-all ${
+            className={`mt-4 w-full py-4 rounded-xl text-lg font-bold transition-all ${
               selectedProfile && currentWeight >= 10
                 ? 'bg-white text-purple-600 shadow-2xl'
                 : 'bg-white/20 text-white/50 cursor-not-allowed'
             }`}
           >
-            <div className="flex items-center justify-center gap-3">
-              <Camera size={32} />
+            <div className="flex items-center justify-center gap-2">
+              <Camera size={24} />
               <span>Tara ve Analiz Et</span>
             </div>
           </motion.button>
@@ -126,32 +137,32 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass rounded-3xl p-8 flex flex-col"
+          className="glass rounded-2xl p-4 flex flex-col"
         >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-white flex items-center gap-2">
-              <Users size={32} />
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Users size={24} />
               Profiller
             </h2>
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate('/profiles')}
-              className="bg-white/20 hover:bg-white/30 text-white rounded-full p-3"
+              className="bg-white/20 hover:bg-white/30 text-white rounded-full p-2"
             >
-              <SettingsIcon size={24} />
+              <SettingsIcon size={18} />
             </motion.button>
           </div>
 
           {/* Profile List */}
-          <div className="flex-1 overflow-y-auto space-y-3">
+          <div className="flex-1 overflow-y-auto space-y-2">
             {profiles.length === 0 ? (
-              <div className="text-center text-white/60 py-12">
-                <Users size={48} className="mx-auto mb-4 opacity-50" />
-                <p className="text-xl">Henüz profil yok</p>
+              <div className="text-center text-white/60 py-6">
+                <Users size={32} className="mx-auto mb-2 opacity-50" />
+                <p className="text-base">Henüz profil yok</p>
                 <button
                   onClick={() => navigate('/profiles')}
-                  className="mt-4 text-white underline"
+                  className="mt-2 text-sm text-white underline"
                 >
                   Profil Ekle
                 </button>
@@ -166,7 +177,7 @@ export default function Dashboard() {
                     setSelectedProfile(profile);
                     playSound('beep');
                   }}
-                  className={`p-4 rounded-xl cursor-pointer transition-all ${
+                  className={`p-3 rounded-lg cursor-pointer transition-all ${
                     selectedProfile?.id === profile.id
                       ? 'bg-white text-purple-600 shadow-xl'
                       : 'bg-white/10 text-white hover:bg-white/20'
@@ -174,8 +185,8 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-xl font-bold">{profile.name}</h3>
-                      <p className="text-sm opacity-80">
+                      <h3 className="text-base font-bold">{profile.name}</h3>
+                      <p className="text-xs opacity-80">
                         {profile.height} cm • {profile.weight} kg • {profile.gender}
                       </p>
                     </div>
@@ -183,9 +194,9 @@ export default function Dashboard() {
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center"
+                        className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center"
                       >
-                        <Zap size={16} className="text-white" fill="white" />
+                        <Zap size={12} className="text-white" fill="white" />
                       </motion.div>
                     )}
                   </div>
@@ -201,23 +212,23 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex gap-4"
+        className="flex justify-center gap-3 mt-3"
       >
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => navigate('/profiles')}
-          className="glass rounded-full p-4 text-white"
+          className="glass rounded-full p-3 text-white"
         >
-          <Users size={28} />
+          <Users size={20} />
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => navigate('/settings')}
-          className="glass rounded-full p-4 text-white"
+          className="glass rounded-full p-3 text-white"
         >
-          <SettingsIcon size={28} />
+          <SettingsIcon size={20} />
         </motion.button>
       </motion.div>
     </div>

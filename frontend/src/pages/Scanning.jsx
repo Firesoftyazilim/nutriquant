@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Camera, Loader2, ArrowLeft } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
-import { connectWeightStream, scanComplete } from '../services/api';
+import { connectWeightStream, scanComplete, getWeight } from '../services/api';
 
 export default function Scanning() {
   const navigate = useNavigate();
@@ -20,8 +20,19 @@ export default function Scanning() {
     });
     setWs(websocket);
 
+    // Fallback: Her saniye ağırlık güncelle
+    const pollInterval = setInterval(async () => {
+      try {
+        const weight = await getWeight();
+        setCurrentWeight(weight);
+      } catch (error) {
+        console.error('Ağırlık polling hatası:', error);
+      }
+    }, 1000);
+
     return () => {
       if (websocket) websocket.close();
+      clearInterval(pollInterval);
     };
   }, [setCurrentWeight]);
 
