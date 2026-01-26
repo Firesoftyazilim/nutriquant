@@ -114,8 +114,8 @@ export NODE_ENV=production
 echo "🚀 Electron başlatılıyor (Production Mode)..."
 echo "   NODE_ENV=$NODE_ENV"
 
-# Electron'u doğrudan production modda çalıştır
-NODE_ENV=production electron . 2>&1 | tee electron.log
+# Electron'u npx ile çalıştır (global kurulum gerekmez)
+NODE_ENV=production npx electron . 2>&1 | tee electron.log
 
 # Cleanup
 echo "🛑 Kapatılıyor..."
