@@ -24,13 +24,13 @@ source "$VENV_PATH/bin/activate"
 
 # 2. Kütüphaneleri Yükle
 echo "📦 Kütüphaneler kontrol ediliyor ve yükleniyor..."
-# Ana dizindeki requirements.txt'yi öncelikli kullan (Daha güncel)
-if [ -f "$PROJECT_ROOT/requirements.txt" ]; then
-    echo "   -> Ana dizindeki requirements.txt kullanılıyor."
-    pip install -r "$PROJECT_ROOT/requirements.txt"
-elif [ -f "$SCRIPT_DIR/requirements.txt" ]; then
+# Backend dizinindeki requirements.txt'yi öncelikli kullan
+if [ -f "$SCRIPT_DIR/requirements.txt" ]; then
     echo "   -> Backend dizinindeki requirements.txt kullanılıyor."
     pip install -r "$SCRIPT_DIR/requirements.txt"
+elif [ -f "$PROJECT_ROOT/requirements.txt" ]; then
+    echo "   -> Ana dizindeki requirements.txt kullanılıyor."
+    pip install -r "$PROJECT_ROOT/requirements.txt"
 else 
     echo "⚠️ Uyarı: requirements.txt bulunamadı, kütüphane kurulumu atlanıyor."
 fi

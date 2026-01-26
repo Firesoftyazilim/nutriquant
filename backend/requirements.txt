@@ -10,6 +10,9 @@ websockets==16.0
 opencv-python-headless>=4.8.0
 Pillow>=10.2.0
 numpy>=1.26.0
+# TensorFlow Lite - Raspberry Pi için hafif versiyon
+tflite-runtime>=2.14.0; platform_system == "Linux" and platform_machine == "armv7l"
+# TensorFlow - Diğer platformlar için (Mac, x86_64 Linux)
 tensorflow>=2.15.0; platform_system != "Linux" or platform_machine != "armv7l"
 
 # Raspberry Pi Sensörler (sadece Pi'de çalışır - Mac'te yüklenmez)
