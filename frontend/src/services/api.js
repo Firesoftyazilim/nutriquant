@@ -5,7 +5,8 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+// Backend API URL - Raspberry Pi'de aynı makinede çalışıyor
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 // Axios instance
 const api = axios.create({
@@ -37,7 +38,7 @@ export const tareScale = async () => {
 
 // WebSocket için ağırlık stream'i
 export const connectWeightStream = (onWeightUpdate) => {
-  const ws = new WebSocket(`ws://localhost:8000/ws/weight`);
+  const ws = new WebSocket(`ws://127.0.0.1:8000/ws/weight`);
   
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);

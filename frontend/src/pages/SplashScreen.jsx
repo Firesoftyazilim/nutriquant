@@ -13,8 +13,7 @@ export default function SplashScreen() {
         {/* Logo */}
         <motion.div
           animate={{ 
-            rotate: [0, 360],
-            scale: [1, 1.2, 1]
+            scale: [1, 1.1, 1]
           }}
           transition={{ 
             duration: 2,
@@ -23,7 +22,11 @@ export default function SplashScreen() {
           }}
           className="inline-block mb-8"
         >
-          <Scale size={120} className="text-white" strokeWidth={1.5} />
+          <img 
+            src="/icon.png" 
+            alt="Nutriquant Logo" 
+            className="w-32 h-32 object-contain"
+          />
         </motion.div>
 
         {/* App Name */}

@@ -9,6 +9,11 @@ const path = require('path');
 // Raspberry Pi GPU hataları için flag'ler
 app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-software-rasterizer');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+app.commandLine.appendSwitch('enable-features', 'VaapiVideoDecoder');
+app.commandLine.appendSwitch('use-gl', 'egl');
 
 // Geliştirme modu kontrolü
 const isDev = process.env.NODE_ENV === 'development';
@@ -64,9 +69,20 @@ function createWindow() {
     console.error('❌ Page failed to load:', errorCode, errorDescription);
   });
 
-  // Console mesajlarını yakala
+  // Console mesajlarını yakala (detaylı)
   mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
-    console.log(`[Renderer] ${message}`);
+    const levels = ['', 'INFO', 'WARNING', 'ERROR'];
+    console.log(`[Renderer ${levels[level] || 'LOG'}] ${message} (${sourceId}:${line})`);
+  });
+
+  // Renderer process hataları
+  mainWindow.webContents.on('render-process-gone', (event, details) => {
+    console.error('❌ Renderer process crashed:', details);
+  });
+
+  // Unresponsive uyarısı
+  mainWindow.on('unresponsive', () => {
+    console.warn('⚠️ Window became unresponsive');
   });
 
   // Pencere kapatıldığında
