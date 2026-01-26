@@ -18,8 +18,9 @@ from typing import Optional, List
 from datetime import datetime
 from PIL import Image
 
-# Proje kök dizinini path'e ekle
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Backend dizinini path'e ekle (artık her şey backend içinde)
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, backend_dir)
 
 from hardware.scale import Scale
 from hardware.camera import Camera
@@ -153,8 +154,14 @@ db = Database()
 
 # TFLite model predictor
 try:
-    model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "model_float16.tflite")
-    class_indices_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "class_indices.json")
+    # Backend klasörü içindeki models klasörü
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(backend_dir, "models", "model_float16.tflite")
+    class_indices_path = os.path.join(backend_dir, "models", "class_indices.json")
+    
+    print(f"🔍 Model yolu: {model_path}")
+    print(f"🔍 Class indices yolu: {class_indices_path}")
+    
     tflite_predictor = TFLitePredictor(model_path, class_indices_path)
 except Exception as e:
     print(f"⚠️ TFLite model yüklenemedi: {e}")
@@ -416,8 +423,8 @@ async def capture_and_analyze():
         if tflite_predictor is None:
             raise HTTPException(status_code=503, detail="TFLite model yüklenmedi")
         
-        # Fotoğraf dosya yolu
-        photo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "foto.jpg")
+        # Fotoğraf dosya yolu (backend klasörü içinde)
+        photo_path = os.path.join(backend_dir, "foto.jpg")
         
         # rpicam-still komutu ile fotoğraf çek
         print(f"📸 Fotoğraf çekiliyor: {photo_path}")
@@ -516,8 +523,8 @@ async def scan_complete():
         if tflite_predictor is None:
             raise HTTPException(status_code=503, detail="TFLite model yüklenmedi")
         
-        # Fotoğraf dosya yolu
-        photo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "foto.jpg")
+        # Fotoğraf dosya yolu (backend klasörü içinde)
+        photo_path = os.path.join(backend_dir, "foto.jpg")
         
         # rpicam-still komutu ile fotoğraf çek
         cmd = [

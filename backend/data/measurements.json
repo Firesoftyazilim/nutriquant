@@ -161,6 +161,31 @@
         "bmi": 22.86,
         "comment": "Normal"
       }
+    },
+    {
+      "timestamp": "2026-01-26T19:35:31.887032",
+      "user_id": 1,
+      "food": "macaroni_and_cheese",
+      "weight": 414.0,
+      "nutrition": {
+        "name": "macaroni_and_cheese",
+        "weight": 414,
+        "calorie": 679,
+        "protein": 24.8,
+        "carbohydrate": 82.8,
+        "sugar": 8.3,
+        "base_values_per_100g": {
+          "name": "macaroni_and_cheese",
+          "calorie": 164,
+          "protein": 6,
+          "carbohydrate": 20,
+          "sugar": 2
+        }
+      },
+      "bmi": {
+        "bmi": 0,
+        "comment": "-"
+      }
     }
   ]
 }
