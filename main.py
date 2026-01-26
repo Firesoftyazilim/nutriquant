@@ -8,7 +8,6 @@ import pygame
 from hardware.scale import Scale
 from hardware.camera import Camera
 from hardware.battery import Battery
-from hardware.led_ring import LEDRing
 from hardware.speaker import Speaker
 from ai.food_recognition import FoodRecognizer
 from core.nutrition import NutritionCalculator
@@ -24,7 +23,6 @@ class Nutriquant:
         self.scale = Scale()
         self.camera = Camera()
         self.battery = Battery()
-        self.led = LEDRing()
         self.speaker = Speaker()
         self.recognizer = FoodRecognizer()
         self.nutrition_calc = NutritionCalculator()
@@ -44,9 +42,6 @@ class Nutriquant:
         
         print("Sistem hazır!")
         self.speaker.play_ready()
-        self.led.green()
-        time.sleep(1)
-        self.led.off()
     
     def show_splash_animation(self):
         """Açılış ekranı animasyonu göster"""
@@ -187,7 +182,6 @@ class Nutriquant:
                     
                 elif event == 'click_retry':
                     self.display.state = UIState.DASHBOARD
-                    self.led.off()
                     
                 elif event == 'click_save':
                     self.save_result()
@@ -306,7 +300,6 @@ class Nutriquant:
             
         self.display.state = UIState.SCANNING
         self.display.show_camera_feed()
-        self.led.white()
         self.speaker.play_beep()
         
         # Kamera Görüntüsü Al (Biraz gecikme efekti verilebilir)
@@ -315,20 +308,17 @@ class Nutriquant:
         
         self.display.state = UIState.ANALYZING
         self.display.show_analysis()
-        self.led.blue()
         
         # AI Analizi
         food_key, confidence = self.recognizer.recognize(image)
         
         if not food_key:
             print("Yemek tanınamadı")
-            self.led.yellow()
             self.speaker.play_warning()
             # Hata ekranı yerine, bilinmeyen olarak devam edebilir veya uyarı verebiliriz
             # Şimdilik Dashboard'a dönelim
             time.sleep(1)
             self.display.state = UIState.DASHBOARD
-            self.led.off()
             return
             
         print(f"Tanınan: {food_key} (Weight: {weight}g)")
@@ -345,9 +335,7 @@ class Nutriquant:
             
             self.display.state = UIState.RESULT
             self.display.show_results(nutrition['name'], nutrition, bmi_comment)
-            self.led.green()
         else:
-            self.led.red()
             self.display.state = UIState.DASHBOARD
             
     def save_result(self):
@@ -365,7 +353,6 @@ class Nutriquant:
     def cleanup(self):
         """Kaynakları temizle"""
         print("Temizlik yapılıyor...")
-        self.led.off()
         self.scale.cleanup()
         self.camera.cleanup()
         self.display.cleanup()
