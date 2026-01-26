@@ -339,7 +339,7 @@ async def shutdown_event():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "main:app",
+        app,  # Direct app object instead of "main:app"
         host="0.0.0.0",
         port=8000,
         reload=False,  # Production'da False
