@@ -1,39 +1,39 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Dashboard from './pages/Dashboard';
 import Scanning from './pages/Scanning';
 import Results from './pages/Results';
 import Profiles from './pages/Profiles';
 import Settings from './pages/Settings';
+import WallpaperSelector from './pages/WallpaperSelector';
 import SplashScreen from './pages/SplashScreen';
 import { useAppStore } from './store/appStore';
 import { checkHealth } from './services/api';
 
 function App() {
   const { isLoading, setLoading } = useAppStore();
-  const [backendError, setBackendError] = useState(null);
 
   useEffect(() => {
-    // Backend bağlantısını kontrol et
+    // Backend bağlantısını kontrol et (arka planda)
     const checkBackend = async () => {
       try {
         console.log('🔍 Backend bağlantısı kontrol ediliyor...');
         await checkHealth();
         console.log('✅ Backend bağlantısı başarılı');
-        setBackendError(null);
       } catch (error) {
-        console.error('❌ Backend bağlantı hatası:', error.message);
-        setBackendError(error.message);
-      } finally {
-        // Başlangıç yüklemesi
-        console.log('⏳ Splash screen 2 saniye gösteriliyor...');
-        setTimeout(() => {
-          console.log('✅ Splash screen tamamlandı, Dashboard yükleniyor...');
-          setLoading(false);
-        }, 2000);
+        console.warn('⚠️ Backend bağlantı kurulamadı:', error.message);
+        console.warn('Uygulama çalışmaya devam edecek ancak bazı özellikler çalışmayabilir.');
       }
     };
 
+    // Başlangıç yüklemesi
+    console.log('⏳ Splash screen 2 saniye gösteriliyor...');
+    setTimeout(() => {
+      console.log('✅ Splash screen tamamlandı, Dashboard yükleniyor...');
+      setLoading(false);
+    }, 2000);
+
+    // Backend kontrolünü arka planda yap
     checkBackend();
   }, [setLoading]);
 
@@ -42,29 +42,8 @@ function App() {
     return <SplashScreen />;
   }
 
-  // Backend bağlantı hatası varsa göster
-  if (backendError) {
-    console.log('📺 Rendering: Backend Error Screen');
-    return (
-      <div className="h-screen w-screen bg-gradient-to-br from-red-600 via-orange-600 to-yellow-500 flex items-center justify-center p-8">
-        <div className="glass rounded-3xl p-8 max-w-2xl text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">⚠️ Backend Bağlantı Hatası</h1>
-          <p className="text-xl text-white/90 mb-6">{backendError}</p>
-          <p className="text-lg text-white/80">Backend sunucusunun çalıştığından emin olun.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-6 bg-white text-orange-600 px-8 py-3 rounded-xl font-bold text-lg hover:bg-white/90 transition"
-          >
-            Yeniden Dene
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   console.log('📺 Rendering: Router (Main App)');
   console.log('   isLoading:', isLoading);
-  console.log('   backendError:', backendError);
   
   return (
     <Router>
@@ -74,6 +53,7 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/profiles" element={<Profiles />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/wallpaper" element={<WallpaperSelector />} />
       </Routes>
     </Router>
   );

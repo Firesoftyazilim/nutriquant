@@ -4,6 +4,15 @@
 
 import { create } from 'zustand';
 
+// LocalStorage'dan wallpaper'ı yükle
+const loadWallpaper = () => {
+  try {
+    return localStorage.getItem('nutriquant_wallpaper') || 'default';
+  } catch {
+    return 'default';
+  }
+};
+
 export const useAppStore = create((set) => ({
   // Loading state
   isLoading: true,
@@ -32,4 +41,11 @@ export const useAppStore = create((set) => ({
     brightness: 100,
   },
   setSettings: (settings) => set({ settings }),
+
+  // Wallpaper
+  currentWallpaper: loadWallpaper(),
+  setCurrentWallpaper: (wallpaper) => {
+    localStorage.setItem('nutriquant_wallpaper', wallpaper);
+    set({ currentWallpaper: wallpaper });
+  },
 }));

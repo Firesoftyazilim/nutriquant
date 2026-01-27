@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Camera, Loader2, ArrowLeft } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { connectWeightStream, scanComplete, getWeight } from '../services/api';
+import WallpaperBackground from '../components/WallpaperBackground';
 
 export default function Scanning() {
   const navigate = useNavigate();
@@ -109,7 +110,8 @@ export default function Scanning() {
   };
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 p-8 flex flex-col">
+    <WallpaperBackground gradient="from-purple-600 via-blue-600 to-cyan-500">
+    <div className="h-full w-full p-8 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <motion.button
@@ -121,12 +123,11 @@ export default function Scanning() {
           <ArrowLeft size={28} />
         </motion.button>
 
-        <h1 className="text-3xl font-bold text-white">
-          {status === 'ready' && 'Hazırlanıyor...'}
-          {status === 'measuring' && 'Ağırlık Ölçülüyor...'}
-          {status === 'capturing' && 'Fotoğraf Çekiliyor...'}
-          {status === 'analyzing' && 'Analiz Ediliyor...'}
-        </h1>
+        <img 
+          src="/icon.png" 
+          alt="Nutriquant Logo" 
+          className="w-14 h-14 object-contain"
+        />
 
         <div className="w-12" /> {/* Spacer */}
       </div>
@@ -189,5 +190,6 @@ export default function Scanning() {
         <span>Profil: {selectedProfile?.name}</span>
       </div>
     </div>
+    </WallpaperBackground>
   );
 }

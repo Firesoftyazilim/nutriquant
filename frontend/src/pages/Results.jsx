@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Save, RotateCcw, Flame, Beef, Wheat, Droplet } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { saveMeasurement, playSound } from '../services/api';
+import WallpaperBackground from '../components/WallpaperBackground';
 
 export default function Results() {
   const navigate = useNavigate();
@@ -45,7 +46,8 @@ export default function Results() {
   ];
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-green-600 via-emerald-600 to-teal-500 p-8 flex flex-col">
+    <WallpaperBackground gradient="from-green-600 via-emerald-600 to-teal-500">
+    <div className="h-full w-full p-8 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <motion.button
@@ -57,7 +59,11 @@ export default function Results() {
           <ArrowLeft size={28} />
         </motion.button>
 
-        <h1 className="text-3xl font-bold text-white">Analiz Sonucu</h1>
+        <img 
+          src="/icon.png" 
+          alt="Nutriquant Logo" 
+          className="w-14 h-14 object-contain"
+        />
 
         <div className="w-12" />
       </div>
@@ -147,5 +153,6 @@ export default function Results() {
         </motion.button>
       </div>
     </div>
+    </WallpaperBackground>
   );
 }

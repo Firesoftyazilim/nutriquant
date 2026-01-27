@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, Edit2, Trash2, User, Save, X } from 'lucide-react';
 import { getProfiles, createProfile, updateProfile, deleteProfile, playSound } from '../services/api';
+import WallpaperBackground from '../components/WallpaperBackground';
+import TouchKeyboard from '../components/TouchKeyboard';
 
 export default function Profiles() {
   const navigate = useNavigate();
@@ -15,6 +17,8 @@ export default function Profiles() {
     height: '',
     weight: ''
   });
+  const [activeInput, setActiveInput] = useState(null);
+  const [showKeyboard, setShowKeyboard] = useState(false);
 
   useEffect(() => {
     loadProfiles();
@@ -33,6 +37,8 @@ export default function Profiles() {
     setEditingProfile(null);
     setFormData({ name: '', gender: 'Erkek', height: '', weight: '' });
     setShowForm(true);
+    setShowKeyboard(false);
+    setActiveInput(null);
     playSound('beep');
   };
 
@@ -41,10 +47,12 @@ export default function Profiles() {
     setFormData({
       name: profile.name,
       gender: profile.gender,
-      height: profile.height.toString(),
-      weight: profile.weight.toString()
+      height: profile.height,
+      weight: profile.weight
     });
     setShowForm(true);
+    setShowKeyboard(false);
+    setActiveInput(null);
     playSound('beep');
   };
 
@@ -91,8 +99,45 @@ export default function Profiles() {
     }
   };
 
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingProfile(null);
+    setFormData({ name: '', gender: 'Erkek', height: '', weight: '' });
+    setShowKeyboard(false);
+    setActiveInput(null);
+  };
+
+  const handleInputFocus = (inputName) => {
+    setActiveInput(inputName);
+    setShowKeyboard(true);
+  };
+
+  const handleKeyPress = (key) => {
+    if (activeInput) {
+      setFormData(prev => ({
+        ...prev,
+        [activeInput]: prev[activeInput] + key
+      }));
+    }
+  };
+
+  const handleBackspace = () => {
+    if (activeInput) {
+      setFormData(prev => ({
+        ...prev,
+        [activeInput]: prev[activeInput].slice(0, -1)
+      }));
+    }
+  };
+
+  const handleKeyboardClose = () => {
+    setShowKeyboard(false);
+    setActiveInput(null);
+  };
+
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-8 flex flex-col">
+    <WallpaperBackground gradient="from-indigo-600 via-purple-600 to-pink-500">
+    <div className="h-full w-full p-8 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <motion.button
@@ -104,7 +149,11 @@ export default function Profiles() {
           <ArrowLeft size={28} />
         </motion.button>
 
-        <h1 className="text-3xl font-bold text-white">Profil Yönetimi</h1>
+        <img 
+          src="/icon.png" 
+          alt="Nutriquant Logo" 
+          className="w-18 h-12 object-contain"
+        />
 
         <motion.button
           whileHover={{ scale: 1.1 }}
@@ -185,8 +234,12 @@ export default function Profiles() {
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              animate={{ 
+                scale: 1, 
+                opacity: 1
+              }}
               exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
               className="glass rounded-3xl p-8 w-[500px] max-w-[90vw]"
             >
@@ -209,8 +262,11 @@ export default function Profiles() {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-lg focus:outline-none focus:border-white/40"
+                    onFocus={() => handleInputFocus('name')}
+                    readOnly
+                    className={`w-full bg-white/10 border rounded-xl px-4 py-3 text-white text-lg focus:outline-none cursor-pointer transition-all ${
+                      activeInput === 'name' ? 'border-white/60 bg-white/20' : 'border-white/20'
+                    }`}
                     placeholder="Örn: Ahmet"
                   />
                 </div>
@@ -241,20 +297,26 @@ export default function Profiles() {
                   <div>
                     <label className="block text-white/80 mb-2">Boy (cm)</label>
                     <input
-                      type="number"
+                      type="text"
                       value={formData.height}
-                      onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-lg focus:outline-none focus:border-white/40"
+                      onFocus={() => handleInputFocus('height')}
+                      readOnly
+                      className={`w-full bg-white/10 border rounded-xl px-4 py-3 text-white text-lg focus:outline-none cursor-pointer transition-all ${
+                        activeInput === 'height' ? 'border-white/60 bg-white/20' : 'border-white/20'
+                      }`}
                       placeholder="175"
                     />
                   </div>
                   <div>
                     <label className="block text-white/80 mb-2">Kilo (kg)</label>
                     <input
-                      type="number"
+                      type="text"
                       value={formData.weight}
-                      onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                      className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-lg focus:outline-none focus:border-white/40"
+                      onFocus={() => handleInputFocus('weight')}
+                      readOnly
+                      className={`w-full bg-white/10 border rounded-xl px-4 py-3 text-white text-lg focus:outline-none cursor-pointer transition-all ${
+                        activeInput === 'weight' ? 'border-white/60 bg-white/20' : 'border-white/20'
+                      }`}
                       placeholder="70"
                     />
                   </div>
@@ -275,6 +337,25 @@ export default function Profiles() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Touch Keyboard */}
+      <AnimatePresence>
+        {showKeyboard && (
+          <TouchKeyboard
+            onKeyPress={handleKeyPress}
+            onBackspace={handleBackspace}
+            onClose={handleKeyboardClose}
+            type={activeInput === 'name' ? 'text' : 'numeric'}
+            currentValue={formData[activeInput] || ''}
+            label={
+              activeInput === 'name' ? 'İsim' :
+              activeInput === 'height' ? 'Boy (cm)' :
+              activeInput === 'weight' ? 'Kilo (kg)' : ''
+            }
+          />
+        )}
+      </AnimatePresence>
     </div>
+    </WallpaperBackground>
   );
 }
