@@ -2,7 +2,7 @@
 
 # ============================================
 # Nutriquant Raspberry Pi Başlatma Scripti
-# Production Mode - Tam Ekran Kiosk
+# Chromium Kiosk Mode
 # ============================================
 
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -10,115 +10,143 @@ BACKEND_DIR="$PROJECT_DIR/backend"
 FRONTEND_DIR="$PROJECT_DIR/frontend"
 
 echo "============================================"
-echo "🍓 Nutriquant Raspberry Pi Modu"
+echo "🍓 Nutriquant Raspberry Pi Kiosk Modu"
 echo "============================================"
 
+# Cleanup fonksiyonu
+cleanup() {
+    echo ""
+    echo "🛑 Kapatılıyor..."
+    
+    # Frontend'i kapat
+    if [ ! -z "$FRONTEND_PID" ]; then
+        echo "   Frontend durduruluyor (PID: $FRONTEND_PID)..."
+        kill $FRONTEND_PID 2>/dev/null || true
+    fi
+    
+    # Backend'i kapat
+    if [ ! -z "$BACKEND_PID" ]; then
+        echo "   Backend durduruluyor (PID: $BACKEND_PID)..."
+        kill $BACKEND_PID 2>/dev/null || true
+    fi
+    
+    # Chromium'u kapat
+    echo "   Chromium kapatılıyor..."
+    pkill -f "chromium.*kiosk" 2>/dev/null || true
+    
+    echo "✅ Tamamlandı"
+    exit 0
+}
 
-# Backend başlat (arka planda)
-echo "🐍 Backend başlatılıyor..."
+# SIGINT ve SIGTERM yakalandığında cleanup çalıştır
+trap cleanup SIGINT SIGTERM
 
-# Venv yolunu belirle (backend içinde veya root'ta)
-if [ -f "$BACKEND_DIR/venv/bin/activate" ]; then
-    source "$BACKEND_DIR/venv/bin/activate"
-elif [ -f "$PROJECT_DIR/venv/bin/activate" ]; then
-    source "$PROJECT_DIR/venv/bin/activate"
-else
-    echo "❌ venv bulunamadı! Oluşturuluyor..."
-    python3 -m venv "$PROJECT_DIR/venv"
-    source "$PROJECT_DIR/venv/bin/activate"
-fi
-
-# Bağımlılıkları kontrol et ve yükle
-echo "📦 Bağımlılıklar güncelleniyor..."
-if [ -f "$BACKEND_DIR/requirements.txt" ]; then
-    pip install -r "$BACKEND_DIR/requirements.txt" > /dev/null
-fi
-
+# 1. Backend'i başlat (backend/start.sh kullanarak)
+echo ""
+echo "� Backend başlatılıyor (backend/start.sh)..."
 cd "$BACKEND_DIR"
-nohup python main.py > backend.log 2>&1 &
-BACKEND_PID=$!
-echo "✅ Backend başlatıldı (PID: $BACKEND_PID)"
 
-# Backend hazır olsun - daha uzun bekleme ve health check
+# Backend start.sh'ı arka planda çalıştır
+if [ -f "start.sh" ]; then
+    chmod +x start.sh
+    nohup ./start.sh > backend.log 2>&1 &
+    BACKEND_PID=$!
+    echo "✅ Backend başlatıldı (PID: $BACKEND_PID)"
+else
+    echo "❌ backend/start.sh bulunamadı!"
+    exit 1
+fi
+
+# Backend hazır olsun
 echo "⏳ Backend hazırlanıyor..."
-sleep 3
+sleep 5
 
-# Backend'in hazır olduğunu kontrol et
-echo "🔍 Backend health check yapılıyor..."
-for i in {1..10}; do
+# Backend health check
+echo "🔍 Backend health check..."
+for i in {1..15}; do
     if curl -s http://localhost:8000/api/health > /dev/null 2>&1; then
         echo "✅ Backend hazır!"
         break
     fi
-    echo "   Deneme $i/10..."
+    echo "   Deneme $i/15..."
     sleep 1
+    
+    if [ $i -eq 15 ]; then
+        echo "❌ Backend başlatılamadı!"
+        echo "📋 Backend log:"
+        tail -20 backend.log
+        cleanup
+    fi
 done
 
-# Frontend başlat (tam ekran)
-echo "🎨 Frontend başlatılıyor (TAM EKRAN)..."
+# 2. Frontend'i başlat (Vite dev server)
+echo ""
+echo "🎨 Frontend başlatılıyor (Vite dev server)..."
 cd "$FRONTEND_DIR"
 
-# Node.js kontrolü ve otomatik kurulum
+# Node.js kontrolü
 if ! command -v node &> /dev/null; then
-    echo "⚙️  Node.js bulunamadı, kuruluyor..."
-    echo "   Node.js 18.x repository ekleniyor..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    echo "   Node.js kuruluyor..."
-    sudo apt install -y nodejs
-    
-    if ! command -v node &> /dev/null; then
-        echo "❌ Node.js kurulumu başarısız!"
-        kill $BACKEND_PID 2>/dev/null
-        exit 1
-    fi
-    echo "✅ Node.js kuruldu: $(node --version)"
+    echo "❌ Node.js bulunamadı!"
+    echo "Lütfen Node.js kurun: curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && sudo apt install -y nodejs"
+    cleanup
 fi
 
 # npm bağımlılıkları kontrolü
 if [ ! -d "node_modules" ]; then
-    echo "⚙️  Frontend kütüphaneleri yükleniyor..."
+    echo "📦 Frontend bağımlılıkları yükleniyor..."
     npm install
 fi
 
-# Frontend'i build et (production)
-echo "🔨 Frontend build ediliyor..."
-if ! npm run build; then
-    echo "❌ Frontend build hatası!"
-    echo "📋 Build log'u kontrol edin"
-    kill $BACKEND_PID 2>/dev/null
-    exit 1
-fi
+# Vite dev server'ı arka planda başlat
+echo "� Vite dev server başlatılıyor..."
+nohup npm run dev > frontend.log 2>&1 &
+FRONTEND_PID=$!
+echo "✅ Frontend başlatıldı (PID: $FRONTEND_PID)"
 
-# Build kontrolü
-if [ ! -d "dist" ]; then
-    echo "❌ dist klasörü oluşmadı!"
-    kill $BACKEND_PID 2>/dev/null
-    exit 1
-fi
+# Frontend hazır olsun
+echo "⏳ Frontend hazırlanıyor..."
+sleep 5
 
-if [ ! -f "dist/index.html" ]; then
-    echo "❌ dist/index.html bulunamadı!"
-    kill $BACKEND_PID 2>/dev/null
-    exit 1
-fi
+# Frontend health check
+echo "� Frontend health check..."
+for i in {1..15}; do
+    if curl -s http://localhost:5173 > /dev/null 2>&1; then
+        echo "✅ Frontend hazır!"
+        break
+    fi
+    echo "   Deneme $i/15..."
+    sleep 1
+    
+    if [ $i -eq 15 ]; then
+        echo "❌ Frontend başlatılamadı!"
+        echo "📋 Frontend log:"
+        tail -20 frontend.log
+        cleanup
+    fi
+done
 
-echo "✅ Frontend build başarılı"
+# 3. Chromium'u kiosk modda aç
+echo ""
+echo "🌐 Chromium kiosk mode başlatılıyor..."
+echo "   URL: http://localhost:5173"
 
-# X11 display ve environment ayarla (Electron başlamadan önce)
+# X11 display ayarla
 export DISPLAY=:0
-export NODE_ENV=production
 
-echo "🚀 Electron başlatılıyor (Production Mode)..."
-echo "   DISPLAY=$DISPLAY"
-echo "   NODE_ENV=$NODE_ENV"
-echo "   PWD=$PWD"
-echo "   Checking dist folder..."
-ls -la dist/ | head -10
+# Chromium'u kiosk modda başlat
+chromium-browser \
+  --kiosk \
+  --user-data-dir=/home/pi/kiosk-profile \
+  --disable-infobars \
+  --disable-session-crashed-bubble \
+  --disable-translate \
+  --disable-features=Translate,TranslateUI \
+  --disable-background-networking \
+  --disable-sync \
+  --disable-component-update \
+  --no-first-run \
+  --noerrdialogs \
+  http://localhost:5173
 
-# Electron'u başlat - package.json'daki main entry point kullanılır
-NODE_ENV=production npx electron . 2>&1 | tee electron.log
-
-# Cleanup
-echo "🛑 Kapatılıyor..."
-kill $BACKEND_PID 2>/dev/null || true
-echo "✅ Tamamlandı"
+# Chromium kapandığında cleanup
+cleanup
