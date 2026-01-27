@@ -86,7 +86,24 @@ export default function Scanning() {
       }
     } catch (error) {
       console.error('Tarama hatası:', error);
-      alert('Bir hata oluştu: ' + error.message);
+      
+      // Backend'den gelen hata mesajını al
+      let errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';
+      
+      if (error.response?.data?.detail) {
+        // Backend'den gelen özel hata mesajı
+        errorMessage = error.response.data.detail;
+      } else if (error.response?.status === 400) {
+        errorMessage = 'Geçersiz istek. Lütfen kontrol edin.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Sunucu hatası. Lütfen tekrar deneyin.';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
+      } else if (error.message.includes('Network Error')) {
+        errorMessage = 'Bağlantı hatası. Backend çalışıyor mu kontrol edin.';
+      }
+      
+      alert(errorMessage);
       navigate('/');
     }
   };
