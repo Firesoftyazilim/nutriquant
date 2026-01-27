@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Camera, Loader2, ArrowLeft } from 'lucide-react';
+import { Camera, Loader2, ArrowLeft, Scale } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { connectWeightStream, scanComplete, getWeight } from '../services/api';
 import WallpaperBackground from '../components/WallpaperBackground';
@@ -110,7 +110,7 @@ export default function Scanning() {
   };
 
   return (
-    <WallpaperBackground gradient="from-purple-600 via-blue-600 to-cyan-500">
+    <WallpaperBackground>
     <div className="h-full w-full p-8 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">

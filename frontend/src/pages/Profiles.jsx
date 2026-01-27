@@ -136,7 +136,7 @@ export default function Profiles() {
   };
 
   return (
-    <WallpaperBackground gradient="from-indigo-600 via-purple-600 to-pink-500">
+    <WallpaperBackground>
     <div className="h-full w-full p-8 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">

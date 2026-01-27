@@ -91,7 +91,7 @@ export default function Dashboard() {
   console.log('🎨 Dashboard rendering JSX...');
   
   return (
-    <WallpaperBackground gradient="from-blue-600 via-purple-600 to-pink-500">
+    <WallpaperBackground>
     <div className="h-full w-full p-3 overflow-hidden flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-2">

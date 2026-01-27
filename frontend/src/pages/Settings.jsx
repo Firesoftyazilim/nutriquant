@@ -37,7 +37,7 @@ export default function Settings() {
   ];
 
   return (
-    <WallpaperBackground gradient="from-slate-700 via-gray-800 to-zinc-900">
+    <WallpaperBackground>
     <div className="h-full w-full p-6 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-4 flex-shrink-0">

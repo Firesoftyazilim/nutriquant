@@ -11,7 +11,7 @@ const wallpaperFiles = {
   default: null, // Gradient
 };
 
-export default function WallpaperBackground({ children, gradient = 'from-blue-600 via-purple-600 to-pink-500' }) {
+export default function WallpaperBackground({ children, gradient = 'from-blue-500 via-green-500 to-yellow-400' }) {
   const { currentWallpaper } = useAppStore();
   const wallpaperFile = wallpaperFiles[currentWallpaper];
 

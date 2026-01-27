@@ -46,7 +46,7 @@ export default function Results() {
   ];
 
   return (
-    <WallpaperBackground gradient="from-green-600 via-emerald-600 to-teal-500">
+    <WallpaperBackground>
     <div className="h-full w-full p-4 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-3 flex-shrink-0">

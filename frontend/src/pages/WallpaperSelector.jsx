@@ -50,7 +50,7 @@ export default function WallpaperSelector() {
   };
 
   return (
-    <WallpaperBackground gradient="from-slate-700 via-gray-800 to-zinc-900">
+    <WallpaperBackground>
     <div className="h-full w-full p-6 flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
@@ -67,7 +67,7 @@ export default function WallpaperSelector() {
         <img 
           src="/icon.png" 
           alt="Nutriquant Logo" 
-          className="w-12 h-12 object-contain"
+          className="w-50 h-10 object-contain"
         />
 
         <div className="w-12" />
