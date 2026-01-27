@@ -165,59 +165,30 @@ export default function Dashboard() {
                     }}
                     className="relative flex flex-col items-center cursor-pointer"
                   >
-                    {/* Neon Hexagon Çerçeve */}
+                    {/* Avatar Daire */}
                     <div className="relative">
-                      {/* Hexagon SVG */}
-                      <svg width="120" height="140" viewBox="0 0 120 140" className="absolute inset-0">
-                        <defs>
-                          <linearGradient id={`gradient-${profile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor={selectedProfile?.id === profile.id ? '#a855f7' : '#ffffff'} stopOpacity="0.3" />
-                            <stop offset="100%" stopColor={selectedProfile?.id === profile.id ? '#ec4899' : '#ffffff'} stopOpacity="0.1" />
-                          </linearGradient>
-                          <filter id={`glow-${profile.id}`}>
-                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                            <feMerge>
-                              <feMergeNode in="coloredBlur"/>
-                              <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                          </filter>
-                        </defs>
-                        {/* Hexagon path */}
-                        <path
-                          d="M60 10 L100 35 L100 85 L60 110 L20 85 L20 35 Z"
-                          fill={`url(#gradient-${profile.id})`}
-                          stroke={selectedProfile?.id === profile.id ? '#a855f7' : 'rgba(255,255,255,0.3)'}
-                          strokeWidth={selectedProfile?.id === profile.id ? '3' : '2'}
-                          filter={selectedProfile?.id === profile.id ? `url(#glow-${profile.id})` : 'none'}
-                          className="transition-all duration-300"
-                        />
-                      </svg>
-                      
-                      {/* Avatar İçerik */}
-                      <div className="relative w-[120px] h-[140px] flex flex-col items-center justify-center">
-                        <div
-                          className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold transition-all ${
-                            selectedProfile?.id === profile.id
-                              ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl'
-                              : 'bg-white/20 text-white backdrop-blur-sm'
-                          }`}
-                        >
-                          {profile.name.charAt(0).toUpperCase()}
-                        </div>
-                        
-                        {/* Seçili işareti */}
-                        {selectedProfile?.id === profile.id && (
-                          <motion.div
-                            initial={{ scale: 0, rotate: -180 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            className="absolute -bottom-2"
-                          >
-                            <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-1.5">
-                              <Zap size={16} className="text-white" fill="white" />
-                            </div>
-                          </motion.div>
-                        )}
+                      <div
+                        className={`w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold transition-all ${
+                          selectedProfile?.id === profile.id
+                            ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl ring-4 ring-purple-400/50'
+                            : 'bg-white/20 text-white backdrop-blur-sm'
+                        }`}
+                      >
+                        {profile.name.charAt(0).toUpperCase()}
                       </div>
+                      
+                      {/* Seçili işareti */}
+                      {selectedProfile?.id === profile.id && (
+                        <motion.div
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          className="absolute -bottom-1 left-1/2 -translate-x-1/2"
+                        >
+                          <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-1.5">
+                            <Zap size={16} className="text-white" fill="white" />
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
                     
                     {/* İsim */}
@@ -251,30 +222,10 @@ export default function Dashboard() {
                   }}
                   className="relative flex flex-col items-center cursor-pointer"
                 >
-                  {/* Hexagon Çerçeve */}
+                  {/* + Daire */}
                   <div className="relative">
-                    <svg width="120" height="140" viewBox="0 0 120 140" className="absolute inset-0">
-                      <defs>
-                        <linearGradient id="gradient-add" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.2" />
-                          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.05" />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        d="M60 10 L100 35 L100 85 L60 110 L20 85 L20 35 Z"
-                        fill="url(#gradient-add)"
-                        stroke="rgba(255,255,255,0.4)"
-                        strokeWidth="2"
-                        strokeDasharray="5,5"
-                        className="transition-all duration-300"
-                      />
-                    </svg>
-                    
-                    {/* + İkonu */}
-                    <div className="relative w-[120px] h-[140px] flex flex-col items-center justify-center">
-                      <div className="w-20 h-20 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/40">
-                        <Plus size={40} className="text-white/70" />
-                      </div>
+                    <div className="w-24 h-24 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/40 transition-all">
+                      <Plus size={40} className="text-white/70" />
                     </div>
                   </div>
                   
