@@ -138,51 +138,63 @@ export default function Scanning() {
         animate={{ opacity: 1, scale: 1 }}
         className="flex-1 glass rounded-3xl overflow-hidden relative flex items-center justify-center"
       >
-        <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-            className="inline-block mb-8"
-          >
-            <Camera size={120} className="text-white/60" />
-          </motion.div>
+        <div className="text-center p-8">
+          {/* Dairesel Progress */}
+          <div className="relative inline-flex items-center justify-center mb-8">
+            {/* Arka plan çember */}
+            <svg className="w-48 h-48 transform -rotate-90">
+              <circle
+                cx="96"
+                cy="96"
+                r="88"
+                stroke="rgba(255, 255, 255, 0.1)"
+                strokeWidth="8"
+                fill="none"
+              />
+              {/* Progress çember */}
+              <motion.circle
+                cx="96"
+                cy="96"
+                r="88"
+                stroke="url(#gradient)"
+                strokeWidth="8"
+                fill="none"
+                strokeLinecap="round"
+                initial={{ strokeDasharray: '0 552' }}
+                animate={{ strokeDasharray: `${(progress / 100) * 552} 552` }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+              />
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#3b82f6" />
+                </linearGradient>
+              </defs>
+            </svg>
+            
+            {/* Ortadaki ikon ve yüzde */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {status === 'measuring' && <Scale size={48} className="text-white mb-2" />}
+              {status === 'capturing' && <Camera size={48} className="text-white mb-2" />}
+              {status === 'analyzing' && <Loader2 size={48} className="text-white mb-2" />}
+              {status === 'ready' && <Loader2 size={48} className="text-white mb-2" />}
+              <span className="text-3xl font-bold text-white">{progress}%</span>
+            </div>
+          </div>
           
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="inline-block mb-6"
-          >
-            <Loader2 size={60} className="text-white" />
-          </motion.div>
-          
-          <p className="text-3xl text-white font-semibold mb-4">
-            {status === 'ready' && 'Sistem hazırlanıyor...'}
-            {status === 'measuring' && 'Ağırlık ölçülüyor...'}
-            {status === 'capturing' && 'Fotoğraf çekiliyor...'}
-            {status === 'analyzing' && 'AI analiz yapıyor...'}
+          {/* Durum Mesajı */}
+          <p className="text-2xl text-white font-semibold mb-2">
+            {status === 'ready' && 'Sistem Hazırlanıyor'}
+            {status === 'measuring' && 'Ağırlık Ölçülüyor'}
+            {status === 'capturing' && 'Fotoğraf Çekiliyor'}
+            {status === 'analyzing' && 'AI Analiz Yapıyor'}
           </p>
           
-          <p className="text-xl text-white/70">
-            Lütfen bekleyin
+          <p className="text-lg text-white/60">
+            Lütfen bekleyin...
           </p>
         </div>
       </motion.div>
-
-      {/* Progress Bar */}
-      {progress > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6 glass rounded-full h-4 overflow-hidden"
-        >
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5 }}
-            className="h-full bg-gradient-to-r from-green-400 to-blue-500"
-          />
-        </motion.div>
-      )}
 
       {/* Info */}
       <div className="mt-4 flex justify-between text-white/80 text-lg">

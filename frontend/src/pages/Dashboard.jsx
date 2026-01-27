@@ -135,7 +135,7 @@ export default function Dashboard() {
         transition={{ delay: 0.1 }}
         className="glass-ios rounded-3xl p-4 flex-1 flex flex-col min-h-0"
       >
-        {/* Profiller - Yatay Dairesel Liste */}
+        {/* Profiller - Neon Hexagon Tasarım */}
         <div className="flex-1 flex flex-col justify-center min-h-0">
           {profiles.length === 0 ? (
             <div className="text-center text-white/60 py-4">
@@ -150,48 +150,91 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="overflow-x-auto pb-2">
-              <div className="flex gap-3 justify-start min-w-max px-1">
-                {profiles.map((profile) => (
+              <div className="flex gap-6 justify-start min-w-max px-2">
+                {profiles.map((profile, index) => (
                   <motion.div
                     key={profile.id}
-                    whileHover={{ scale: 1.05 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.08, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       setSelectedProfile(profile);
                       playSound('beep');
                     }}
-                    className="flex flex-col items-center cursor-pointer"
+                    className="relative flex flex-col items-center cursor-pointer"
                   >
-                    {/* Dairesel Avatar */}
-                    <div
-                      className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold transition-all ${
-                        selectedProfile?.id === profile.id
-                          ? 'bg-white text-purple-600 shadow-2xl ring-4 ring-white/50'
-                          : 'bg-white/20 text-white hover:bg-white/30'
-                      }`}
-                    >
-                      {profile.name.charAt(0).toUpperCase()}
+                    {/* Neon Hexagon Çerçeve */}
+                    <div className="relative">
+                      {/* Hexagon SVG */}
+                      <svg width="120" height="140" viewBox="0 0 120 140" className="absolute inset-0">
+                        <defs>
+                          <linearGradient id={`gradient-${profile.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor={selectedProfile?.id === profile.id ? '#a855f7' : '#ffffff'} stopOpacity="0.3" />
+                            <stop offset="100%" stopColor={selectedProfile?.id === profile.id ? '#ec4899' : '#ffffff'} stopOpacity="0.1" />
+                          </linearGradient>
+                          <filter id={`glow-${profile.id}`}>
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                            <feMerge>
+                              <feMergeNode in="coloredBlur"/>
+                              <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                          </filter>
+                        </defs>
+                        {/* Hexagon path */}
+                        <path
+                          d="M60 10 L100 35 L100 85 L60 110 L20 85 L20 35 Z"
+                          fill={`url(#gradient-${profile.id})`}
+                          stroke={selectedProfile?.id === profile.id ? '#a855f7' : 'rgba(255,255,255,0.3)'}
+                          strokeWidth={selectedProfile?.id === profile.id ? '3' : '2'}
+                          filter={selectedProfile?.id === profile.id ? `url(#glow-${profile.id})` : 'none'}
+                          className="transition-all duration-300"
+                        />
+                      </svg>
+                      
+                      {/* Avatar İçerik */}
+                      <div className="relative w-[120px] h-[140px] flex flex-col items-center justify-center">
+                        <div
+                          className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold transition-all ${
+                            selectedProfile?.id === profile.id
+                              ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-2xl'
+                              : 'bg-white/20 text-white backdrop-blur-sm'
+                          }`}
+                        >
+                          {profile.name.charAt(0).toUpperCase()}
+                        </div>
+                        
+                        {/* Seçili işareti */}
+                        {selectedProfile?.id === profile.id && (
+                          <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            className="absolute -bottom-2"
+                          >
+                            <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-1.5">
+                              <Zap size={16} className="text-white" fill="white" />
+                            </div>
+                          </motion.div>
+                        )}
+                      </div>
                     </div>
+                    
                     {/* İsim */}
                     <p
-                      className={`mt-1.5 text-xs font-semibold transition-all ${
+                      className={`mt-2 text-sm font-bold transition-all ${
                         selectedProfile?.id === profile.id
-                          ? 'text-white'
+                          ? 'text-white drop-shadow-lg'
                           : 'text-white/70'
                       }`}
                     >
                       {profile.name}
                     </p>
-                    {/* Seçili işareti */}
-                    {selectedProfile?.id === profile.id && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="mt-0.5"
-                      >
-                        <Zap size={14} className="text-white" fill="white" />
-                      </motion.div>
-                    )}
+                    
+                    {/* Profil Bilgisi */}
+                    <p className="text-xs text-white/50 mt-0.5">
+                      {profile.height}cm • {profile.weight}kg
+                    </p>
                   </motion.div>
                 ))}
               </div>
