@@ -16,6 +16,9 @@ export default function Results() {
 
   // Model prediction results with nutrition
   const { food_name, confidence, percentage, weight, nutrition, predictions, profile } = lastResult;
+  
+  // Türkçe ismi kullan
+  const displayName = nutrition?.base_values_per_100g?.name || food_name;
 
   const handleSave = async () => {
     try {
@@ -82,7 +85,7 @@ export default function Results() {
             transition={{ type: 'spring', stiffness: 200 }}
             className="text-3xl font-bold text-white mb-1"
           >
-            {food_name}
+            {displayName}
           </motion.h2>
           <div className="flex items-center justify-center gap-3 text-white/80">
             <span className="text-lg">{weight?.toFixed(0) || 0}g</span>
