@@ -150,7 +150,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="overflow-x-auto pb-2">
-              <div className="flex gap-6 justify-start min-w-max px-2">
+              <div className="flex gap-6 justify-center items-center px-2">
                 {profiles.map((profile, index) => (
                   <motion.div
                     key={profile.id}
@@ -237,6 +237,55 @@ export default function Dashboard() {
                     </p>
                   </motion.div>
                 ))}
+                
+                {/* Yeni Profil Ekle Butonu */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: profiles.length * 0.1 }}
+                  whileHover={{ scale: 1.08, y: -5 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    playSound('beep');
+                    navigate('/profiles');
+                  }}
+                  className="relative flex flex-col items-center cursor-pointer"
+                >
+                  {/* Hexagon Çerçeve */}
+                  <div className="relative">
+                    <svg width="120" height="140" viewBox="0 0 120 140" className="absolute inset-0">
+                      <defs>
+                        <linearGradient id="gradient-add" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.2" />
+                          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.05" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M60 10 L100 35 L100 85 L60 110 L20 85 L20 35 Z"
+                        fill="url(#gradient-add)"
+                        stroke="rgba(255,255,255,0.4)"
+                        strokeWidth="2"
+                        strokeDasharray="5,5"
+                        className="transition-all duration-300"
+                      />
+                    </svg>
+                    
+                    {/* + İkonu */}
+                    <div className="relative w-[120px] h-[140px] flex flex-col items-center justify-center">
+                      <div className="w-20 h-20 rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/40">
+                        <Plus size={40} className="text-white/70" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Yazı */}
+                  <p className="mt-2 text-sm font-bold text-white/60">
+                    Yeni Profil
+                  </p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    Ekle
+                  </p>
+                </motion.div>
               </div>
             </div>
           )}
