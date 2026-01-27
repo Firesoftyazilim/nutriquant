@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Scale, Camera, Users, Settings as SettingsIcon, Battery, Zap } from 'lucide-react';
+import { Scale, Camera, Users, Settings as SettingsIcon, Battery, Zap, Plus } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { getProfiles, getBattery, connectWeightStream, getWeight, playSound } from '../services/api';
 import WallpaperBackground from '../components/WallpaperBackground';
