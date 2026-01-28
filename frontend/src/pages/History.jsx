@@ -49,7 +49,7 @@ export default function History() {
 
   return (
     <WallpaperBackground>
-    <div className="h-screen w-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 p-4 overflow-hidden flex flex-col">
+    <div className="h-screen w-screen p-4 overflow-hidden flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <motion.button
