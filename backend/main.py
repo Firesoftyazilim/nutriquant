@@ -426,11 +426,12 @@ async def capture_and_analyze():
         # Fotoğraf dosya yolu (backend klasörü içinde)
         photo_path = os.path.join(backend_dir, "foto.jpg")
         
-        # rpicam-still komutu ile fotoğraf çek
+        # rpicam-still komutu ile fotoğraf çek (arka planda, önizleme yok)
         print(f"📸 Fotoğraf çekiliyor: {photo_path}")
         
         cmd = [
             "rpicam-still",
+            "--nopreview",  # Önizleme gösterme
             "--mode", "3280:2464",
             "--roi", "0,0,1,1",
             "-o", photo_path
@@ -526,9 +527,10 @@ async def scan_complete():
         # Fotoğraf dosya yolu (backend klasörü içinde)
         photo_path = os.path.join(backend_dir, "foto.jpg")
         
-        # rpicam-still komutu ile fotoğraf çek
+        # rpicam-still komutu ile fotoğraf çek (arka planda, önizleme yok)
         cmd = [
             "rpicam-still",
+            "--nopreview",  # Önizleme gösterme
             "--mode", "3280:2464",
             "--roi", "0,0,1,1",
             "-o", photo_path
