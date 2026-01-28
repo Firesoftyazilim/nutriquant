@@ -6,6 +6,7 @@ import Results from './pages/Results';
 import Profiles from './pages/Profiles';
 import Settings from './pages/Settings';
 import WallpaperSelector from './pages/WallpaperSelector';
+import History from './pages/History';
 import SplashScreen from './pages/SplashScreen';
 import { useAppStore } from './store/appStore';
 import { checkHealth } from './services/api';
@@ -54,6 +55,7 @@ function App() {
         <Route path="/profiles" element={<Profiles />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/wallpaper" element={<WallpaperSelector />} />
+        <Route path="/history/:profileId" element={<History />} />
       </Routes>
     </Router>
   );

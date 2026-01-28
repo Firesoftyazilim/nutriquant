@@ -51,8 +51,14 @@ class Database:
         measurement = {
             "timestamp": datetime.now().isoformat(),
             "user_id": user_id,
-            "food": food_name,
+            "food_name": food_name,
+            "food": food_name,  # Backward compatibility
             "weight": weight,
+            "calories": nutrition.get("calories", 0),
+            "protein": nutrition.get("protein", 0),
+            "carbs": nutrition.get("carbs", 0),
+            "fat": nutrition.get("fat", 0),
+            "confidence": nutrition.get("confidence", 0),
             "nutrition": nutrition,
             "bmi": bmi_data
         }
@@ -63,6 +69,15 @@ class Database:
             measurements["measurements"] = measurements["measurements"][-100:]
         
         return self.save_json("measurements.json", measurements)
+    
+    def get_measurements_by_user(self, user_id):
+        """Kullanıcıya ait tüm ölçümleri getir"""
+        measurements = self.load_json("measurements.json", {"measurements": []})
+        user_measurements = [
+            m for m in measurements["measurements"] 
+            if m.get("user_id") == user_id
+        ]
+        return user_measurements
     
     def get_user(self, user_id):
         """Kullanıcı bilgisi getir"""

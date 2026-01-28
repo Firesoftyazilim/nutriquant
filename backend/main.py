@@ -670,6 +670,33 @@ async def delete_profile(profile_id: int):
     speaker.play_success()
     return {"status": "success"}
 
+@app.get("/api/profiles/{profile_id}/history")
+async def get_profile_history(profile_id: int):
+    """Profil geçmiş taramalarını getir"""
+    try:
+        # Profil bilgisini al
+        profiles = db.get_all_profiles()
+        profile = next((p for p in profiles if p['id'] == profile_id), None)
+        
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profil bulunamadı")
+        
+        # Ölçümleri al
+        measurements = db.get_measurements_by_user(profile_id)
+        
+        # Tarihe göre sırala (en yeni en üstte)
+        measurements.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        return {
+            "profile_name": profile['name'],
+            "history": measurements
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Geçmiş yükleme hatası: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== DATABASE ====================
 
 @app.post("/api/measurements")

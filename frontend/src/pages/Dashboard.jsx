@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Scale, Camera, Users, Settings as SettingsIcon, Battery, Zap, Plus } from 'lucide-react';
+import { Scale, Camera, Users, Settings as SettingsIcon, Battery, Zap, Plus, History } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { getProfiles, getBattery, connectWeightStream, getWeight, playSound } from '../services/api';
 import WallpaperBackground from '../components/WallpaperBackground';
@@ -242,27 +242,50 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Tara ve Analiz Et Butonu */}
-        <motion.button
-          whileHover={{ scale: selectedProfile ? 1.02 : 1 }}
-          whileTap={{ scale: selectedProfile ? 0.98 : 1 }}
-          onClick={handleScan}
-          disabled={!selectedProfile}
-          className={`w-full py-4 rounded-2xl text-lg font-bold transition-all mt-3 ${
-            selectedProfile
-              ? 'bg-white text-purple-600 shadow-2xl'
-              : 'bg-white/20 text-white/50 cursor-not-allowed'
-          }`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            <Camera size={24} />
-            <span>Tara ve Analiz Et</span>
-          </div>
-        </motion.button>
-        
-        {!selectedProfile && (
-          <p className="text-white/60 text-xs mt-2 text-center">Lütfen bir profil seçin</p>
-        )}
+        {/* Butonlar */}
+        <div className="space-y-2 mt-3">
+          {/* Tara ve Analiz Et Butonu */}
+          <motion.button
+            whileHover={{ scale: selectedProfile ? 1.02 : 1 }}
+            whileTap={{ scale: selectedProfile ? 0.98 : 1 }}
+            onClick={handleScan}
+            disabled={!selectedProfile}
+            className={`w-full py-4 rounded-2xl text-lg font-bold transition-all ${
+              selectedProfile
+                ? 'bg-white text-purple-600 shadow-2xl'
+                : 'bg-white/20 text-white/50 cursor-not-allowed'
+            }`}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <Camera size={24} />
+              <span>Tara ve Analiz Et</span>
+            </div>
+          </motion.button>
+
+          {/* Geçmiş Taramalar Butonu - Sadece profil seçiliyse göster */}
+          {selectedProfile && (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                playSound('beep');
+                navigate(`/history/${selectedProfile.id}`);
+              }}
+              className="w-full py-3 rounded-2xl text-base font-semibold transition-all bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <History size={20} />
+                <span>Geçmiş Taramalar</span>
+              </div>
+            </motion.button>
+          )}
+          
+          {!selectedProfile && (
+            <p className="text-white/60 text-xs mt-2 text-center">Lütfen bir profil seçin</p>
+          )}
+        </div>
       </motion.div>
     </div>
     </WallpaperBackground>

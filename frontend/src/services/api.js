@@ -120,6 +120,11 @@ export const deleteProfile = async (profileId) => {
   return response.data;
 };
 
+export const getProfileHistory = async (profileId) => {
+  const response = await api.get(`/api/profiles/${profileId}/history`);
+  return response.data;
+};
+
 // ==================== MEASUREMENTS ====================
 
 export const saveMeasurement = async (measurementData) => {
