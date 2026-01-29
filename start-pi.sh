@@ -133,7 +133,7 @@ echo "   URL: http://localhost:5173"
 # X11 display ayarla
 export DISPLAY=:0
 
-# Chromium'u kiosk modda başlat
+# Chromium'u kiosk modda başlat (tablet/mobil mod)
 chromium-browser \
   --kiosk \
   --user-data-dir=/home/pi/kiosk-profile \
@@ -146,10 +146,10 @@ chromium-browser \
   --disable-component-update \
   --no-first-run \
   --noerrdialogs \
-  --user-agent="Mozilla/5.0 (Linux; Android 10; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36" \
-  --window-size=412,915 \
-  --force-device-scale-factor=2 \
-  --touch-events=enabled
+  --touch-events=enabled \
+  --enable-features=OverlayScrollbar \
+  --force-device-scale-factor=1 \
+  --user-agent="Mozilla/5.0 (Linux; Android 10; Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
   http://localhost:5173
 
 # Chromium kapandığında cleanup
