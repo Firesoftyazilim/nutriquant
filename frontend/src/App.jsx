@@ -28,6 +28,17 @@ function App() {
       }
     };
 
+    // Touch event debug
+    const handleTouchStart = (e) => {
+      console.log('👆 Touch Start:', e.touches.length, 'touches');
+    };
+    const handleTouchMove = (e) => {
+      console.log('👆 Touch Move:', e.touches[0].clientY);
+    };
+    
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+
     // Başlangıç yüklemesi
     console.log('⏳ Splash screen 2 saniye gösteriliyor...');
     setTimeout(() => {
@@ -37,6 +48,11 @@ function App() {
 
     // Backend kontrolünü arka planda yap
     checkBackend();
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+    };
   }, [setLoading]);
 
   if (isLoading) {

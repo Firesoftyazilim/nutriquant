@@ -6,6 +6,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  touch-action: auto !important;
 }
 
 body {
@@ -13,7 +14,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
-  touch-action: manipulation;
+  touch-action: pan-y pan-x pinch-zoom !important;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -81,17 +82,17 @@ body {
 .overflow-x-auto,
 .overflow-auto {
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch !important;
   overscroll-behavior: contain;
-  touch-action: pan-y;
+  touch-action: pan-y pan-x !important;
 }
 
 .overflow-y-auto {
-  touch-action: pan-y;
+  touch-action: pan-y !important;
 }
 
 .overflow-x-auto {
-  touch-action: pan-x;
+  touch-action: pan-x !important;
 }
 
 /* Butonlar ve interaktif elementler için */
@@ -100,5 +101,10 @@ a,
 input,
 textarea,
 select {
-  touch-action: manipulation;
+  touch-action: manipulation !important;
+}
+
+/* Tüm div'ler için touch desteği */
+div {
+  -webkit-overflow-scrolling: touch;
 }
