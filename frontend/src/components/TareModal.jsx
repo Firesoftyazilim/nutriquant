@@ -103,13 +103,13 @@ export default function TareModal({ isOpen, onClose, onSelectPlate }) {
   const handleSelectPlate = (plate) => {
     setSelectedPlate(plate);
     onSelectPlate(plate);
-    onClose();
+    // onClose çağrılmıyor - parent handleTareComplete'te modal'ı kapatacak
   };
 
   const handleSkip = () => {
     setSelectedPlate(null);
     onSelectPlate(null);
-    onClose();
+    // onClose çağrılmıyor - parent handleTareComplete'te modal'ı kapatacak
   };
 
   return (
