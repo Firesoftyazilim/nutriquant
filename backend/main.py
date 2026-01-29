@@ -434,6 +434,12 @@ async def capture_and_analyze():
             "--nopreview",  # Önizleme gösterme
             "--mode", "3280:2464",
             "--roi", "0,0,1,1",
+            "--autofocus-mode", "auto",
+            "--autofocus-on-capture",
+            "--denoise", "off",
+            "--tuning-file", "/usr/share/libcamera/ipa/rpi/vc4/imx219_noir.json",
+            "--sharpness", "2.0",
+            "--contrast", "1.15",
             "-o", photo_path
         ]
         
@@ -533,6 +539,12 @@ async def scan_complete():
             "--nopreview",  # Önizleme gösterme
             "--mode", "3280:2464",
             "--roi", "0,0,1,1",
+            "--autofocus-mode", "auto",
+            "--autofocus-on-capture",
+            "--denoise", "off",
+            "--tuning-file", "/usr/share/libcamera/ipa/rpi/vc4/imx219_noir.json",
+            "--sharpness", "2.0",
+            "--contrast", "1.15",
             "-o", photo_path
         ]
         
