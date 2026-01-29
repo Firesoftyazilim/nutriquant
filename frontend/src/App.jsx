@@ -7,6 +7,7 @@ import Profiles from './pages/Profiles';
 import Settings from './pages/Settings';
 import WallpaperSelector from './pages/WallpaperSelector';
 import History from './pages/History';
+import FoodList from './pages/FoodList';
 import SplashScreen from './pages/SplashScreen';
 import { useAppStore } from './store/appStore';
 import { checkHealth } from './services/api';
@@ -56,6 +57,7 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/wallpaper" element={<WallpaperSelector />} />
         <Route path="/history/:profileId" element={<History />} />
+        <Route path="/food-list" element={<FoodList />} />
       </Routes>
     </Router>
   );

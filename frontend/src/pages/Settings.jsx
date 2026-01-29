@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, UtensilsCrossed } from 'lucide-react';
 import { getSettings } from '../services/api';
 import WallpaperBackground from '../components/WallpaperBackground';
 
@@ -59,23 +59,43 @@ export default function Settings() {
         <div className="w-10" />
       </div>
 
-      {/* Settings - Arka Plan */}
+      {/* Settings Grid */}
       <div className="flex-1 flex items-center justify-center">
-        <motion.button
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/wallpaper')}
-          className="glass rounded-3xl p-8 text-center max-w-xs w-full"
-        >
-          <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 mb-4">
-            <ImageIcon size={48} className="text-white" />
-          </div>
-          <h3 className="text-2xl font-bold text-white mb-2">Arka Plan</h3>
-          <p className="text-white/70 text-base">Arka plan resmini değiştir</p>
-        </motion.button>
+        <div className="grid grid-cols-2 gap-4 max-w-2xl w-full">
+          {/* Arka Plan */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/wallpaper')}
+            className="glass rounded-3xl p-6 text-center"
+          >
+            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-500 mb-3">
+              <ImageIcon size={40} className="text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-1">Arka Plan</h3>
+            <p className="text-white/70 text-sm">Arka plan değiştir</p>
+          </motion.button>
+
+          {/* Yemek Listesi */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/food-list')}
+            className="glass rounded-3xl p-6 text-center"
+          >
+            <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 mb-3">
+              <UtensilsCrossed size={40} className="text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-1">Yemek Listesi</h3>
+            <p className="text-white/70 text-sm">Tanınabilir yemekler</p>
+          </motion.button>
+        </div>
       </div>
 
       {/* App Info */}

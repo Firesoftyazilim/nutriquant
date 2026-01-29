@@ -170,6 +170,11 @@ export const setWallpaper = async (wallpaperName) => {
   return response.data;
 };
 
+export const getFoods = async () => {
+  const response = await api.get('/api/foods');
+  return response.data;
+};
+
 // ==================== HARDWARE CONTROL ====================
 
 export const controlLED = async (color) => {

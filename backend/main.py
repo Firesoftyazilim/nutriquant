@@ -790,6 +790,34 @@ async def set_wallpaper(wallpaper: dict):
     db.save_wallpaper(wallpaper.get("name"))
     return {"status": "success"}
 
+@app.get("/api/foods")
+async def get_foods():
+    """Tanınabilir yemek listesini getir"""
+    try:
+        nutrition_db_path = os.path.join(backend_dir, "models", "datas.json")
+        
+        with open(nutrition_db_path, 'r', encoding='utf-8') as f:
+            nutrition_db = json.load(f)
+        
+        # Yemekleri alfabetik sıraya göre listele
+        foods = []
+        for key, value in sorted(nutrition_db.items(), key=lambda x: x[1]['name']):
+            foods.append({
+                "key": key,
+                "name": value["name"],
+                "calorie": value["calorie"],
+                "protein": value["protein"],
+                "carbohydrate": value["carbohydrate"]
+            })
+        
+        return {
+            "foods": foods,
+            "total": len(foods)
+        }
+    except Exception as e:
+        print(f"❌ Yemek listesi hatası: {e}")
+        raise HTTPException(status_code=500, detail=f"Yemek listesi yüklenemedi: {str(e)}")
+
 # ==================== HARDWARE CONTROL ====================
 
 
