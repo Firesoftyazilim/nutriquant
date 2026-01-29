@@ -146,6 +146,10 @@ chromium-browser \
   --disable-component-update \
   --no-first-run \
   --noerrdialogs \
+  --user-agent="Mozilla/5.0 (Linux; Android 10; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36" \
+  --window-size=412,915 \
+  --force-device-scale-factor=2 \
+  --touch-events=enabled
   http://localhost:5173
 
 # Chromium kapandığında cleanup
