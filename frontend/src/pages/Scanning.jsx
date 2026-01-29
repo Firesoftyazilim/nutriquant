@@ -5,14 +5,16 @@ import { Camera, Loader2, ArrowLeft, Scale } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { connectWeightStream, scanComplete, getWeight } from '../services/api';
 import WallpaperBackground from '../components/WallpaperBackground';
+import TareModal from '../components/TareModal';
 
 export default function Scanning() {
   const navigate = useNavigate();
-  const { selectedProfile, currentWeight, setCurrentWeight, setLastResult } = useAppStore();
+  const { selectedProfile, selectedPlate, currentWeight, setCurrentWeight, setLastResult } = useAppStore();
   
-  const [status, setStatus] = useState('ready'); // ready, measuring, capturing, analyzing
+  const [status, setStatus] = useState('tare'); // tare, ready, measuring, capturing, analyzing
   const [progress, setProgress] = useState(0);
   const [ws, setWs] = useState(null);
+  const [showTareModal, setShowTareModal] = useState(true);
 
   // WebSocket ile gerçek zamanlı ağırlık
   useEffect(() => {
@@ -37,12 +39,16 @@ export default function Scanning() {
     };
   }, [setCurrentWeight]);
 
-  // Otomatik tarama başlat
-  useEffect(() => {
-    startScanning();
-  }, []);
+  const handleTareComplete = (plate) => {
+    setShowTareModal(false);
+    setStatus('ready');
+    // Tara seçimi tamamlandı, taramayı başlat
+    setTimeout(() => {
+      startScanning(plate);
+    }, 500);
+  };
 
-  const startScanning = async () => {
+  const startScanning = async (plate) => {
     try {
       // 1. Ağırlık ölçümü
       setStatus('measuring');
@@ -59,8 +65,8 @@ export default function Scanning() {
       setStatus('analyzing');
       setProgress(60);
       
-      // 3. Backend'den tam tarama yap
-      const result = await scanComplete();
+      // 3. Backend'den tam tarama yap (tabak ID'si ile)
+      const result = await scanComplete(plate?.id || null);
       
       setProgress(100);
       
@@ -112,6 +118,16 @@ export default function Scanning() {
   return (
     <WallpaperBackground>
     <div className="h-full w-full p-8 flex flex-col">
+      {/* Tara Modal */}
+      <TareModal
+        isOpen={showTareModal}
+        onClose={() => {
+          setShowTareModal(false);
+          navigate('/');
+        }}
+        onSelectPlate={handleTareComplete}
+      />
+
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <motion.button
@@ -174,6 +190,7 @@ export default function Scanning() {
             
             {/* Ortadaki ikon ve yüzde */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {status === 'tare' && <Scale size={48} className="text-white mb-2" />}
               {status === 'measuring' && <Scale size={48} className="text-white mb-2" />}
               {status === 'capturing' && <Camera size={48} className="text-white mb-2" />}
               {status === 'analyzing' && <Loader2 size={48} className="text-white mb-2" />}
@@ -184,6 +201,7 @@ export default function Scanning() {
           
           {/* Durum Mesajı */}
           <p className="text-2xl text-white font-semibold mb-2">
+            {status === 'tare' && 'Tara Alma'}
             {status === 'ready' && 'Sistem Hazırlanıyor'}
             {status === 'measuring' && 'Ağırlık Ölçülüyor'}
             {status === 'capturing' && 'Fotoğraf Çekiliyor'}
@@ -191,7 +209,7 @@ export default function Scanning() {
           </p>
           
           <p className="text-lg text-white/60">
-            Lütfen bekleyin...
+            {status === 'tare' ? 'Tabağınızı seçin veya kaydedin' : 'Lütfen bekleyin...'}
           </p>
         </div>
       </motion.div>

@@ -74,7 +74,7 @@ export default function WallpaperSelector() {
       </div>
 
       {/* Wallpaper Grid */}
-      <div className="flex-1 grid grid-cols-2 gap-4 overflow-y-auto pb-4 pr-2">
+      <div className="flex-1 grid grid-cols-2 gap-4 overflow-y-auto pb-4 pr-2 overscroll-contain scroll-smooth touch-pan-y">
         {wallpapers.map((wallpaper, index) => (
           <motion.button
             key={wallpaper.id}

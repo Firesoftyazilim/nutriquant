@@ -72,7 +72,7 @@ export default function Results() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-4">
+      <div className="flex-1 overflow-y-auto pb-4 overscroll-contain scroll-smooth touch-pan-y">
         {/* Food Name & Confidence */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

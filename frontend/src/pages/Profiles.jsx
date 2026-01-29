@@ -166,7 +166,7 @@ export default function Profiles() {
       </div>
 
       {/* Profile List */}
-      <div className="flex-1 overflow-y-auto space-y-4">
+      <div className="flex-1 overflow-y-auto space-y-4 overscroll-contain scroll-smooth touch-pan-y">
         <AnimatePresence>
           {profiles.map((profile, index) => (
             <motion.div

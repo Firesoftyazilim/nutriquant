@@ -191,6 +191,13 @@ class SaveMeasurementRequest(BaseModel):
     nutrition: dict
     bmi_data: dict
 
+class PlateCreate(BaseModel):
+    name: str
+    weight: float
+
+class ScanCompleteRequest(BaseModel):
+    plate_id: Optional[int] = None
+
 # ==================== ENDPOINTS ====================
 
 @app.get("/")
@@ -508,17 +515,33 @@ async def capture_and_analyze():
         raise HTTPException(status_code=500, detail=f"Capture and analyze hatası: {error_detail}")
 
 @app.post("/api/scan-complete")
-async def scan_complete():
+async def scan_complete(request: ScanCompleteRequest):
     """
     Tam tarama işlemi: Ağırlık ölç + Fotoğraf çek + Model tahmini + Besin değerleri hesapla
+    
+    Args:
+        plate_id: Opsiyonel tabak ID'si (tara ağırlığı çıkarılır)
     
     Returns:
         Ağırlık, tahmin edilen yemek, ve hesaplanmış besin değerleri
     """
     try:
         # 1. Ağırlık ölç
-        weight = scale.read_weight()
-        print(f"📊 Ölçülen ağırlık: {weight}g")
+        total_weight = scale.read_weight()
+        print(f"📊 Ölçülen toplam ağırlık: {total_weight}g")
+        
+        # Tabak ağırlığını çıkar (eğer seçilmişse)
+        plate_weight = 0
+        if request.plate_id:
+            plates = db.get_all_plates()
+            plate = next((p for p in plates if p['id'] == request.plate_id), None)
+            if plate:
+                plate_weight = plate['weight']
+                print(f"🍽️ Tabak ağırlığı: {plate_weight}g")
+        
+        # Net yemek ağırlığı
+        weight = total_weight - plate_weight
+        print(f"🥘 Net yemek ağırlığı: {weight}g")
         
         if weight < 5:
             raise HTTPException(status_code=400, detail="Tartıda yeterli ağırlık yok (minimum 5g)")
@@ -710,6 +733,28 @@ async def get_profile_history(profile_id: int):
     except Exception as e:
         print(f"❌ Geçmiş yükleme hatası: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== PLATES ====================
+
+@app.get("/api/plates")
+async def get_plates():
+    """Tüm tabakları getir"""
+    plates = db.get_all_plates()
+    return {"plates": plates}
+
+@app.post("/api/plates")
+async def create_plate(plate: PlateCreate):
+    """Yeni tabak kaydet"""
+    new_plate = db.add_plate(plate.name, plate.weight)
+    speaker.play_success()
+    return new_plate
+
+@app.delete("/api/plates/{plate_id}")
+async def delete_plate(plate_id: int):
+    """Tabak sil"""
+    db.delete_plate(plate_id)
+    speaker.play_success()
+    return {"status": "success"}
 
 # ==================== DATABASE ====================
 

@@ -93,8 +93,27 @@ export const testModel = async (imageBlob) => {
   return response.data;
 };
 
-export const scanComplete = async () => {
-  const response = await api.post('/api/scan-complete');
+export const scanComplete = async (plateId = null) => {
+  const response = await api.post('/api/scan-complete', {
+    plate_id: plateId
+  });
+  return response.data;
+};
+
+// ==================== PLATES ====================
+
+export const getPlates = async () => {
+  const response = await api.get('/api/plates');
+  return response.data.plates;
+};
+
+export const createPlate = async (plateData) => {
+  const response = await api.post('/api/plates', plateData);
+  return response.data;
+};
+
+export const deletePlate = async (plateId) => {
+  const response = await api.delete(`/api/plates/${plateId}`);
   return response.data;
 };
 

@@ -81,7 +81,7 @@ export default function History() {
             <p className="text-white/70">İlk taramanızı yapmak için ana sayfaya dönün</p>
           </div>
         ) : (
-          <div className="h-full overflow-y-auto pb-4">
+          <div className="h-full overflow-y-auto pb-4 overscroll-contain scroll-smooth touch-pan-y">
             <div className="space-y-3">
               {history.map((item, index) => (
                 <motion.div

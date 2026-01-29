@@ -159,6 +159,35 @@ class Database:
     def save_wallpaper(self, wallpaper_name):
         """Arka plan seçimini kaydet"""
         return self.save_setting("wallpaper", wallpaper_name)
+    
+    def get_all_plates(self):
+        """Tüm tabakları getir"""
+        plates = self.load_json("plates.json", {"plates": []})
+        return plates["plates"]
+    
+    def add_plate(self, name, weight):
+        """Yeni tabak ekle"""
+        plates = self.load_json("plates.json", {"plates": []})
+        
+        # Yeni ID oluştur
+        new_id = max([p.get("id", 0) for p in plates["plates"]], default=0) + 1
+        
+        plate = {
+            "id": new_id,
+            "name": name,
+            "weight": weight,
+            "created_at": datetime.now().isoformat()
+        }
+        
+        plates["plates"].append(plate)
+        self.save_json("plates.json", plates)
+        return plate
+    
+    def delete_plate(self, plate_id):
+        """Tabak sil"""
+        plates = self.load_json("plates.json", {"plates": []})
+        plates["plates"] = [p for p in plates["plates"] if p["id"] != plate_id]
+        return self.save_json("plates.json", plates)
 
 # Test fonksiyonu
 if __name__ == "__main__":

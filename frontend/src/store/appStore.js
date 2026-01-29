@@ -48,4 +48,8 @@ export const useAppStore = create((set) => ({
     localStorage.setItem('nutriquant_wallpaper', wallpaper);
     set({ currentWallpaper: wallpaper });
   },
+
+  // Selected plate (for tare)
+  selectedPlate: null,
+  setSelectedPlate: (plate) => set({ selectedPlate: plate }),
 }));
