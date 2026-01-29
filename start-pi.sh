@@ -134,6 +134,8 @@ echo "   URL: http://localhost:5173"
 export DISPLAY=:0
 
 # Chromium'u kiosk modda başlat (tablet/mobil mod)
+# --window-size ve --window-position ile tam ekran
+# --use-mobile-user-agent ile mobil tarayıcı simülasyonu
 chromium-browser \
   --kiosk \
   --user-data-dir=/home/pi/kiosk-profile \
@@ -147,12 +149,12 @@ chromium-browser \
   --no-first-run \
   --noerrdialogs \
   --touch-events=enabled \
-  --touch-devices=123 \
   --enable-features=OverlayScrollbar,TouchEventFeatureDetection \
-  --enable-blink-features=PointerEvent \
+  --enable-blink-features=PointerEvent,TouchEventFeatureDetection \
   --force-device-scale-factor=1 \
-  --auto-accept-this-tab-capture \
-  --user-agent="Mozilla/5.0 (Linux; Android 10; Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+  --window-size=800,480 \
+  --use-mobile-user-agent \
+  --user-agent="Mozilla/5.0 (Linux; Android 10; Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36" \
   http://localhost:5173
 
 # Chromium kapandığında cleanup

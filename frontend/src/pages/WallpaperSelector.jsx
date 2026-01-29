@@ -51,7 +51,7 @@ export default function WallpaperSelector() {
 
   return (
     <WallpaperBackground>
-    <div className="h-full w-full p-6 flex flex-col">
+    <div className="h-full w-full p-6 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <motion.button
@@ -74,7 +74,9 @@ export default function WallpaperSelector() {
       </div>
 
       {/* Wallpaper Grid */}
-      <div className="flex-1 grid grid-cols-2 gap-4 overflow-y-auto pb-4 pr-2 overscroll-contain scroll-smooth touch-pan-y">
+      <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 overflow-y-auto pb-4 pr-2"
+           style={{ touchAction: 'pan-y' }}
+      >
         {wallpapers.map((wallpaper, index) => (
           <motion.button
             key={wallpaper.id}
@@ -85,6 +87,7 @@ export default function WallpaperSelector() {
             whileTap={{ scale: 0.95 }}
             onClick={() => handleSelectWallpaper(wallpaper)}
             disabled={saving}
+            style={{ touchAction: 'manipulation' }}
             className={`relative rounded-2xl overflow-hidden h-32 ${
               selectedWallpaper === wallpaper.id ? 'ring-4 ring-white' : ''
             }`}
