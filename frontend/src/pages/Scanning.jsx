@@ -128,6 +128,8 @@ export default function Scanning() {
         onSelectPlate={handleTareComplete}
       />
 
+      {/* Scanning Content - Modal açıkken blur/opacity ile gizle */}
+      <div className={`flex flex-col h-full transition-all duration-300 ${showTareModal ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <motion.button
@@ -219,6 +221,7 @@ export default function Scanning() {
         <span>Ağırlık: {currentWeight.toFixed(0)}g</span>
         <span>Profil: {selectedProfile?.name}</span>
       </div>
+      </div> {/* Scanning Content wrapper end */}
     </div>
     </WallpaperBackground>
   );
