@@ -42,7 +42,7 @@ export default function FoodList() {
 
   return (
     <WallpaperBackground>
-      <div className="h-full w-full p-6 flex flex-col">
+      <div className="h-full w-full p-6 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center mb-4 flex-shrink-0">
           <motion.button
@@ -77,7 +77,13 @@ export default function FoodList() {
         </div>
 
         {/* Food List */}
-        <div className="flex-1 overflow-y-auto">
+        <div 
+          className="flex-1 min-h-0 overflow-y-auto pr-2"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent'
+          }}
+        >
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-white/60 text-center">
@@ -97,9 +103,12 @@ export default function FoodList() {
               {filteredFoods.map((food, index) => (
                 <motion.div
                   key={food.key}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.02 }}
+                  transition={{ 
+                    delay: Math.min(index * 0.01, 0.3),
+                    duration: 0.2
+                  }}
                   className="glass rounded-2xl p-4"
                 >
                   <div className="flex items-start justify-between">
