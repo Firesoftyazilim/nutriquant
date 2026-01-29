@@ -13,9 +13,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: pan-y pan-x;
+  touch-action: manipulation;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -78,11 +76,29 @@ body {
   background-clip: padding-box;
 }
 
-/* Scrollable alanlar için smooth scroll */
+/* Scrollable alanlar için smooth scroll ve touch support */
 .overflow-y-auto,
 .overflow-x-auto,
 .overflow-auto {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+.overflow-y-auto {
+  touch-action: pan-y;
+}
+
+.overflow-x-auto {
+  touch-action: pan-x;
+}
+
+/* Butonlar ve interaktif elementler için */
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
 }

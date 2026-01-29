@@ -147,8 +147,10 @@ chromium-browser \
   --no-first-run \
   --noerrdialogs \
   --touch-events=enabled \
-  --enable-features=OverlayScrollbar \
+  --enable-features=OverlayScrollbar,TouchEventFeatureDetection \
+  --enable-blink-features=PointerEvent \
   --force-device-scale-factor=1 \
+  --simulate-touch-screen-with-mouse \
   --user-agent="Mozilla/5.0 (Linux; Android 10; Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
   http://localhost:5173
 
