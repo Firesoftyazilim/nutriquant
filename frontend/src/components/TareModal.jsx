@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, Scale, Save } from 'lucide-react';
-import { getPlates, createPlate, deletePlate, getWeight, connectWeightStream } from '../services/api';
+import { getPlates, createPlate, deletePlate } from '../services/api';
 import { useAppStore } from '../store/appStore';
+import axios from 'axios';
 
 export default function TareModal({ isOpen, onClose, onSelectPlate }) {
   const { setSelectedPlate } = useAppStore();
@@ -10,7 +11,7 @@ export default function TareModal({ isOpen, onClose, onSelectPlate }) {
   const [currentWeight, setCurrentWeight] = useState(0);
   const [showNewPlate, setShowNewPlate] = useState(false);
   const [newPlateName, setNewPlateName] = useState('');
-  const [ws, setWs] = useState(null);
+  const inputRef = useRef(null);
 
   // Tabakları yükle
   useEffect(() => {
@@ -19,30 +20,37 @@ export default function TareModal({ isOpen, onClose, onSelectPlate }) {
     }
   }, [isOpen]);
 
-  // Ağırlık stream'i
+  // Ağırlık polling (sadece yeni tabak ekleme modunda)
   useEffect(() => {
-    if (isOpen) {
-      const websocket = connectWeightStream((weight) => {
-        setCurrentWeight(weight);
-      });
-      setWs(websocket);
+    if (isOpen && showNewPlate) {
+      // İlk ağırlığı hemen al
+      fetchWeight();
+      
+      // Her 1 saniyede bir ağırlık güncelle
+      const pollInterval = setInterval(fetchWeight, 1000);
 
-      // Fallback polling
-      const pollInterval = setInterval(async () => {
-        try {
-          const weight = await getWeight();
-          setCurrentWeight(weight);
-        } catch (error) {
-          console.error('Ağırlık polling hatası:', error);
+      // Input'a focus yap (klavye açılsın)
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.click(); // Mobil cihazlarda klavye açılması için
         }
-      }, 1000);
+      }, 100);
 
       return () => {
-        if (websocket) websocket.close();
         clearInterval(pollInterval);
       };
     }
-  }, [isOpen]);
+  }, [isOpen, showNewPlate]);
+
+  const fetchWeight = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/scale/weight');
+      setCurrentWeight(response.data.weight);
+    } catch (error) {
+      console.error('Ağırlık okuma hatası:', error);
+    }
+  };
 
   const loadPlates = async () => {
     try {
@@ -133,13 +141,6 @@ export default function TareModal({ isOpen, onClose, onSelectPlate }) {
             </button>
           </div>
 
-          {/* Mevcut Ağırlık */}
-          <div className="glass rounded-2xl p-4 mb-6 text-center">
-            <Scale size={32} className="mx-auto mb-2 text-white" />
-            <p className="text-white/60 text-sm mb-1">Mevcut Ağırlık</p>
-            <p className="text-3xl font-bold text-white">{currentWeight.toFixed(0)}g</p>
-          </div>
-
           {/* Yeni Tabak Ekleme */}
           {showNewPlate ? (
             <motion.div
@@ -147,13 +148,24 @@ export default function TareModal({ isOpen, onClose, onSelectPlate }) {
               animate={{ opacity: 1, y: 0 }}
               className="glass rounded-2xl p-4 mb-4"
             >
+              {/* Mevcut Ağırlık - Sadece yeni tabak eklerken göster */}
+              <div className="glass rounded-2xl p-4 mb-4 text-center">
+                <Scale size={32} className="mx-auto mb-2 text-white" />
+                <p className="text-white/60 text-sm mb-1">Mevcut Ağırlık</p>
+                <p className="text-3xl font-bold text-white">{currentWeight.toFixed(0)}g</p>
+              </div>
+
               <input
+                ref={inputRef}
                 type="text"
                 value={newPlateName}
                 onChange={(e) => setNewPlateName(e.target.value)}
                 placeholder="Tabak adı (örn: Beyaz Tabak)"
                 className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3 mb-3 focus:outline-none focus:ring-2 focus:ring-white/30"
                 autoFocus
+                autoComplete="off"
+                inputMode="text"
+                onFocus={(e) => e.target.select()}
               />
               <div className="flex gap-2">
                 <button
