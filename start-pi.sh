@@ -133,12 +133,16 @@ echo "   URL: http://localhost:5173"
 # X11 display ayarla
 export DISPLAY=:0
 
-# Chromium'u kiosk modda başlat (tablet/mobil mod)
-# --window-size ve --window-position ile tam ekran
-# --use-mobile-user-agent ile mobil tarayıcı simülasyonu
+# Chromium'u kiosk modda başlat (mobil dokunmatik mod)
+# Dokunmatik kaydırma ve mobil davranış için optimize edilmiş
 chromium-browser \
   --kiosk \
+  --app=http://localhost:5173 \
   --user-data-dir=/home/pi/kiosk-profile \
+  --window-size=800,480 \
+  --window-position=0,0 \
+  --force-device-scale-factor=1 \
+  --disable-gpu \
   --disable-infobars \
   --disable-session-crashed-bubble \
   --disable-translate \
@@ -148,14 +152,12 @@ chromium-browser \
   --disable-component-update \
   --no-first-run \
   --noerrdialogs \
+  --check-for-update-interval=604800 \
   --touch-events=enabled \
   --enable-features=OverlayScrollbar,TouchEventFeatureDetection \
   --enable-blink-features=PointerEvent,TouchEventFeatureDetection \
-  --force-device-scale-factor=1 \
-  --window-size=800,480 \
   --use-mobile-user-agent \
-  --user-agent="Mozilla/5.0 (Linux; Android 10; Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36" \
-  http://localhost:5173
+  --user-agent="Mozilla/5.0 (Linux; Android 10; Tablet) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
 
 # Chromium kapandığında cleanup
 cleanup
