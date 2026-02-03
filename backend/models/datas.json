@@ -1,10 +1,45 @@
 {
+  "adana-kebap": {
+    "name": "Adana Kebap",
+    "calorie": 280,
+    "protein": 18.0,
+    "carbohydrate": 2.0,
+    "sugar": 0.5
+  },
+  "anne-koftesi": {
+    "name": "Anne Köftesi",
+    "calorie": 245,
+    "protein": 16.0,
+    "carbohydrate": 12.0,
+    "sugar": 2.0
+  },
   "apple_pie": {
     "name": "Elmalı Turta",
     "calorie": 237,
     "protein": 2.4,
     "carbohydrate": 34.0,
     "sugar": 12.1
+  },
+  "armut": {
+    "name": "Armut",
+    "calorie": 57,
+    "protein": 0.4,
+    "carbohydrate": 15.0,
+    "sugar": 10.0
+  },
+  "avokado": {
+    "name": "Avokado",
+    "calorie": 160,
+    "protein": 2.0,
+    "carbohydrate": 9.0,
+    "sugar": 0.7
+  },
+  "ayran": {
+    "name": "Ayran",
+    "calorie": 38,
+    "protein": 1.5,
+    "carbohydrate": 4.5,
+    "sugar": 4.0
   },
   "baby_back_ribs": {
     "name": "Kaburga",
@@ -48,6 +83,20 @@
     "carbohydrate": 43.0,
     "sugar": 10.0
   },
+  "beyaz-lahana-sarmasi": {
+    "name": "Beyaz Lahana Sarması",
+    "calorie": 95,
+    "protein": 4.5,
+    "carbohydrate": 12.0,
+    "sugar": 2.0
+  },
+  "biber-dolma": {
+    "name": "Biber Dolma",
+    "calorie": 110,
+    "protein": 3.5,
+    "carbohydrate": 18.0,
+    "sugar": 4.0
+  },
   "bibimbap": {
     "name": "Bibimbap",
     "calorie": 132,
@@ -69,6 +118,20 @@
     "carbohydrate": 20.0,
     "sugar": 1.8
   },
+  "brokoli": {
+    "name": "Brokoli",
+    "calorie": 34,
+    "protein": 2.8,
+    "carbohydrate": 7.0,
+    "sugar": 1.7
+  },
+  "bruksel-lahanasi": {
+    "name": "Brüksel Lahanası",
+    "calorie": 43,
+    "protein": 3.4,
+    "carbohydrate": 9.0,
+    "sugar": 2.2
+  },
   "bruschetta": {
     "name": "Bruschetta",
     "calorie": 150,
@@ -82,6 +145,27 @@
     "protein": 7.0,
     "carbohydrate": 6.0,
     "sugar": 1.5
+  },
+  "bulgur-pilavi": {
+    "name": "Bulgur Pilavı",
+    "calorie": 83,
+    "protein": 3.1,
+    "carbohydrate": 18.6,
+    "sugar": 0.2
+  },
+  "cacik": {
+    "name": "Cacık",
+    "calorie": 45,
+    "protein": 2.5,
+    "carbohydrate": 4.0,
+    "sugar": 3.0
+  },
+  "canak-enginar": {
+    "name": "Çanak Enginar",
+    "calorie": 47,
+    "protein": 3.3,
+    "carbohydrate": 11.0,
+    "sugar": 1.0
   },
   "cannoli": {
     "name": "Cannoli",
@@ -103,6 +187,13 @@
     "protein": 4.5,
     "carbohydrate": 47.0,
     "sugar": 32.0
+  },
+  "cay": {
+    "name": "Çay",
+    "calorie": 2,
+    "protein": 0.0,
+    "carbohydrate": 0.3,
+    "sugar": 0.0
   },
   "ceviche": {
     "name": "Ceviche",
@@ -167,6 +258,27 @@
     "carbohydrate": 52.0,
     "sugar": 25.0
   },
+  "cig-kofte": {
+    "name": "Çiğ Köfte",
+    "calorie": 135,
+    "protein": 4.5,
+    "carbohydrate": 22.0,
+    "sugar": 2.0
+  },
+  "cilek": {
+    "name": "Çilek",
+    "calorie": 32,
+    "protein": 0.7,
+    "carbohydrate": 7.7,
+    "sugar": 4.9
+  },
+  "cipura": {
+    "name": "Çipura",
+    "calorie": 96,
+    "protein": 19.4,
+    "carbohydrate": 0.0,
+    "sugar": 0.0
+  },
   "clam_chowder": {
     "name": "Deniz Tarağı Çorbası",
     "calorie": 105,
@@ -180,6 +292,13 @@
     "protein": 13.0,
     "carbohydrate": 22.0,
     "sugar": 3.0
+  },
+  "coban-salatasi": {
+    "name": "Çoban Salatası",
+    "calorie": 65,
+    "protein": 1.5,
+    "carbohydrate": 8.0,
+    "sugar": 4.5
   },
   "crab_cakes": {
     "name": "Yengeç Köftesi",
@@ -216,6 +335,34 @@
     "carbohydrate": 2.0,
     "sugar": 1.0
   },
+  "domates": {
+    "name": "Domates",
+    "calorie": 18,
+    "protein": 0.9,
+    "carbohydrate": 3.9,
+    "sugar": 2.6
+  },
+  "domates-corbasi": {
+    "name": "Domates Çorbası",
+    "calorie": 74,
+    "protein": 2.0,
+    "carbohydrate": 11.0,
+    "sugar": 6.0
+  },
+  "dondurma": {
+    "name": "Dondurma",
+    "calorie": 207,
+    "protein": 3.5,
+    "carbohydrate": 24.0,
+    "sugar": 21.0
+  },
+  "doner": {
+    "name": "Döner",
+    "calorie": 265,
+    "protein": 18.0,
+    "carbohydrate": 15.0,
+    "sugar": 2.0
+  },
   "donuts": {
     "name": "Donut",
     "calorie": 452,
@@ -244,12 +391,40 @@
     "carbohydrate": 14.0,
     "sugar": 1.0
   },
+  "ekmek": {
+    "name": "Ekmek",
+    "calorie": 265,
+    "protein": 9.0,
+    "carbohydrate": 49.0,
+    "sugar": 5.0
+  },
+  "elma": {
+    "name": "Elma",
+    "calorie": 52,
+    "protein": 0.3,
+    "carbohydrate": 14.0,
+    "sugar": 10.0
+  },
+  "erik": {
+    "name": "Erik",
+    "calorie": 46,
+    "protein": 0.7,
+    "carbohydrate": 11.0,
+    "sugar": 9.9
+  },
   "escargots": {
     "name": "Salyangoz",
     "calorie": 90,
     "protein": 16.0,
     "carbohydrate": 2.0,
     "sugar": 0.0
+  },
+  "et-sote": {
+    "name": "Et Sote",
+    "calorie": 185,
+    "protein": 15.0,
+    "carbohydrate": 8.0,
+    "sugar": 3.0
   },
   "falafel": {
     "name": "Falafel",
@@ -370,6 +545,27 @@
     "carbohydrate": 20.0,
     "sugar": 1.0
   },
+  "hamsi-tava": {
+    "name": "Hamsi Tava",
+    "calorie": 180,
+    "protein": 16.0,
+    "carbohydrate": 8.0,
+    "sugar": 0.5
+  },
+  "haslanmis-yumurta": {
+    "name": "Haşlanmış Yumurta",
+    "calorie": 155,
+    "protein": 13.0,
+    "carbohydrate": 1.1,
+    "sugar": 0.6
+  },
+  "havuc": {
+    "name": "Havuç",
+    "calorie": 41,
+    "protein": 0.9,
+    "carbohydrate": 10.0,
+    "sugar": 4.7
+  },
   "hamburger": {
     "name": "Hamburger",
     "calorie": 295,
@@ -405,6 +601,13 @@
     "carbohydrate": 14.0,
     "sugar": 0.3
   },
+  "hunkar-begendi": {
+    "name": "Hünkar Beğendi",
+    "calorie": 195,
+    "protein": 12.0,
+    "carbohydrate": 14.0,
+    "sugar": 4.0
+  },
   "ice_cream": {
     "name": "Dondurma",
     "calorie": 207,
@@ -412,12 +615,159 @@
     "carbohydrate": 24.0,
     "sugar": 21.0
   },
+  "icli-kofte": {
+    "name": "İçli Köfte",
+    "calorie": 220,
+    "protein": 8.0,
+    "carbohydrate": 28.0,
+    "sugar": 2.0
+  },
+  "incir": {
+    "name": "İncir",
+    "calorie": 74,
+    "protein": 0.8,
+    "carbohydrate": 19.0,
+    "sugar": 16.0
+  },
+  "iskender": {
+    "name": "İskender",
+    "calorie": 310,
+    "protein": 20.0,
+    "carbohydrate": 22.0,
+    "sugar": 3.0
+  },
+  "ispanak-yemegi": {
+    "name": "Ispanak Yemeği",
+    "calorie": 85,
+    "protein": 4.0,
+    "carbohydrate": 8.0,
+    "sugar": 2.0
+  },
   "lasagna": {
     "name": "Lazanya",
     "calorie": 135,
     "protein": 7.5,
     "carbohydrate": 15.0,
     "sugar": 2.0
+  },
+  "kabak-mucver": {
+    "name": "Kabak Mücver",
+    "calorie": 145,
+    "protein": 5.0,
+    "carbohydrate": 15.0,
+    "sugar": 3.0
+  },
+  "kalburabasti": {
+    "name": "Kalburabastı",
+    "calorie": 380,
+    "protein": 6.0,
+    "carbohydrate": 52.0,
+    "sugar": 35.0
+  },
+  "karnabahar": {
+    "name": "Karnabahar",
+    "calorie": 25,
+    "protein": 1.9,
+    "carbohydrate": 5.0,
+    "sugar": 1.9
+  },
+  "karniyarik": {
+    "name": "Karnıyarık",
+    "calorie": 180,
+    "protein": 8.0,
+    "carbohydrate": 15.0,
+    "sugar": 6.0
+  },
+  "karpuz": {
+    "name": "Karpuz",
+    "calorie": 30,
+    "protein": 0.6,
+    "carbohydrate": 8.0,
+    "sugar": 6.2
+  },
+  "kavun": {
+    "name": "Kavun",
+    "calorie": 34,
+    "protein": 0.8,
+    "carbohydrate": 8.0,
+    "sugar": 7.9
+  },
+  "kayisi": {
+    "name": "Kayısı",
+    "calorie": 48,
+    "protein": 1.4,
+    "carbohydrate": 11.0,
+    "sugar": 9.2
+  },
+  "kazandibi": {
+    "name": "Kazandibi",
+    "calorie": 250,
+    "protein": 5.0,
+    "carbohydrate": 35.0,
+    "sugar": 25.0
+  },
+  "kemal-pasa-tatlisi": {
+    "name": "Kemalpaşa Tatlısı",
+    "calorie": 320,
+    "protein": 7.0,
+    "carbohydrate": 45.0,
+    "sugar": 30.0
+  },
+  "kiraz": {
+    "name": "Kiraz",
+    "calorie": 63,
+    "protein": 1.1,
+    "carbohydrate": 16.0,
+    "sugar": 13.0
+  },
+  "kisir": {
+    "name": "Kısır",
+    "calorie": 105,
+    "protein": 3.0,
+    "carbohydrate": 18.0,
+    "sugar": 2.0
+  },
+  "kivi": {
+    "name": "Kivi",
+    "calorie": 61,
+    "protein": 1.1,
+    "carbohydrate": 15.0,
+    "sugar": 9.0
+  },
+  "kiymali-borek": {
+    "name": "Kıymalı Börek",
+    "calorie": 280,
+    "protein": 12.0,
+    "carbohydrate": 25.0,
+    "sugar": 2.0
+  },
+  "kiymali-pide": {
+    "name": "Kıymalı Pide",
+    "calorie": 290,
+    "protein": 14.0,
+    "carbohydrate": 35.0,
+    "sugar": 3.0
+  },
+  "kokorec": {
+    "name": "Kokoreç",
+    "calorie": 240,
+    "protein": 16.0,
+    "carbohydrate": 5.0,
+    "sugar": 1.0
+  },
+  "lahmacun": {
+    "name": "Lahmacun",
+    "calorie": 235,
+    "protein": 10.0,
+    "carbohydrate": 30.0,
+    "sugar": 3.0
+  },
+  "levrek": {
+    "name": "Levrek",
+    "calorie": 97,
+    "protein": 18.4,
+    "carbohydrate": 0.0,
+    "sugar": 0.0
   },
   "lobster_bisque": {
     "name": "İstakoz Çorbası",
@@ -433,6 +783,13 @@
     "carbohydrate": 18.0,
     "sugar": 2.0
   },
+  "lokma": {
+    "name": "Lokma",
+    "calorie": 340,
+    "protein": 5.0,
+    "carbohydrate": 48.0,
+    "sugar": 28.0
+  },
   "macaroni_and_cheese": {
     "name": "Makarna & Peynir",
     "calorie": 164,
@@ -447,12 +804,68 @@
     "carbohydrate": 50.0,
     "sugar": 45.0
   },
+  "mango": {
+    "name": "Mango",
+    "calorie": 60,
+    "protein": 0.8,
+    "carbohydrate": 15.0,
+    "sugar": 13.7
+  },
+  "manti": {
+    "name": "Mantı",
+    "calorie": 165,
+    "protein": 7.0,
+    "carbohydrate": 22.0,
+    "sugar": 2.0
+  },
+  "menemen": {
+    "name": "Menemen",
+    "calorie": 120,
+    "protein": 7.0,
+    "carbohydrate": 6.0,
+    "sugar": 4.0
+  },
+  "mercimek-corbasi": {
+    "name": "Mercimek Çorbası",
+    "calorie": 116,
+    "protein": 6.0,
+    "carbohydrate": 20.0,
+    "sugar": 2.0
+  },
+  "mercimek-koftesi": {
+    "name": "Mercimek Köftesi",
+    "calorie": 125,
+    "protein": 5.0,
+    "carbohydrate": 22.0,
+    "sugar": 2.0
+  },
+  "midye-dolma": {
+    "name": "Midye Dolma",
+    "calorie": 95,
+    "protein": 5.0,
+    "carbohydrate": 12.0,
+    "sugar": 1.0
+  },
+  "midye-tava": {
+    "name": "Midye Tava",
+    "calorie": 185,
+    "protein": 14.0,
+    "carbohydrate": 10.0,
+    "sugar": 0.5
+  },
   "miso_soup": {
     "name": "Miso Çorbası",
     "calorie": 40,
     "protein": 3.0,
     "carbohydrate": 5.0,
     "sugar": 1.0
+  },
+  "mumbar-dolmasi": {
+    "name": "Mumbar Dolması",
+    "calorie": 210,
+    "protein": 9.0,
+    "carbohydrate": 25.0,
+    "sugar": 2.0
   },
   "mussels": {
     "name": "Midye",
@@ -461,6 +874,13 @@
     "carbohydrate": 7.0,
     "sugar": 0.0
   },
+  "muz": {
+    "name": "Muz",
+    "calorie": 89,
+    "protein": 1.1,
+    "carbohydrate": 23.0,
+    "sugar": 12.0
+  },
   "nachos": {
     "name": "Nachos",
     "calorie": 346,
@@ -468,7 +888,21 @@
     "carbohydrate": 33.0,
     "sugar": 2.0
   },
+  "nar": {
+    "name": "Nar",
+    "calorie": 83,
+    "protein": 1.7,
+    "carbohydrate": 19.0,
+    "sugar": 14.0
+  },
   "omelette": {
+    "name": "Omlet",
+    "calorie": 154,
+    "protein": 11.0,
+    "carbohydrate": 1.5,
+    "sugar": 0.5
+  },
+  "omlet": {
     "name": "Omlet",
     "calorie": 154,
     "protein": 11.0,
@@ -517,6 +951,34 @@
     "carbohydrate": 18.0,
     "sugar": 15.0
   },
+  "patates-kizartmasi": {
+    "name": "Patates Kızartması",
+    "calorie": 312,
+    "protein": 3.4,
+    "carbohydrate": 41.0,
+    "sugar": 0.3
+  },
+  "patates-puresi": {
+    "name": "Patates Püresi",
+    "calorie": 105,
+    "protein": 2.0,
+    "carbohydrate": 16.0,
+    "sugar": 1.5
+  },
+  "patates-salatasi": {
+    "name": "Patates Salatası",
+    "calorie": 143,
+    "protein": 2.5,
+    "carbohydrate": 18.0,
+    "sugar": 2.0
+  },
+  "patlican-kebabi": {
+    "name": "Patlıcan Kebabı",
+    "calorie": 175,
+    "protein": 10.0,
+    "carbohydrate": 12.0,
+    "sugar": 5.0
+  },
   "peking_duck": {
     "name": "Pekin Ördeği",
     "calorie": 337,
@@ -524,12 +986,33 @@
     "carbohydrate": 2.0,
     "sugar": 0.0
   },
+  "peynirli-borek": {
+    "name": "Peynirli Börek",
+    "calorie": 265,
+    "protein": 10.0,
+    "carbohydrate": 28.0,
+    "sugar": 2.0
+  },
   "pho": {
     "name": "Pho",
     "calorie": 90,
     "protein": 6.0,
     "carbohydrate": 10.0,
     "sugar": 1.0
+  },
+  "pilav": {
+    "name": "Pilav",
+    "calorie": 130,
+    "protein": 2.7,
+    "carbohydrate": 28.0,
+    "sugar": 0.1
+  },
+  "pirasa": {
+    "name": "Pırasa",
+    "calorie": 61,
+    "protein": 1.5,
+    "carbohydrate": 14.0,
+    "sugar": 4.0
   },
   "pizza": {
     "name": "Pizza",
@@ -544,6 +1027,13 @@
     "protein": 25.0,
     "carbohydrate": 0.0,
     "sugar": 0.0
+  },
+  "portakal": {
+    "name": "Portakal",
+    "calorie": 47,
+    "protein": 0.9,
+    "carbohydrate": 12.0,
+    "sugar": 9.0
   },
   "poutine": {
     "name": "Poutine",
@@ -594,12 +1084,40 @@
     "carbohydrate": 18.0,
     "sugar": 1.0
   },
+  "sahlep": {
+    "name": "Sahlep",
+    "calorie": 120,
+    "protein": 3.0,
+    "carbohydrate": 22.0,
+    "sugar": 18.0
+  },
+  "salatalik": {
+    "name": "Salatalık",
+    "calorie": 16,
+    "protein": 0.7,
+    "carbohydrate": 3.6,
+    "sugar": 1.7
+  },
+  "salcali-makarna": {
+    "name": "Salçalı Makarna",
+    "calorie": 158,
+    "protein": 5.5,
+    "carbohydrate": 30.0,
+    "sugar": 5.0
+  },
   "samosa": {
     "name": "Samosa",
     "calorie": 262,
     "protein": 6.0,
     "carbohydrate": 32.0,
     "sugar": 3.0
+  },
+  "sandvic": {
+    "name": "Sandviç",
+    "calorie": 250,
+    "protein": 12.0,
+    "carbohydrate": 28.0,
+    "sugar": 3.5
   },
   "sashimi": {
     "name": "Sashimi",
@@ -622,12 +1140,33 @@
     "carbohydrate": 10.0,
     "sugar": 3.0
   },
+  "seftali": {
+    "name": "Şeftali",
+    "calorie": 39,
+    "protein": 0.9,
+    "carbohydrate": 10.0,
+    "sugar": 8.4
+  },
+  "sehriye-corbasi": {
+    "name": "Şehriye Çorbası",
+    "calorie": 85,
+    "protein": 3.0,
+    "carbohydrate": 15.0,
+    "sugar": 1.5
+  },
   "shrimp_and_grits": {
     "name": "Karides & Mısır Lapası",
     "calorie": 150,
     "protein": 9.0,
     "carbohydrate": 16.0,
     "sugar": 1.5
+  },
+  "siyah-zeytin": {
+    "name": "Siyah Zeytin",
+    "calorie": 115,
+    "protein": 0.8,
+    "carbohydrate": 6.0,
+    "sugar": 0.0
   },
   "spaghetti_bolognese": {
     "name": "Spagetti Bolonez",
@@ -664,12 +1203,82 @@
     "carbohydrate": 38.0,
     "sugar": 25.0
   },
+  "su-boregi": {
+    "name": "Su Böreği",
+    "calorie": 235,
+    "protein": 8.0,
+    "carbohydrate": 26.0,
+    "sugar": 2.0
+  },
+  "sucuklu-yumurta": {
+    "name": "Sucuklu Yumurta",
+    "calorie": 290,
+    "protein": 14.0,
+    "carbohydrate": 3.0,
+    "sugar": 1.0
+  },
+  "sulu-bamya-yemegi": {
+    "name": "Sulu Bamya Yemeği",
+    "calorie": 95,
+    "protein": 3.0,
+    "carbohydrate": 12.0,
+    "sugar": 4.0
+  },
+  "sulu-barbunya-yemegi": {
+    "name": "Sulu Barbunya Yemeği",
+    "calorie": 110,
+    "protein": 5.0,
+    "carbohydrate": 18.0,
+    "sugar": 3.0
+  },
+  "sulu-bezelye-yemegi": {
+    "name": "Sulu Bezelye Yemeği",
+    "calorie": 105,
+    "protein": 4.5,
+    "carbohydrate": 16.0,
+    "sugar": 5.0
+  },
+  "sulu-kuru-fasulye-yemegi": {
+    "name": "Sulu Kuru Fasulye Yemeği",
+    "calorie": 127,
+    "protein": 6.0,
+    "carbohydrate": 20.0,
+    "sugar": 3.0
+  },
+  "sulu-mercimek-yemegi": {
+    "name": "Sulu Mercimek Yemeği",
+    "calorie": 115,
+    "protein": 6.5,
+    "carbohydrate": 18.0,
+    "sugar": 2.5
+  },
+  "sulu-nohut-yemegi": {
+    "name": "Sulu Nohut Yemeği",
+    "calorie": 135,
+    "protein": 6.0,
+    "carbohydrate": 22.0,
+    "sugar": 4.0
+  },
+  "sulu-patates-yemegi": {
+    "name": "Sulu Patates Yemeği",
+    "calorie": 98,
+    "protein": 2.5,
+    "carbohydrate": 18.0,
+    "sugar": 3.0
+  },
   "sushi": {
     "name": "Suşi",
     "calorie": 130,
     "protein": 6.0,
     "carbohydrate": 28.0,
     "sugar": 3.0
+  },
+  "sutlac": {
+    "name": "Sütlaç",
+    "calorie": 135,
+    "protein": 4.0,
+    "carbohydrate": 24.0,
+    "sugar": 18.0
   },
   "tacos": {
     "name": "Taco",
@@ -685,12 +1294,47 @@
     "carbohydrate": 20.0,
     "sugar": 2.0
   },
+  "tantuni": {
+    "name": "Tantuni",
+    "calorie": 245,
+    "protein": 16.0,
+    "carbohydrate": 18.0,
+    "sugar": 2.0
+  },
+  "tarhana-corbasi": {
+    "name": "Tarhana Çorbası",
+    "calorie": 95,
+    "protein": 4.0,
+    "carbohydrate": 16.0,
+    "sugar": 3.0
+  },
+  "tas-kebabi": {
+    "name": "Tas Kebabı",
+    "calorie": 220,
+    "protein": 18.0,
+    "carbohydrate": 10.0,
+    "sugar": 3.0
+  },
+  "tavuk-sote": {
+    "name": "Tavuk Sote",
+    "calorie": 165,
+    "protein": 14.0,
+    "carbohydrate": 8.0,
+    "sugar": 3.0
+  },
   "tiramisu": {
     "name": "Tiramisu",
     "calorie": 283,
     "protein": 5.0,
     "carbohydrate": 28.0,
     "sugar": 20.0
+  },
+  "tulumba-tatlisi": {
+    "name": "Tulumba Tatlısı",
+    "calorie": 350,
+    "protein": 5.0,
+    "carbohydrate": 50.0,
+    "sugar": 32.0
   },
   "tuna_tartare": {
     "name": "Ton Balığı Tartar",
@@ -699,11 +1343,74 @@
     "carbohydrate": 1.0,
     "sugar": 0.0
   },
+  "turk-kahvesi": {
+    "name": "Türk Kahvesi",
+    "calorie": 2,
+    "protein": 0.1,
+    "carbohydrate": 0.5,
+    "sugar": 0.0
+  },
+  "tursu": {
+    "name": "Turşu",
+    "calorie": 12,
+    "protein": 0.5,
+    "carbohydrate": 2.5,
+    "sugar": 1.0
+  },
+  "uzum": {
+    "name": "Üzüm",
+    "calorie": 69,
+    "protein": 0.7,
+    "carbohydrate": 18.0,
+    "sugar": 15.5
+  },
   "waffles": {
     "name": "Waffle",
     "calorie": 291,
     "protein": 6.0,
     "carbohydrate": 34.0,
     "sugar": 8.0
+  },
+  "yaprak-sarma": {
+    "name": "Yaprak Sarma",
+    "calorie": 85,
+    "protein": 3.0,
+    "carbohydrate": 14.0,
+    "sugar": 2.0
+  },
+  "yayla-corbasi": {
+    "name": "Yayla Çorbası",
+    "calorie": 78,
+    "protein": 3.5,
+    "carbohydrate": 10.0,
+    "sugar": 2.0
+  },
+  "yesil-zeytin": {
+    "name": "Yeşil Zeytin",
+    "calorie": 145,
+    "protein": 1.0,
+    "carbohydrate": 4.0,
+    "sugar": 0.0
+  },
+  "yogurt": {
+    "name": "Yoğurt",
+    "calorie": 59,
+    "protein": 3.5,
+    "carbohydrate": 4.7,
+    "sugar": 4.7
+  },
+  "yogurtlu-makarna": {
+    "name": "Yoğurtlu Makarna",
+    "calorie": 185,
+    "protein": 7.0,
+    "carbohydrate": 28.0,
+    "sugar": 4.0
+  },
+  "zeytinyagli-fasulye": {
+    "name": "Zeytinyağlı Fasulye",
+    "calorie": 95,
+    "protein": 4.0,
+    "carbohydrate": 15.0,
+    "sugar": 3.0
   }
 }

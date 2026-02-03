@@ -24,7 +24,7 @@ CAMERA_FORMAT = "RGB888"
 CAMERA_ROTATION = 0
 
 # AI Model
-MODEL_PATH = "models/food_classifier.tflite"
+MODEL_PATH = "models/model.tflite"
 LABELS_PATH = "models/labels.txt"
 CONFIDENCE_THRESHOLD = 0.7
 INPUT_SIZE = (224, 224)

@@ -365,7 +365,7 @@ async def analyze_food(request: AnalyzeRequest):
 @app.post("/api/model-test")
 async def test_model(file: UploadFile = File(...)):
     """
-    Model test endpoint - model_float16.tflite ile görüntü analizi
+    Model test endpoint - model.tflite ile görüntü analizi
     
     Args:
         file: Yüklenen görüntü dosyası (multipart/form-data)
@@ -403,7 +403,7 @@ async def test_model(file: UploadFile = File(...)):
         
         return {
             "status": "success",
-            "model": "model_float16.tflite",
+            "model": "model.tflite",
             "predictions": results,
             "top_match": results[0] if results else None
         }
@@ -499,7 +499,7 @@ async def capture_and_analyze():
         
         return {
             "status": "success",
-            "model": "model_float16.tflite",
+            "model": "model.tflite",
             "photo_path": photo_path,
             "predictions": results,
             "top_match": results[0] if results else None
