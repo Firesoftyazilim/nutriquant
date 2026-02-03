@@ -156,7 +156,7 @@ db = Database()
 try:
     # Backend klasörü içindeki models klasörü
     backend_dir = os.path.dirname(os.path.abspath(__file__))
-    model_path = os.path.join(backend_dir, "models", "model_float16.tflite")
+    model_path = os.path.join(backend_dir, "models", "model.tflite")
     class_indices_path = os.path.join(backend_dir, "models", "class_indices.json")
     
     print(f"🔍 Model yolu: {model_path}")
