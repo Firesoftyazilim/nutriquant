@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Search, UtensilsCrossed, Flame, Beef, Wheat } from 'lucide-react';
 import { getFoods } from '../services/api';
 import WallpaperBackground from '../components/WallpaperBackground';
+import TouchKeyboard from '../components/TouchKeyboard';
 
 export default function FoodList() {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ export default function FoodList() {
   const [filteredFoods, setFilteredFoods] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     loadFoods();
@@ -40,6 +43,22 @@ export default function FoodList() {
     }
   };
 
+  const handleKeyPress = (key) => {
+    setSearchTerm(prev => prev + key.toLowerCase());
+  };
+
+  const handleBackspace = () => {
+    setSearchTerm(prev => prev.slice(0, -1));
+  };
+
+  const handleKeyboardClose = () => {
+    setShowKeyboard(false);
+  };
+
+  const handleInputClick = () => {
+    setShowKeyboard(true);
+  };
+
   return (
     <WallpaperBackground>
       <div className="h-full w-full p-6 flex flex-col overflow-hidden">
@@ -64,14 +83,18 @@ export default function FoodList() {
 
         {/* Search */}
         <div className="mb-4 flex-shrink-0">
-          <div className="glass rounded-2xl p-3 flex items-center gap-3">
+          <div 
+            className="glass rounded-2xl p-3 flex items-center gap-3 cursor-pointer"
+            onClick={handleInputClick}
+          >
             <Search size={20} className="text-white/60" />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              readOnly
               placeholder="Yemek ara..."
-              className="flex-1 bg-transparent text-white placeholder-white/40 focus:outline-none"
+              className="flex-1 bg-transparent text-white placeholder-white/40 focus:outline-none cursor-pointer"
             />
           </div>
         </div>
@@ -139,6 +162,20 @@ export default function FoodList() {
           )}
         </div>
       </div>
+
+      {/* Touch Keyboard */}
+      <AnimatePresence>
+        {showKeyboard && (
+          <TouchKeyboard
+            onKeyPress={handleKeyPress}
+            onBackspace={handleBackspace}
+            onClose={handleKeyboardClose}
+            type="text"
+            currentValue={searchTerm}
+            label="Yemek Ara"
+          />
+        )}
+      </AnimatePresence>
     </WallpaperBackground>
   );
 }
