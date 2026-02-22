@@ -47,6 +47,10 @@ class Battery:
     
     def get_percentage(self):
         """Pil yüzdesi (yaklaşık - voltaj bazlı)"""
+        if not self.available:
+            # UPS bağlı değilse sabit değer döndür (test için)
+            return 85
+            
         voltage = self.get_voltage()
         
         # Li-ion 2S (7.4V nominal, 8.4V max, 6.0V min)
