@@ -12,7 +12,7 @@ except ImportError:
 
 
 class PowerButton:
-    def __init__(self, pin, hold_seconds=3, enabled=True, poll_interval=0.05):
+    def __init__(self, pin, hold_seconds=3, enabled=True, poll_interval=0.1):
         self.pin = int(pin)
         self.hold_seconds = float(hold_seconds)
         self.enabled = bool(enabled)
@@ -74,18 +74,27 @@ class PowerButton:
 
     def _run(self):
         pressed_since = None
+        debounce_count = 0
+        required_debounce = 3  # 3 ardışık okuma gerekli
 
         while not self._stop_event.is_set():
             pressed = self._is_pressed()
             now = time.monotonic()
 
             if pressed:
-                if pressed_since is None:
-                    pressed_since = now
-                elif (now - pressed_since) >= self.hold_seconds:
-                    self._shutdown()
-                    return
+                debounce_count += 1
+                if debounce_count >= required_debounce:
+                    if pressed_since is None:
+                        pressed_since = now
+                        print(f"[PowerButton] Buton basıldı, {self.hold_seconds}s bekleniyor...")
+                    elif (now - pressed_since) >= self.hold_seconds:
+                        print("[PowerButton] Shutdown tetikleniyor!")
+                        self._shutdown()
+                        return
             else:
+                if debounce_count > 0:
+                    print(f"[PowerButton] Buton bırakıldı (debounce: {debounce_count})")
+                debounce_count = 0
                 pressed_since = None
 
             time.sleep(self.poll_interval)
