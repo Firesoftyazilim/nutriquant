@@ -146,11 +146,17 @@ app.add_middleware(
 )
 
 # Hardware ve AI sınıfları (singleton)
+print("[Main] Scale başlatılıyor...")
 scale = Scale()
+print("[Main] Camera başlatılıyor...")
 camera = Camera()
+print("[Main] Battery başlatılıyor...")
 battery = Battery()
+print("[Main] Speaker başlatılıyor...")
 speaker = Speaker()
+print("[Main] Power button başlatılıyor...")
 power_button = PowerButton(POWER_BUTTON_PIN, POWER_BUTTON_HOLD_SECONDS, enabled=False)  # Geçici devre dışı
+print("[Main] LED ring başlatılıyor...")
 try:
     led_ring = LedRing(LED_COUNT, LED_PIN, LED_BRIGHTNESS, enabled=False)  # Import hatası var
     print("[Main] LED ring başlatıldı")
@@ -162,10 +168,15 @@ except Exception as e:
         def on_white(self): pass
         def off(self): pass
     led_ring = DummyLedRing()
+print("[Main] AI modülleri başlatılıyor...")
 recognizer = FoodRecognizer()
+print("[Main] Nutrition calculator başlatılıyor...")
 nutrition_calc = NutritionCalculator()
+print("[Main] BMI calculator başlatılıyor...")
 bmi_calc = BMICalculator()
+print("[Main] Database başlatılıyor...")
 db = Database()
+print("[Main] Tüm modüller başlatıldı!")
 
 # TFLite model predictor
 try:
