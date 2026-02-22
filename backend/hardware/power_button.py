@@ -70,7 +70,8 @@ class PowerButton:
             return False
 
     def _shutdown(self):
-        os.system("sudo /sbin/shutdown -h now")
+        print("[PowerButton] Shutdown komutu kaldırıldı - buton takılı kalmış olabilir")
+        # os.system("sudo /sbin/shutdown -h now")  # Devre dışı
 
     def _run(self):
         pressed_since = None

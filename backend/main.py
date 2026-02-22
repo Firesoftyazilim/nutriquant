@@ -871,7 +871,7 @@ async def startup_event():
     print("🚀 Nutriquant Backend başlatıldı")
     print(f"   Scale Mode: {scale.mode}")
     print(f"   Camera Mode: {'Mock' if camera.mock_mode else 'Real'}")
-    power_button.start()
+    power_button.start()  # Artık güvenli - shutdown komutu kaldırıldı
 
 @app.on_event("shutdown")
 async def shutdown_event():
