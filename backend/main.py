@@ -151,7 +151,17 @@ camera = Camera()
 battery = Battery()
 speaker = Speaker()
 power_button = PowerButton(POWER_BUTTON_PIN, POWER_BUTTON_HOLD_SECONDS, enabled=False)  # Geçici devre dışı
-led_ring = LedRing(LED_COUNT, LED_PIN, LED_BRIGHTNESS, enabled=True)
+try:
+    led_ring = LedRing(LED_COUNT, LED_PIN, LED_BRIGHTNESS, enabled=False)  # Import hatası var
+    print("[Main] LED ring başlatıldı")
+except Exception as e:
+    print(f"[Main] LED ring başlatma hatası: {e}")
+    # Fallback - LED olmadan devam et
+    class DummyLedRing:
+        def blink_white(self, seconds): pass
+        def on_white(self): pass
+        def off(self): pass
+    led_ring = DummyLedRing()
 recognizer = FoodRecognizer()
 nutrition_calc = NutritionCalculator()
 bmi_calc = BMICalculator()

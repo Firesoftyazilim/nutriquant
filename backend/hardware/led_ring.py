@@ -5,9 +5,12 @@ import time
 try:
     from rpi_ws281x import PixelStrip, Color
     _LED_AVAILABLE = True
-except ImportError:
+    print("[LED] rpi_ws281x kütüphanesi yüklendi")
+except ImportError as e:
+    print(f"[LED] rpi_ws281x import hatası: {e}")
     from hardware.mock_hardware import MockPixelStrip as PixelStrip, MockColor as Color
     _LED_AVAILABLE = False
+    print("[LED] Mock modda çalışıyor")
 
 
 class LedRing:
@@ -20,10 +23,16 @@ class LedRing:
         self._lock = threading.Lock()
         self.available = _LED_AVAILABLE
 
-        self.strip = PixelStrip(self.count, self.pin, brightness=self.brightness)
+        if not self.enabled:
+            self.available = False
+            return
+
         try:
+            self.strip = PixelStrip(self.count, self.pin, brightness=self.brightness)
             self.strip.begin()
-        except Exception:
+            print(f"[LED] Strip başlatıldı: {self.count} LED, GPIO{self.pin}")
+        except Exception as e:
+            print(f"[LED] Strip başlatma hatası: {e}")
             self.available = False
 
     def _set_all(self, r, g, b):
