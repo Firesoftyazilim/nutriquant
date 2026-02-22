@@ -151,7 +151,7 @@ camera = Camera()
 battery = Battery()
 speaker = Speaker()
 power_button = PowerButton(POWER_BUTTON_PIN, POWER_BUTTON_HOLD_SECONDS, enabled=True)
-led_ring = LedRing(LED_COUNT, LED_PIN, LED_BRIGHTNESS, enabled=True)
+led_ring = LedRing(LED_COUNT, LED_PIN, LED_BRIGHTNESS, enabled=False)  # Geçici devre dışı
 recognizer = FoodRecognizer()
 nutrition_calc = NutritionCalculator()
 bmi_calc = BMICalculator()
