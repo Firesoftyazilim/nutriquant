@@ -17,6 +17,7 @@ import subprocess
 from typing import Optional, List
 from datetime import datetime
 from PIL import Image
+from config import *
 
 # Backend dizinini path'e ekle (artık her şey backend içinde)
 backend_dir = os.path.dirname(os.path.abspath(__file__))
@@ -27,6 +28,7 @@ from hardware.camera import Camera
 from hardware.battery import Battery
 from hardware.speaker import Speaker
 from hardware.power_button import PowerButton
+from hardware.led_ring import LedRing
 from ai.food_recognition import FoodRecognizer
 from core.nutrition import NutritionCalculator
 from core.bmi import BMICalculator
@@ -149,6 +151,7 @@ camera = Camera()
 battery = Battery()
 speaker = Speaker()
 power_button = PowerButton(POWER_BUTTON_PIN, POWER_BUTTON_HOLD_SECONDS, enabled=True)
+led_ring = LedRing(LED_COUNT, LED_PIN, LED_BRIGHTNESS, enabled=True)
 recognizer = FoodRecognizer()
 nutrition_calc = NutritionCalculator()
 bmi_calc = BMICalculator()
@@ -849,6 +852,16 @@ async def get_battery():
         "voltage": battery.get_voltage(),
         "is_charging": battery.is_charging()
     }
+
+@app.get("/api/led/blink")
+async def blink_leds():
+    """LED'leri 1 sn yak-söndür"""
+    def _blink():
+        led_ring.blink_white(1.0)
+
+    t = threading.Thread(target=_blink, daemon=True)
+    t.start()
+    return {"status": "success"}
 
 # ==================== STARTUP & SHUTDOWN ====================
 
