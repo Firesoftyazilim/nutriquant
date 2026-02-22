@@ -27,6 +27,10 @@ CAMERA_ROTATION = 0
 CAMERA_FLASH_PIN = 21
 CAMERA_FLASH_PULSE_MS = 80
 
+# Power Button (GPIO)
+POWER_BUTTON_PIN = 3
+POWER_BUTTON_HOLD_SECONDS = 3
+
 # AI Model
 MODEL_PATH = "models/model.tflite"
 LABELS_PATH = "models/labels.txt"

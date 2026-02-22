@@ -26,6 +26,7 @@ from hardware.scale import Scale
 from hardware.camera import Camera
 from hardware.battery import Battery
 from hardware.speaker import Speaker
+from hardware.power_button import PowerButton
 from ai.food_recognition import FoodRecognizer
 from core.nutrition import NutritionCalculator
 from core.bmi import BMICalculator
@@ -147,6 +148,7 @@ scale = Scale()
 camera = Camera()
 battery = Battery()
 speaker = Speaker()
+power_button = PowerButton(POWER_BUTTON_PIN, POWER_BUTTON_HOLD_SECONDS, enabled=True)
 recognizer = FoodRecognizer()
 nutrition_calc = NutritionCalculator()
 bmi_calc = BMICalculator()
@@ -856,6 +858,7 @@ async def startup_event():
     print("🚀 Nutriquant Backend başlatıldı")
     print(f"   Scale Mode: {scale.mode}")
     print(f"   Camera Mode: {'Mock' if camera.mock_mode else 'Real'}")
+    power_button.start()
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -863,6 +866,7 @@ async def shutdown_event():
     print("🛑 Nutriquant Backend kapatılıyor...")
     scale.cleanup()
     camera.cleanup()
+    power_button.cleanup()
 
 # ==================== MAIN ====================
 
