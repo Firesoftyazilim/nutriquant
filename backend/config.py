@@ -23,6 +23,10 @@ CAMERA_RESOLUTION = (640, 480)
 CAMERA_FORMAT = "RGB888"
 CAMERA_ROTATION = 0
 
+# Kamera Flash LED (GPIO)
+CAMERA_FLASH_PIN = 21
+CAMERA_FLASH_PULSE_MS = 80
+
 # AI Model
 MODEL_PATH = "models/model.tflite"
 LABELS_PATH = "models/labels.txt"

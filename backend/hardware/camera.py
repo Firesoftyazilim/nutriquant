@@ -6,7 +6,8 @@ import time
 import platform
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-from config import CAMERA_RESOLUTION, CAMERA_FORMAT, CAMERA_ROTATION
+from config import CAMERA_RESOLUTION, CAMERA_FORMAT, CAMERA_ROTATION, CAMERA_FLASH_PIN, CAMERA_FLASH_PULSE_MS
+from hardware.flash import Flash
 
 class Camera:
     def __init__(self):
@@ -14,6 +15,7 @@ class Camera:
         self.is_raspberry_pi = self._detect_raspberry_pi()
         self.mock_mode = not self.is_raspberry_pi
         self.preview_process = None  # rpicam-vid process for live preview
+        self.flash = Flash(CAMERA_FLASH_PIN, CAMERA_FLASH_PULSE_MS, enabled=not self.mock_mode)
         
         if self.mock_mode:
             print("[Camera] Mock mod aktif (Raspberry Pi dışı platform)")
@@ -55,6 +57,7 @@ class Camera:
             return self._get_mock_image()
         
         try:
+            self.flash.pulse()
             # Komut: rpicam-still -n (preview yok) -t 100 (100ms gecikme) --width W --height H -o output.jpg
             # --nopreview (-n) önemli, yoksa ekrana basmaya çalışır
             # -t süresi pozlama ve AWB için biraz zaman tanır. Çok kısa olursa karanlık/yeşil çıkabilir.
@@ -198,6 +201,11 @@ class Camera:
         """Temizlik"""
         # Önizleme varsa durdur
         self.stop_preview()
+
+        try:
+            self.flash.cleanup()
+        except Exception:
+            pass
         
         if not self.mock_mode and self.temp_file and os.path.exists(self.temp_file):
             try:
