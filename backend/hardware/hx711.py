@@ -109,8 +109,12 @@ class HX711:
         self.readLock.acquire()
 
         # Wait until HX711 is ready for us to read a sample.
+        timeout_count = 0
         while not self.is_ready():
-           pass
+            timeout_count += 1
+            if timeout_count > 1000:  # 1000 deneme sonrası timeout
+                raise Exception("HX711 timeout - donanım bağlantısını kontrol edin")
+            time.sleep(0.001)  # 1ms bekle
 
         # Read three bytes of data from the HX711.
         firstByte  = self.readNextByte()

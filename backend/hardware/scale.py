@@ -32,6 +32,7 @@ class Scale:
         
         try:
             # HX711 başlat (GPIO 5=DOUT, 6=SCK)
+            print(f"[Scale] HX711 başlatılıyor (DOUT: GPIO{HX711_DOUT_PIN}, SCK: GPIO{HX711_SCK_PIN})")
             self.hx = HX711(HX711_DOUT_PIN, HX711_SCK_PIN)
             
             if self.mode == "MOCK":
@@ -59,6 +60,9 @@ class Scale:
             print(f"[Scale] Başlatma hatası: {e}")
             print("[Scale] MOCK moda geçiliyor...")
             self.mode = "MOCK"
+            # Mock HX711 kullan
+            from hardware.mock_hardware import MockHX711
+            self.hx = MockHX711(HX711_DOUT_PIN, HX711_SCK_PIN)
     
     def _continuous_reading(self):
         """Arka planda sürekli ağırlık oku"""

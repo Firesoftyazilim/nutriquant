@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Scale, Camera, Users, Settings as SettingsIcon, Battery, Zap, Plus, History } from 'lucide-react';
+import { Scale, Camera, Users, Settings as SettingsIcon, Battery, Zap, Plus, History, Power } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
-import { getProfiles, getBattery, connectWeightStream, getWeight, playSound } from '../services/api';
+import { getProfiles, getBattery, connectWeightStream, getWeight, playSound, shutdownSystem, rebootSystem } from '../services/api';
 import WallpaperBackground from '../components/WallpaperBackground';
 
 export default function Dashboard() {
@@ -14,6 +14,7 @@ export default function Dashboard() {
   
   const [profiles, setProfiles] = useState([]);
   const [ws, setWs] = useState(null);
+  const [showPowerModal, setShowPowerModal] = useState(false);
   
   console.log('🎯 Dashboard state:', { selectedProfile, currentWeight, batteryPercent, profilesCount: profiles.length });
 
@@ -106,7 +107,7 @@ export default function Dashboard() {
           />
         </motion.div>
 
-        {/* Settings & Battery */}
+        {/* Settings, Power & Battery */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -119,6 +120,15 @@ export default function Dashboard() {
             className="glass rounded-full p-2 text-white"
           >
             <SettingsIcon size={18} />
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowPowerModal(true)}
+            className="glass rounded-full p-2 text-white"
+          >
+            <Power size={18} />
           </motion.button>
           
           <div className="glass rounded-full px-4 py-2 flex items-center gap-2">
@@ -287,6 +297,72 @@ export default function Dashboard() {
           )}
         </div>
       </motion.div>
+
+      {/* Power Modal */}
+      {showPowerModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setShowPowerModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="glass rounded-3xl p-6 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-2xl font-bold text-white text-center mb-6">Sistem Kontrolü</h2>
+            
+            <div className="space-y-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={async () => {
+                  try {
+                    await shutdownSystem();
+                    setShowPowerModal(false);
+                  } catch (error) {
+                    console.error('Shutdown error:', error);
+                  }
+                }}
+                className="w-full py-4 rounded-2xl text-lg font-semibold transition-all bg-red-500/80 text-white backdrop-blur-sm hover:bg-red-500/90 flex items-center justify-center gap-3"
+              >
+                <Power size={24} />
+                <span>Sistemi Kapat</span>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={async () => {
+                  try {
+                    await rebootSystem();
+                    setShowPowerModal(false);
+                  } catch (error) {
+                    console.error('Reboot error:', error);
+                  }
+                }}
+                className="w-full py-4 rounded-2xl text-lg font-semibold transition-all bg-orange-500/80 text-white backdrop-blur-sm hover:bg-orange-500/90 flex items-center justify-center gap-3"
+              >
+                <Zap size={24} />
+                <span>Yeniden Başlat</span>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowPowerModal(false)}
+                className="w-full py-3 rounded-2xl text-base font-semibold transition-all bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
+              >
+                İptal
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
     </WallpaperBackground>
   );

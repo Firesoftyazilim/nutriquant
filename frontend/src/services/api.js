@@ -170,6 +170,18 @@ export const setWallpaper = async (wallpaperName) => {
   return response.data;
 };
 
+// ==================== SYSTEM ====================
+
+export const shutdownSystem = async () => {
+  const response = await api.post('/api/system/shutdown');
+  return response.data;
+};
+
+export const rebootSystem = async () => {
+  const response = await api.post('/api/system/reboot');
+  return response.data;
+};
+
 export const getFoods = async () => {
   const response = await api.get('/api/foods');
   return response.data;

@@ -884,6 +884,30 @@ async def blink_leds():
     t.start()
     return {"status": "success"}
 
+@app.post("/api/system/shutdown")
+async def shutdown_system():
+    """Raspberry Pi'yi kapat"""
+    def _shutdown():
+        import time
+        time.sleep(2)  # Frontend'in response alması için bekle
+        os.system("sudo /sbin/shutdown -h now")
+    
+    t = threading.Thread(target=_shutdown, daemon=True)
+    t.start()
+    return {"status": "success", "message": "Sistem kapatılıyor..."}
+
+@app.post("/api/system/reboot")
+async def reboot_system():
+    """Raspberry Pi'yi yeniden başlat"""
+    def _reboot():
+        import time
+        time.sleep(2)  # Frontend'in response alması için bekle
+        os.system("sudo /sbin/reboot")
+    
+    t = threading.Thread(target=_reboot, daemon=True)
+    t.start()
+    return {"status": "success", "message": "Sistem yeniden başlatılıyor..."}
+
 # ==================== STARTUP & SHUTDOWN ====================
 
 @app.on_event("startup")
