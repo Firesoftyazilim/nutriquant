@@ -583,6 +583,10 @@ async def scan_complete(request: ScanCompleteRequest):
         # Fotoğraf dosya yolu (backend klasörü içinde)
         photo_path = os.path.join(backend_dir, "foto.jpg")
         
+        # LED flash'ı yak (fotoğraf çekimi öncesi)
+        print(f"💡 LED flash yakılıyor...")
+        camera.flash.pulse()
+        
         # rpicam-still komutu ile fotoğraf çek (arka planda, önizleme yok)
         cmd = [
             "rpicam-still",
