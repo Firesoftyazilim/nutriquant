@@ -877,24 +877,36 @@ async def get_battery():
 @app.get("/api/led/blink")
 async def blink_leds():
     """LED'i 1 sn yak-söndür"""
-    def _blink():
-        camera.flash.blink(1.0)
+    try:
+        def _blink():
+            camera.flash.blink(1.0)
 
-    t = threading.Thread(target=_blink, daemon=True)
-    t.start()
-    return {"status": "success"}
+        t = threading.Thread(target=_blink, daemon=True)
+        t.start()
+        return {"status": "success"}
+    except Exception as e:
+        print(f"[LED] Blink endpoint hatası: {e}")
+        return {"status": "error", "message": str(e)}
 
 @app.post("/api/led/on")
 async def led_on():
     """LED'i aç"""
-    camera.flash.on()
-    return {"status": "success", "message": "LED açıldı"}
+    try:
+        camera.flash.on()
+        return {"status": "success", "message": "LED açıldı"}
+    except Exception as e:
+        print(f"[LED] On endpoint hatası: {e}")
+        return {"status": "error", "message": str(e)}
 
 @app.post("/api/led/off")
 async def led_off():
     """LED'i kapat"""
-    camera.flash.off()
-    return {"status": "success", "message": "LED kapatıldı"}
+    try:
+        camera.flash.off()
+        return {"status": "success", "message": "LED kapatıldı"}
+    except Exception as e:
+        print(f"[LED] Off endpoint hatası: {e}")
+        return {"status": "error", "message": str(e)}
 
 @app.post("/api/system/shutdown")
 async def shutdown_system():
