@@ -109,9 +109,14 @@ export default function History() {
                       <h3 className="text-lg font-bold text-white mb-1">
                         {item.food_name}
                       </h3>
-                      <p className="text-white/70 text-sm mb-2">
-                        {item.weight}g • {item.calories} kcal
-                      </p>
+                      <div className="flex items-center gap-4 mb-2">
+                        <div className="bg-blue-500/20 rounded-lg px-3 py-1">
+                          <span className="text-blue-300 text-lg font-bold">{item.weight}g</span>
+                        </div>
+                        <div className="bg-orange-500/20 rounded-lg px-3 py-1">
+                          <span className="text-orange-300 text-lg font-bold">{item.calories} kcal</span>
+                        </div>
+                      </div>
                       
                       {/* Besin Değerleri */}
                       <div className="grid grid-cols-3 gap-2 text-xs">
