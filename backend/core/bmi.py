@@ -52,6 +52,70 @@ class BMICalculator:
         
         return comments.get(category, "Bilinmiyor")
     
+    def get_meal_recommendation(self, bmi, age, meal_calories, meal_name="bu yemek"):
+        """BMI'ya göre öğün önerisi"""
+        category = self.get_category(bmi, age)
+        
+        # Günlük kalori ihtiyaçları (ortalama)
+        daily_calories = {
+            "zayif": 2200,      # Kilo almaya odaklan
+            "normal": 2000,     # Dengeli beslen
+            "fazla_kilolu": 1800, # Hafif kısıtla
+            "obez": 1600,       # Daha fazla kısıtla
+            "yuksek": 1700      # Yaşlılar için
+        }
+        
+        # Tek öğün için kalori (günlük kalorinın %30-35'i)
+        target_meal_calories = daily_calories.get(category, 2000) * 0.33
+        
+        recommendations = {
+            "zayif": {
+                "message": f"Kilo almanız gerekiyor. {meal_name} ({meal_calories} kalori) iyi bir seçim!",
+                "advice": "Daha fazla porsiyon tüketebilir, sağlıklı yağlar ve protein ekleyebilirsiniz.",
+                "portion_advice": "normal_plus"
+            },
+            "normal": {
+                "message": f"Kilonuz ideal aralıkta. {meal_name} ({meal_calories} kalori) dengeli bir öğün.",
+                "advice": "Bu porsiyonu koruyun ve düzenli egzersiz yapmaya devam edin.",
+                "portion_advice": "normal"
+            },
+            "fazla_kilolu": {
+                "message": f"Hafif kilo vermeniz önerilir. {meal_name} ({meal_calories} kalori) için dikkatli olun.",
+                "advice": "Porsiyonu biraz azaltabilir veya daha az yağlı alternatifler seçebilirsiniz.",
+                "portion_advice": "reduce"
+            },
+            "obez": {
+                "message": f"Kilo vermeniz gerekiyor. {meal_name} ({meal_calories} kalori) yüksek olabilir.",
+                "advice": "Porsiyonu yarıya indirin veya daha düşük kalorili alternatifler tercih edin.",
+                "portion_advice": "reduce_significantly"
+            },
+            "yuksek": {
+                "message": f"Yaşınız için kilonuz yüksek. {meal_name} ({meal_calories} kalori) dikkatli tüketin.",
+                "advice": "Porsiyonu azaltın ve daha çok sebze ekleyin.",
+                "portion_advice": "reduce"
+            }
+        }
+        
+        recommendation = recommendations.get(category, recommendations["normal"])
+        
+        # Kalori karşılaştırması
+        if meal_calories > target_meal_calories * 1.3:
+            calorie_status = "yuksek"
+        elif meal_calories < target_meal_calories * 0.7:
+            calorie_status = "dusuk"
+        else:
+            calorie_status = "uygun"
+        
+        return {
+            "bmi_category": category,
+            "target_meal_calories": int(target_meal_calories),
+            "meal_calories": meal_calories,
+            "calorie_status": calorie_status,
+            "message": recommendation["message"],
+            "advice": recommendation["advice"],
+            "portion_advice": recommendation["portion_advice"]
+        }
+    
     def should_warn(self, bmi, age):
         """Uyarı verilmeli mi?"""
         category = self.get_category(bmi, age)

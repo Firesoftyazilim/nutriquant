@@ -15,7 +15,7 @@ export default function Results() {
   }
 
   // Model prediction results with nutrition
-  const { food_name, confidence, percentage, weight, nutrition, predictions, profile } = lastResult;
+  const { food_name, confidence, percentage, weight, nutrition, predictions, profile, bmi_recommendation } = lastResult;
   
   // Türkçe ismi kullan
   const displayName = nutrition?.base_values_per_100g?.name || food_name;
@@ -115,12 +115,54 @@ export default function Results() {
           ))}
         </div>
 
+        {/* BMI Recommendation */}
+        {bmi_recommendation && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="glass rounded-2xl p-4 mb-3"
+          >
+            <h3 className="text-white text-lg font-bold mb-3">💡 Beslenme Önerisi</h3>
+            <div className="space-y-3">
+              <div className="bg-white/10 rounded-xl p-3">
+                <p className="text-white text-sm font-medium mb-1">
+                  {bmi_recommendation.message}
+                </p>
+                <p className="text-white/70 text-xs">
+                  {bmi_recommendation.advice}
+                </p>
+              </div>
+              
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-white/60">Hedef kalori (öğün):</span>
+                <span className="text-white font-semibold">{bmi_recommendation.target_meal_calories} kcal</span>
+              </div>
+              
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-white/60">Bu öğün:</span>
+                <span className={`font-semibold ${
+                  bmi_recommendation.calorie_status === 'yuksek' ? 'text-red-300' :
+                  bmi_recommendation.calorie_status === 'dusuk' ? 'text-yellow-300' :
+                  'text-green-300'
+                }`}>
+                  {bmi_recommendation.meal_calories} kcal ({
+                    bmi_recommendation.calorie_status === 'yuksek' ? 'Yüksek' :
+                    bmi_recommendation.calorie_status === 'dusuk' ? 'Düşük' :
+                    'Uygun'
+                  })
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Top 5 Predictions */}
         {predictions && predictions.length > 1 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
             className="glass rounded-2xl p-4 mb-3"
           >
             <h3 className="text-white text-lg font-bold mb-3">Diğer Tahminler</h3>

@@ -677,6 +677,35 @@ async def scan_complete(request: ScanCompleteRequest):
                 "percentage": pred['percentage']
             })
         
+        # 8. BMI bazlı beslenme önerisi oluştur (eğer profil varsa)
+        bmi_recommendation = None
+        try:
+            # Profil bilgilerini al (request'te profile_id olabilir)
+            # Şimdilik varsayılan değerlerle test edelim
+            # TODO: Profile ID'den gerçek profil bilgilerini çek
+            
+            # Test için varsayılan değerler
+            test_weight = 70  # kg
+            test_height = 175  # cm
+            test_age = 30
+            
+            # BMI hesapla ve öneri al
+            bmi_value = bmi_calc.calculate(test_weight, test_height)
+            meal_calories = calculated_nutrition['calorie']
+            
+            bmi_recommendation = bmi_calc.get_meal_recommendation(
+                bmi_value, 
+                test_age, 
+                meal_calories, 
+                food_name
+            )
+            
+            print(f"🍽️ BMI önerisi: {bmi_recommendation['message']}")
+            
+        except Exception as e:
+            print(f"⚠️ BMI önerisi hesaplanamadı: {e}")
+            bmi_recommendation = None
+        
         return {
             "status": "success",
             "weight": weight,
@@ -685,6 +714,7 @@ async def scan_complete(request: ScanCompleteRequest):
             "percentage": top_prediction['percentage'],
             "nutrition": calculated_nutrition,
             "predictions": all_predictions,
+            "bmi_recommendation": bmi_recommendation,
             "photo_path": photo_path,
             "timestamp": datetime.now().isoformat()
         }
