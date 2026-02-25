@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, Scale, Save } from 'lucide-react';
 import { getPlates, createPlate, deletePlate } from '../services/api';
 import { useAppStore } from '../store/appStore';
+import TouchKeyboard from './TouchKeyboard';
 import axios from 'axios';
 
 export default function TareModal({ isOpen, onClose, onSelectPlate }) {
@@ -11,6 +12,7 @@ export default function TareModal({ isOpen, onClose, onSelectPlate }) {
   const [currentWeight, setCurrentWeight] = useState(0);
   const [showNewPlate, setShowNewPlate] = useState(false);
   const [newPlateName, setNewPlateName] = useState('');
+  const [showKeyboard, setShowKeyboard] = useState(false);
   const inputRef = useRef(null);
 
   // Tabakları yükle
@@ -155,18 +157,12 @@ export default function TareModal({ isOpen, onClose, onSelectPlate }) {
                 <p className="text-3xl font-bold text-white">{currentWeight.toFixed(0)}g</p>
               </div>
 
-              <input
-                ref={inputRef}
-                type="text"
-                value={newPlateName}
-                onChange={(e) => setNewPlateName(e.target.value)}
-                placeholder="Tabak adı (örn: Beyaz Tabak)"
-                className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3 mb-3 focus:outline-none focus:ring-2 focus:ring-white/30"
-                autoFocus
-                autoComplete="off"
-                inputMode="text"
-                onFocus={(e) => e.target.select()}
-              />
+              <div
+                onClick={() => setShowKeyboard(true)}
+                className="w-full bg-white/10 text-white placeholder-white/40 rounded-xl px-4 py-3 mb-3 focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer min-h-[48px] flex items-center"
+              >
+                {newPlateName || <span className="text-white/40">Tabak adı (örn: Beyaz Tabak)</span>}
+              </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleSaveNewPlate}
@@ -236,6 +232,22 @@ export default function TareModal({ isOpen, onClose, onSelectPlate }) {
           </button>
         </motion.div>
       </motion.div>
+      )}
+
+      {/* Touch Keyboard */}
+      {showKeyboard && (
+        <TouchKeyboard
+          type="text"
+          currentValue={newPlateName}
+          label="Tabak Adı"
+          onKeyPress={(key) => {
+            setNewPlateName(prev => prev + key);
+          }}
+          onBackspace={() => {
+            setNewPlateName(prev => prev.slice(0, -1));
+          }}
+          onClose={() => setShowKeyboard(false)}
+        />
       )}
     </AnimatePresence>
   );

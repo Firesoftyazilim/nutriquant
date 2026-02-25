@@ -65,8 +65,8 @@ export default function Scanning() {
       setStatus('analyzing');
       setProgress(60);
       
-      // 3. Backend'den tam tarama yap (tabak ID'si ile)
-      const result = await scanComplete(plate?.id || null);
+      // 3. Backend'den tam tarama yap (tabak ID'si ve profil ID'si ile)
+      const result = await scanComplete(plate?.id || null, selectedProfile?.id || null);
       
       setProgress(100);
       

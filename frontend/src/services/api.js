@@ -93,9 +93,10 @@ export const testModel = async (imageBlob) => {
   return response.data;
 };
 
-export const scanComplete = async (plateId = null) => {
+export const scanComplete = async (plateId = null, profileId = null) => {
   const response = await api.post('/api/scan-complete', {
-    plate_id: plateId
+    plate_id: plateId,
+    profile_id: profileId
   });
   return response.data;
 };

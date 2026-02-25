@@ -224,6 +224,7 @@ class PlateCreate(BaseModel):
 
 class ScanCompleteRequest(BaseModel):
     plate_id: Optional[int] = None
+    profile_id: Optional[int] = None
 
 # ==================== ENDPOINTS ====================
 
@@ -680,27 +681,35 @@ async def scan_complete(request: ScanCompleteRequest):
         # 8. BMI bazlı beslenme önerisi oluştur (eğer profil varsa)
         bmi_recommendation = None
         try:
-            # Profil bilgilerini al (request'te profile_id olabilir)
-            # Şimdilik varsayılan değerlerle test edelim
-            # TODO: Profile ID'den gerçek profil bilgilerini çek
-            
-            # Test için varsayılan değerler
-            test_weight = 70  # kg
-            test_height = 175  # cm
-            test_age = 30
-            
-            # BMI hesapla ve öneri al
-            bmi_value = bmi_calc.calculate(test_weight, test_height)
-            meal_calories = calculated_nutrition['calorie']
-            
-            bmi_recommendation = bmi_calc.get_meal_recommendation(
-                bmi_value, 
-                test_age, 
-                meal_calories, 
-                food_name
-            )
-            
-            print(f"🍽️ BMI önerisi: {bmi_recommendation['message']}")
+            if request.profile_id:
+                # Gerçek profil bilgilerini al
+                profiles = db.get_all_profiles()
+                profile = next((p for p in profiles if p['id'] == request.profile_id), None)
+                
+                if profile:
+                    profile_weight = profile.get('weight', 70)  # kg
+                    profile_height = profile.get('height', 175)  # cm
+                    profile_age = profile.get('age', 30)
+                    
+                    print(f"👤 Profil bilgileri: {profile_weight}kg, {profile_height}cm, {profile_age} yaş")
+                    
+                    # BMI hesapla ve öneri al
+                    bmi_value = bmi_calc.calculate(profile_weight, profile_height)
+                    meal_calories = calculated_nutrition['calorie']
+                    
+                    bmi_recommendation = bmi_calc.get_meal_recommendation(
+                        bmi_value, 
+                        profile_age, 
+                        meal_calories, 
+                        food_name
+                    )
+                    
+                    print(f"🍽️ BMI: {bmi_value}, Kategori: {bmi_recommendation['bmi_category']}")
+                    print(f"🍽️ BMI önerisi: {bmi_recommendation['message']}")
+                else:
+                    print(f"⚠️ Profil ID {request.profile_id} bulunamadı")
+            else:
+                print(f"⚠️ Profil ID belirtilmedi, BMI önerisi oluşturulamadı")
             
         except Exception as e:
             print(f"⚠️ BMI önerisi hesaplanamadı: {e}")
