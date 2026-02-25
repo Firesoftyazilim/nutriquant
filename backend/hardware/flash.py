@@ -45,6 +45,38 @@ class Flash:
             except Exception:
                 pass
 
+    def on(self):
+        """LED'i aç"""
+        if not self.enabled or not self.available or not self._initialized:
+            return
+
+        try:
+            GPIO.output(self.pin, GPIO.HIGH)
+        except Exception:
+            pass
+
+    def off(self):
+        """LED'i kapat"""
+        if not self.enabled or not self.available or not self._initialized:
+            return
+
+        try:
+            GPIO.output(self.pin, GPIO.LOW)
+        except Exception:
+            pass
+
+    def blink(self, duration=1.0):
+        """LED'i belirtilen süre boyunca yak-söndür"""
+        if not self.enabled or not self.available or not self._initialized:
+            return
+
+        try:
+            self.on()
+            time.sleep(max(0.0, float(duration)))
+            self.off()
+        except Exception:
+            pass
+
     def cleanup(self):
         if not self.enabled or not self.available or not self._initialized:
             return

@@ -876,13 +876,25 @@ async def get_battery():
 
 @app.get("/api/led/blink")
 async def blink_leds():
-    """LED'leri 1 sn yak-söndür"""
+    """LED'i 1 sn yak-söndür"""
     def _blink():
-        led_ring.blink_white(1.0)
+        camera.flash.blink(1.0)
 
     t = threading.Thread(target=_blink, daemon=True)
     t.start()
     return {"status": "success"}
+
+@app.post("/api/led/on")
+async def led_on():
+    """LED'i aç"""
+    camera.flash.on()
+    return {"status": "success", "message": "LED açıldı"}
+
+@app.post("/api/led/off")
+async def led_off():
+    """LED'i kapat"""
+    camera.flash.off()
+    return {"status": "success", "message": "LED kapatıldı"}
 
 @app.post("/api/system/shutdown")
 async def shutdown_system():

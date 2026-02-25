@@ -194,6 +194,21 @@ export const controlLED = async (color) => {
   return response.data;
 };
 
+export const blinkLED = async () => {
+  const response = await api.get('/api/led/blink');
+  return response.data;
+};
+
+export const turnLEDOn = async () => {
+  const response = await api.post('/api/led/on');
+  return response.data;
+};
+
+export const turnLEDOff = async () => {
+  const response = await api.post('/api/led/off');
+  return response.data;
+};
+
 export const playSound = async (sound) => {
   const response = await api.post(`/api/speaker/${sound}`);
   return response.data;
