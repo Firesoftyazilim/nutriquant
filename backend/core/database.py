@@ -54,9 +54,9 @@ class Database:
             "food_name": food_name,
             "food": food_name,  # Backward compatibility
             "weight": weight,
-            "calories": nutrition.get("calories", 0),
+            "calories": nutrition.get("calorie", nutrition.get("calories", 0)),
             "protein": nutrition.get("protein", 0),
-            "carbs": nutrition.get("carbs", 0),
+            "carbs": nutrition.get("carbohydrate", nutrition.get("carbs", 0)),
             "fat": nutrition.get("fat", 0),
             "confidence": nutrition.get("confidence", 0),
             "nutrition": nutrition,

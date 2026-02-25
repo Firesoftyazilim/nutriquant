@@ -22,17 +22,28 @@ export default function Results() {
 
   const handleSave = async () => {
     try {
+      // BMI verilerini hazırla
+      let bmiData = { bmi: 0, comment: '-' };
+      if (bmi_recommendation) {
+        bmiData = {
+          bmi: bmi_recommendation.bmi_category || 'normal',
+          comment: bmi_recommendation.message || '-'
+        };
+      }
+
       await saveMeasurement({
         user_id: selectedProfile?.id || 1,
         food_name: food_name,
         weight: weight,
         nutrition: nutrition,
-        bmi_data: { bmi: 0, comment: '-' }
+        bmi_data: bmiData,
+        bmi_recommendation: bmi_recommendation
       });
       await playSound('success');
       navigate('/');
     } catch (error) {
       console.error('Kayıt hatası:', error);
+      alert('Kayıt sırasında hata oluştu: ' + error.message);
     }
   };
 

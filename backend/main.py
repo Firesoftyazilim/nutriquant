@@ -217,6 +217,7 @@ class SaveMeasurementRequest(BaseModel):
     weight: float
     nutrition: dict
     bmi_data: dict
+    bmi_recommendation: Optional[dict] = None
 
 class PlateCreate(BaseModel):
     name: str
@@ -831,14 +832,27 @@ async def delete_plate(plate_id: int):
 @app.post("/api/measurements")
 async def save_measurement(request: SaveMeasurementRequest):
     """Ölçüm kaydet"""
-    success = db.add_measurement(
-        request.user_id,
-        request.food_name,
-        request.weight,
-        request.nutrition,
-        request.bmi_data
-    )
-    return {"status": "success" if success else "failed"}
+    try:
+        print(f"💾 Ölçüm kaydediliyor: {request.food_name}, {request.weight}g, User: {request.user_id}")
+        
+        success = db.add_measurement(
+            request.user_id,
+            request.food_name,
+            request.weight,
+            request.nutrition,
+            request.bmi_data
+        )
+        
+        if success:
+            print(f"✅ Ölçüm başarıyla kaydedildi")
+            return {"status": "success"}
+        else:
+            print(f"❌ Ölçüm kaydedilemedi")
+            return {"status": "failed", "message": "Database kayıt hatası"}
+            
+    except Exception as e:
+        print(f"❌ Save measurement hatası: {e}")
+        return {"status": "failed", "message": str(e)}
 
 @app.get("/api/measurements")
 async def get_measurements():
