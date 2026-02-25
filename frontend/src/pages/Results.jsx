@@ -17,6 +17,9 @@ export default function Results() {
   // Model prediction results with nutrition
   const { food_name, confidence, percentage, weight, nutrition, predictions, profile, bmi_recommendation } = lastResult;
   
+  // Debug BMI recommendation
+  console.log('Results page - BMI recommendation:', bmi_recommendation);
+  
   // Türkçe ismi kullan
   const displayName = nutrition?.base_values_per_100g?.name || food_name;
 

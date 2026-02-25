@@ -80,6 +80,7 @@ export default function Scanning() {
           weight: result.weight,
           nutrition: result.nutrition,
           predictions: result.predictions,
+          bmi_recommendation: result.bmi_recommendation,
           profile: selectedProfile,
           timestamp: result.timestamp
         });
