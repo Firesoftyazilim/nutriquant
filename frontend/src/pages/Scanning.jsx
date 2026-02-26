@@ -236,14 +236,11 @@ export default function Scanning() {
       <LowConfidenceModal
         isOpen={showLowConfidenceModal}
         onClose={() => {
+          console.log('🚫 LowConfidenceModal kapatılıyor - dashboard\'a yönlendiriliyor');
           setShowLowConfidenceModal(false);
           setLowConfidenceData(null);
-          // State'i sıfırla ve dashboard'a dön
-          setStatus('ready');
-          setProgress(0);
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 100);
+          // Window location ile zorla yönlendir
+          window.location.href = '/dashboard';
         }}
         data={lowConfidenceData}
         onRetryAnalysis={() => {
@@ -260,15 +257,12 @@ export default function Scanning() {
       <ManualFoodSelector
         isOpen={showManualSelector}
         onClose={() => {
+          console.log('🚫 ManualFoodSelector kapatılıyor - dashboard\'a yönlendiriliyor');
           setShowManualSelector(false);
           setShowLowConfidenceModal(false);
           setLowConfidenceData(null);
-          // State'i sıfırla ve dashboard'a dön
-          setStatus('ready');
-          setProgress(0);
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 100);
+          // Window location ile zorla yönlendir
+          window.location.href = '/dashboard';
         }}
         weight={lowConfidenceData?.weight || currentWeight}
         onSelect={(result) => {
