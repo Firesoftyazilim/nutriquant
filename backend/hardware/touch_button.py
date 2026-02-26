@@ -14,25 +14,28 @@ except ImportError:
 
 
 class TouchButton:
-    def __init__(self, pin: int = 3, enabled: bool = True, debounce_ms: int = 50):
+    def __init__(self, pin: int = 3, enabled: bool = True, poll_interval: float = 0.1):
         """
-        GPIO3 pinindeki dokunmatik buton için interrupt handler
+        GPIO3 pinindeki dokunmatik buton için polling-based handler
         
         Args:
             pin: GPIO pin numarası (default: 3)
             enabled: Buton aktif mi
-            debounce_ms: Debounce süresi (ms)
+            poll_interval: Polling aralığı (saniye)
         """
         self.pin = int(pin)
         self.enabled = bool(enabled)
-        self.debounce_ms = int(debounce_ms)
+        self.poll_interval = float(poll_interval)
         
         self.available = _GPIO_AVAILABLE and self.enabled
         self._initialized = False
+        self._last_state = None
         self._last_press_time = 0
         
-        # Callback fonksiyonu
+        # Callback fonksiyonu ve polling thread
         self._callback: Optional[Callable] = None
+        self._polling_thread = None
+        self._stop_polling = threading.Event()
         
         if not self.available:
             print(f"[TouchButton] GPIO{self.pin} - Mock modda çalışıyor")
@@ -40,19 +43,11 @@ class TouchButton:
             
         try:
             GPIO.setmode(GPIO.BCM)
-            # GPIO3 fiziksel pull-up resistor var - PUD_DOWN kullan veya None
-            GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            
-            # Interrupt callback ekle (BOTH edge - dokunmatik buton test için)
-            GPIO.add_event_detect(
-                self.pin, 
-                GPIO.BOTH, 
-                callback=self._interrupt_handler,
-                bouncetime=self.debounce_ms
-            )
+            # GPIO3 fiziksel pull-up resistor var - None kullan (varsayılan)
+            GPIO.setup(self.pin, GPIO.IN)
             
             self._initialized = True
-            print(f"[TouchButton] GPIO{self.pin} başarıyla başlatıldı")
+            print(f"[TouchButton] GPIO{self.pin} polling sistemi başlatıldı")
             
         except Exception as e:
             print(f"[TouchButton] GPIO{self.pin} başlatma hatası: {e}")
@@ -60,36 +55,61 @@ class TouchButton:
             self._initialized = False
     
     def set_callback(self, callback: Callable):
-        """Buton basıldığında çağrılacak fonksiyonu ayarla"""
+        """Buton basıldığında çağrılacak fonksiyonu ayarla ve polling başlat"""
         self._callback = callback
         print(f"[TouchButton] Callback fonksiyonu ayarlandı")
+        self.start_polling()
     
-    def _interrupt_handler(self, channel):
-        """GPIO interrupt handler"""
-        current_time = time.time() * 1000  # ms
-        
-        # Debounce kontrolü
-        if (current_time - self._last_press_time) < self.debounce_ms:
+    def start_polling(self):
+        """Polling thread'ini başlat"""
+        if not self.available or not self._initialized:
             return
             
-        self._last_press_time = current_time
-        
-        # Pin durumunu oku ve debug bilgisi ver
-        try:
-            pin_state = GPIO.input(self.pin)
-            state_text = "HIGH" if pin_state == GPIO.HIGH else "LOW"
-            print(f"[TouchButton] 🔘 GPIO{self.pin} interrupt! Pin durumu: {state_text}")
+        if self._polling_thread and self._polling_thread.is_alive():
+            return
             
-            # Callback fonksiyonunu çağır
-            if self._callback:
-                try:
-                    # Thread'de çalıştır ki interrupt bloklanmasın
-                    threading.Thread(target=self._callback, daemon=True).start()
-                except Exception as e:
-                    print(f"[TouchButton] Callback hatası: {e}")
+        self._stop_polling.clear()
+        self._polling_thread = threading.Thread(target=self._polling_loop, daemon=True)
+        self._polling_thread.start()
+        print(f"[TouchButton] GPIO{self.pin} polling başlatıldı")
+    
+    def stop_polling(self):
+        """Polling thread'ini durdur"""
+        self._stop_polling.set()
+        if self._polling_thread:
+            self._polling_thread.join(timeout=1)
+    
+    def _polling_loop(self):
+        """Ana polling döngüsü"""
+        while not self._stop_polling.is_set():
+            try:
+                current_state = GPIO.input(self.pin)
+                
+                # Durum değişikliği kontrolü
+                if self._last_state is not None and current_state != self._last_state:
+                    current_time = time.time() * 1000  # ms
                     
-        except Exception as e:
-            print(f"[TouchButton] Pin okuma hatası: {e}")
+                    # Debounce kontrolü
+                    if (current_time - self._last_press_time) > 100:  # 100ms debounce
+                        state_text = "HIGH" if current_state == GPIO.HIGH else "LOW"
+                        print(f"[TouchButton] 🔘 GPIO{self.pin} değişti: {state_text}")
+                        
+                        # Callback'i çağır
+                        if self._callback:
+                            try:
+                                threading.Thread(target=self._callback, daemon=True).start()
+                            except Exception as e:
+                                print(f"[TouchButton] Callback hatası: {e}")
+                        
+                        self._last_press_time = current_time
+                
+                self._last_state = current_state
+                
+            except Exception as e:
+                print(f"[TouchButton] Polling hatası: {e}")
+                
+            time.sleep(self.poll_interval)
+    
     
     def trigger_power_modal(self):
         """Power modal'ını tetikle - basit flag sistemi"""
@@ -104,12 +124,14 @@ class TouchButton:
             print(f"[TouchButton] Flag oluşturma hatası: {e}")
     
     def cleanup(self):
-        """GPIO temizleme"""
+        """GPIO temizleme ve polling durdurma"""
+        # Polling'i durdur
+        self.stop_polling()
+        
         if not self.available or not self._initialized:
             return
             
         try:
-            GPIO.remove_event_detect(self.pin)
             GPIO.cleanup(self.pin)
             print(f"[TouchButton] GPIO{self.pin} temizlendi")
         except Exception as e:
