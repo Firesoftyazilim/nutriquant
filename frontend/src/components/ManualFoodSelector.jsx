@@ -161,7 +161,7 @@ export default function ManualFoodSelector({
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-gray-800">
-                        {food.name}
+                        {food.display_name || food.name}
                       </h3>
                       <p className="text-sm text-gray-600">
                         {food.calorie} kcal/100g • Protein: {food.protein}g

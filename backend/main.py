@@ -911,20 +911,23 @@ async def set_wallpaper(wallpaper: dict):
 async def get_foods():
     """Tanınabilir yemek listesini getir"""
     try:
-        nutrition_db_path = os.path.join(backend_dir, "models", "datas.json")
+        # foods.json dosyasından Türkçe isimleri al
+        foods_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "foods.json")
         
-        with open(nutrition_db_path, 'r', encoding='utf-8') as f:
-            nutrition_db = json.load(f)
+        with open(foods_db_path, 'r', encoding='utf-8') as f:
+            foods_db = json.load(f)
         
         # Yemekleri alfabetik sıraya göre listele
         foods = []
-        for key, value in sorted(nutrition_db.items(), key=lambda x: x[1]['name']):
+        for key, value in sorted(foods_db.items(), key=lambda x: x[1]['name']):
             foods.append({
                 "key": key,
-                "name": value["name"],
+                "name": key,  # API key
+                "display_name": value["name"],  # Türkçe isim
                 "calorie": value["calorie"],
                 "protein": value["protein"],
-                "carbohydrate": value["carbohydrate"]
+                "carb": value.get("carb", 0),
+                "fat": value.get("fat", 0)
             })
         
         return {

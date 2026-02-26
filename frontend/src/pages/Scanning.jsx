@@ -250,7 +250,11 @@ export default function Scanning() {
       {/* Manuel Besin Seçici */}
       <ManualFoodSelector
         isOpen={showManualSelector}
-        onClose={() => setShowManualSelector(false)}
+        onClose={() => {
+          setShowManualSelector(false);
+          // Manuel seçim iptal edildiğinde dashboard'a dön
+          navigate('/dashboard');
+        }}
         weight={lowConfidenceData?.weight || currentWeight}
         onSelect={(result) => {
           // Manuel seçim sonucunu kaydet ve results sayfasına git
