@@ -19,7 +19,7 @@ export default function Dashboard() {
   
   console.log('🎯 Dashboard state:', { selectedProfile, currentWeight, batteryPercent, profilesCount: profiles.length });
 
-  // Profilleri yükle
+  // Profilleri yükle ve açılış sesi çal
   useEffect(() => {
     console.log('🔄 Dashboard mounting - loading data...');
     loadProfiles().catch(err => console.error('Profile load failed:', err));
@@ -27,6 +27,9 @@ export default function Dashboard() {
     
     // Touch button polling başlat
     startTouchButtonPolling();
+    
+    // Açılış sesi çal
+    playOpeningSound();
     
     return () => {
       // Cleanup
@@ -88,6 +91,24 @@ export default function Dashboard() {
       setBatteryPercent(data.percentage);
     } catch (error) {
       console.error('Batarya hatası:', error);
+    }
+  };
+
+  const playOpeningSound = async () => {
+    try {
+      // HTML5 Audio API kullanarak açılış sesi çal
+      const audio = new Audio('/opening-sound.mp3');
+      audio.volume = 0.7; // Ses seviyesi %70
+      await audio.play();
+      console.log('🔊 Opening sound played successfully');
+    } catch (error) {
+      console.error('Opening sound play error:', error);
+      // Fallback: Backend API ile ses çalmayı dene
+      try {
+        await playSound('startup');
+      } catch (backendError) {
+        console.error('Backend sound play error:', backendError);
+      }
     }
   };
 
