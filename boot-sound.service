@@ -1,0 +1,17 @@
+[Unit]
+Description=Nutriquant Boot Sound
+After=sound.target pulseaudio.service pipewire.service
+Wants=sound.target
+
+[Service]
+Type=oneshot
+User=nutriqua
+Group=audio
+ExecStartPre=/bin/sleep 3
+ExecStart=/usr/bin/aplay /home/nutriqua/nutriquant/opening-sound.wav
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
