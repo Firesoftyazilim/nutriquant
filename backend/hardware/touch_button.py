@@ -40,12 +40,13 @@ class TouchButton:
             
         try:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            # GPIO3 fiziksel pull-up resistor var - PUD_DOWN kullan veya None
+            GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
             
-            # Interrupt callback ekle (falling edge - buton basıldığında)
+            # Interrupt callback ekle (BOTH edge - dokunmatik buton test için)
             GPIO.add_event_detect(
                 self.pin, 
-                GPIO.FALLING, 
+                GPIO.BOTH, 
                 callback=self._interrupt_handler,
                 bouncetime=self.debounce_ms
             )
@@ -73,15 +74,22 @@ class TouchButton:
             
         self._last_press_time = current_time
         
-        print(f"[TouchButton] GPIO{self.pin} basıldı!")
-        
-        # Callback fonksiyonunu çağır
-        if self._callback:
-            try:
-                # Thread'de çalıştır ki interrupt bloklanmasın
-                threading.Thread(target=self._callback, daemon=True).start()
-            except Exception as e:
-                print(f"[TouchButton] Callback hatası: {e}")
+        # Pin durumunu oku ve debug bilgisi ver
+        try:
+            pin_state = GPIO.input(self.pin)
+            state_text = "HIGH" if pin_state == GPIO.HIGH else "LOW"
+            print(f"[TouchButton] 🔘 GPIO{self.pin} interrupt! Pin durumu: {state_text}")
+            
+            # Callback fonksiyonunu çağır
+            if self._callback:
+                try:
+                    # Thread'de çalıştır ki interrupt bloklanmasın
+                    threading.Thread(target=self._callback, daemon=True).start()
+                except Exception as e:
+                    print(f"[TouchButton] Callback hatası: {e}")
+                    
+        except Exception as e:
+            print(f"[TouchButton] Pin okuma hatası: {e}")
     
     def trigger_power_modal(self):
         """Power modal'ını tetikle - basit flag sistemi"""
