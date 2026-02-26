@@ -1,6 +1,21 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { playSound } from '../services/api';
 
 export default function SplashScreen() {
+  useEffect(() => {
+    // Backend API ile startup sesi çal
+    playStartupSound();
+  }, []);
+
+  const playStartupSound = async () => {
+    try {
+      await playSound('startup');
+      console.log('🔊 Startup sound played via backend API');
+    } catch (error) {
+      console.error('Backend startup sound error:', error);
+    }
+  };
 
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-blue-500 via-green-500 to-yellow-400 flex items-center justify-center">
