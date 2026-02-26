@@ -24,27 +24,27 @@ class Speaker:
     
     def play_beep(self):
         """Bip sesi"""
-        self.play_sound("beep.wav")
+        self.play_sound("pa.wav")
     
     def play_success(self):
         """Başarılı işlem sesi"""
-        self.play_sound("success.wav")
+        self.play_sound("pa.wav")
     
     def play_warning(self):
         """Uyarı sesi"""
-        self.play_sound("warning.wav")
+        self.play_sound("da.wav")
     
     def play_error(self):
         """Hata sesi"""
-        self.play_sound("error.wav")
+        self.play_sound("da.wav")
     
     def play_ready(self):
         """Hazır sesi"""
-        self.play_sound("ready.wav")
+        self.play_sound("pa.wav")
     
     def play_startup_music(self):
         """Açılış müziği - En yüksek ses ile"""
-        filepath = os.path.join(self.sounds_dir, "start.mp3")
+        filepath = os.path.join(self.sounds_dir, "oa.waw")
         if os.path.exists(filepath):
             try:
                 pygame.mixer.music.set_volume(1.0)  # Maksimum ses
