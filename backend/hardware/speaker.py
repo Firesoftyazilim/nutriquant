@@ -8,7 +8,7 @@ class Speaker:
     def __init__(self):
         pygame.mixer.init()
         pygame.mixer.music.set_volume(VOLUME / 100)
-        self.sounds_dir = os.path.join(ASSETS_DIR, "sounds")
+        self.sounds_dir = os.path.join(ASSETS_DIR, "sound")
     
     def play_sound(self, filename):
         """Ses dosyası çal"""
@@ -44,7 +44,7 @@ class Speaker:
     
     def play_startup_music(self):
         """Açılış müziği - En yüksek ses ile"""
-        filepath = os.path.join(self.sounds_dir, "oa.waw")
+        filepath = os.path.join(self.sounds_dir, "oa.wav")
         if os.path.exists(filepath):
             try:
                 pygame.mixer.music.set_volume(1.0)  # Maksimum ses
