@@ -157,6 +157,9 @@ print("[Main] Speaker başlatılıyor...")
 speaker = Speaker()
 print("[Main] Power button başlatılıyor...")
 power_button = PowerButton(POWER_BUTTON_PIN, POWER_BUTTON_HOLD_SECONDS, enabled=False)  # Geçici devre dışı
+print("[Main] Touch button başlatılıyor...")
+from hardware.touch_button import TouchButton
+touch_button = TouchButton(pin=3, enabled=True)
 print("[Main] LED ring başlatılıyor...")
 try:
     led_ring = LedRing(LED_COUNT, LED_PIN, LED_BRIGHTNESS, enabled=False)  # Import hatası var
@@ -990,6 +993,34 @@ async def reboot_system():
     t.start()
     return {"status": "success", "message": "Sistem yeniden başlatılıyor..."}
 
+@app.get("/api/check-power-modal-trigger")
+async def check_power_modal_trigger():
+    """GPIO3 dokunmatik buton trigger flag'ini kontrol et"""
+    try:
+        import os
+        flag_file = '/tmp/power_modal_trigger'
+        
+        if os.path.exists(flag_file):
+            # Flag dosyasını oku ve sil
+            with open(flag_file, 'r') as f:
+                timestamp = f.read().strip()
+            
+            os.remove(flag_file)
+            
+            return {
+                "status": "success", 
+                "triggered": True,
+                "timestamp": float(timestamp)
+            }
+        else:
+            return {
+                "status": "success", 
+                "triggered": False
+            }
+    except Exception as e:
+        print(f"[TouchButton] Flag kontrol hatası: {e}")
+        return {"status": "error", "message": str(e)}
+
 # ==================== STARTUP & SHUTDOWN ====================
 
 @app.on_event("startup")
@@ -999,6 +1030,9 @@ async def startup_event():
     print(f"   Scale Mode: {scale.mode}")
     print(f"   Camera Mode: {'Mock' if camera.mock_mode else 'Real'}")
     power_button.start()  # Artık güvenli - shutdown komutu kaldırıldı
+    
+    # Touch button callback'ini ayarla
+    touch_button.set_callback(touch_button.trigger_power_modal)
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -1007,6 +1041,7 @@ async def shutdown_event():
     scale.cleanup()
     camera.cleanup()
     power_button.cleanup()
+    touch_button.cleanup()
 
 # ==================== MAIN ====================
 

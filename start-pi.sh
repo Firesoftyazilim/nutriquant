@@ -133,6 +133,9 @@ echo "   URL: http://localhost:5173"
 # X11 display ayarla
 export DISPLAY=:0
 
+unclutter -idle 0.1 &
+
+
 # Chromium'u kiosk modda başlat (mobil dokunmatik mod)
 # Dokunmatik kaydırma ve mobil davranış için optimize edilmiş
 chromium-browser \

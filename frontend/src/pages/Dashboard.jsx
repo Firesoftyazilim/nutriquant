@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [profiles, setProfiles] = useState([]);
   const [ws, setWs] = useState(null);
   const [showPowerModal, setShowPowerModal] = useState(false);
+  const [touchButtonPolling, setTouchButtonPolling] = useState(null);
   
   console.log('🎯 Dashboard state:', { selectedProfile, currentWeight, batteryPercent, profilesCount: profiles.length });
 
@@ -23,6 +24,16 @@ export default function Dashboard() {
     console.log('🔄 Dashboard mounting - loading data...');
     loadProfiles().catch(err => console.error('Profile load failed:', err));
     loadBattery().catch(err => console.error('Battery load failed:', err));
+    
+    // Touch button polling başlat
+    startTouchButtonPolling();
+    
+    return () => {
+      // Cleanup
+      if (touchButtonPolling) {
+        clearInterval(touchButtonPolling);
+      }
+    };
   }, []);
 
   // Ağırlık gösterimi kaldırıldı - WebSocket ve polling artık gerekli değil
@@ -78,6 +89,26 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Batarya hatası:', error);
     }
+  };
+
+  const startTouchButtonPolling = () => {
+    // GPIO3 dokunmatik buton için polling başlat
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/check-power-modal-trigger');
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.triggered === true) {
+          // Power modal'ı aç
+          setShowPowerModal(true);
+          console.log('🔘 Touch button pressed - Power modal opened');
+        }
+      } catch (error) {
+        // Sessizce devam et - backend henüz hazır olmayabilir
+      }
+    }, 300); // 300ms'de bir kontrol et
+    
+    setTouchButtonPolling(interval);
   };
 
   const handleScan = async () => {
