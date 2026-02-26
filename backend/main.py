@@ -633,8 +633,28 @@ async def scan_complete(request: ScanCompleteRequest):
         top_prediction = predictions[0]
         food_name = top_prediction['class']
         confidence = top_prediction['confidence']
+        percentage = top_prediction['percentage']
         
-        print(f"🍽️ Tahmin edilen yemek: {food_name} (%{top_prediction['percentage']:.1f})")
+        print(f"🍽️ Tahmin edilen yemek: {food_name} (%{percentage:.1f})")
+        
+        # Düşük doğruluk kontrolü (%65 altında)
+        if percentage < 65.0:
+            print(f"⚠️ Düşük doğruluk tespit edildi: %{percentage:.1f}")
+            return {
+                "status": "low_confidence",
+                "weight": weight,
+                "food_name": food_name,
+                "confidence": confidence,
+                "percentage": percentage,
+                "message": "Tahmin doğruluğu düşük. Manuel seçim yapın veya tekrar analiz edin.",
+                "predictions": [{
+                    "food_name": pred['class'],
+                    "confidence": pred['confidence'],
+                    "percentage": pred['percentage']
+                } for pred in predictions],
+                "photo_path": photo_path,
+                "timestamp": datetime.now().isoformat()
+            }
         
         # 4. Besin değerlerini yükle (datas.json)
         nutrition_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "datas.json")

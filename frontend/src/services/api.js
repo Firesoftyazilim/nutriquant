@@ -215,6 +215,11 @@ export const playSound = async (sound) => {
   return response.data;
 };
 
+export const getFoodList = async () => {
+  const response = await api.get('/api/foods');
+  return response.data;
+};
+
 export const getBattery = async () => {
   const response = await api.get('/api/battery');
   return response.data;

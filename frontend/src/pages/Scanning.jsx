@@ -6,6 +6,8 @@ import { useAppStore } from '../store/appStore';
 import { connectWeightStream, scanComplete, getWeight } from '../services/api';
 import WallpaperBackground from '../components/WallpaperBackground';
 import TareModal from '../components/TareModal';
+import LowConfidenceModal from '../components/LowConfidenceModal';
+import ManualFoodSelector from '../components/ManualFoodSelector';
 
 export default function Scanning() {
   const navigate = useNavigate();
@@ -15,6 +17,9 @@ export default function Scanning() {
   const [progress, setProgress] = useState(0);
   const [ws, setWs] = useState(null);
   const [showTareModal, setShowTareModal] = useState(true);
+  const [showLowConfidenceModal, setShowLowConfidenceModal] = useState(false);
+  const [showManualSelector, setShowManualSelector] = useState(false);
+  const [lowConfidenceData, setLowConfidenceData] = useState(null);
 
   // WebSocket ile gerçek zamanlı ağırlık
   useEffect(() => {
@@ -87,6 +92,12 @@ export default function Scanning() {
         
         await new Promise(resolve => setTimeout(resolve, 500));
         navigate('/results');
+      } else if (result.status === 'low_confidence') {
+        // Düşük doğruluk - kullanıcıya seçenek sun
+        setLowConfidenceData(result);
+        setShowLowConfidenceModal(true);
+        setStatus('ready');
+        setProgress(0);
       } else {
         // Tanınamadı
         alert('Yemek tanınamadı. Lütfen tekrar deneyin.');
@@ -220,6 +231,45 @@ export default function Scanning() {
         <span>Ağırlık: {currentWeight.toFixed(0)}g</span>
         <span>Profil: {selectedProfile?.name}</span>
       </div>
+
+      {/* Düşük Doğruluk Modal */}
+      <LowConfidenceModal
+        isOpen={showLowConfidenceModal}
+        onClose={() => setShowLowConfidenceModal(false)}
+        data={lowConfidenceData}
+        onRetryAnalysis={() => {
+          setShowLowConfidenceModal(false);
+          startScanning(selectedPlate);
+        }}
+        onManualSelect={() => {
+          setShowLowConfidenceModal(false);
+          setShowManualSelector(true);
+        }}
+      />
+
+      {/* Manuel Besin Seçici */}
+      <ManualFoodSelector
+        isOpen={showManualSelector}
+        onClose={() => setShowManualSelector(false)}
+        weight={lowConfidenceData?.weight || currentWeight}
+        onSelect={(result) => {
+          // Manuel seçim sonucunu kaydet ve results sayfasına git
+          setLastResult({
+            status: 'manual_selected',
+            food_name: result.food_name,
+            confidence: 1.0,
+            percentage: 100,
+            weight: result.weight,
+            nutrition: result.nutrition,
+            predictions: [],
+            bmi_recommendation: null,
+            profile: selectedProfile,
+            timestamp: new Date().toISOString(),
+            manual_selection: true
+          });
+          navigate('/results');
+        }}
+      />
     </div>
     </WallpaperBackground>
   );
