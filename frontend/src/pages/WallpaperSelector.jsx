@@ -24,28 +24,33 @@ export default function WallpaperSelector() {
   const [saving, setSaving] = useState(false);
 
   const handleSelectWallpaper = async (wallpaper) => {
+    if (saving) return; // Prevent multiple clicks
+    
     setSelectedWallpaper(wallpaper.id);
     setSaving(true);
 
     try {
-      // Backend'e kaydet
-      await setWallpaperAPI(wallpaper.id);
-      
-      // Global state'e kaydet
+      // Global state'e hemen kaydet (UI responsiveness için)
       setCurrentWallpaper(wallpaper.id);
       
       // LocalStorage'a kaydet
       localStorage.setItem('nutriquant_wallpaper', wallpaper.id);
       
+      // Backend'e kaydet (async, hata olsa da devam et)
+      setWallpaperAPI(wallpaper.id).catch(error => {
+        console.error('Backend wallpaper kaydetme hatası:', error);
+      });
+      
       // Kısa bir süre sonra geri dön
       setTimeout(() => {
         setSaving(false);
         navigate('/settings');
-      }, 500);
+      }, 300); // 500ms'den 300ms'ye düşür
+      
     } catch (error) {
-      console.error('Wallpaper kaydetme hatası:', error);
+      console.error('Wallpaper seçim hatası:', error);
       setSaving(false);
-      alert('Arkaplan kaydedilemedi. Lütfen tekrar deneyin.');
+      // Alert yerine console.error kullan - UI donmasını önle
     }
   };
 
