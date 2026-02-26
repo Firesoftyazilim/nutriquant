@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Search, X, Check } from 'lucide-react';
 import { getFoodList } from '../services/api';
@@ -14,10 +14,31 @@ export default function ManualFoodSelector({
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedFood, setSelectedFood] = useState(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       loadFoods();
+      // Modal açıldığında input'a focus ver (klavye tetiklemesi için)
+      setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.click(); // Mobile cihazlarda klavye tetiklemesi için
+          
+          // Raspberry Pi touchscreen için ek tetikleme
+          const touchEvent = new TouchEvent('touchstart', {
+            bubbles: true,
+            cancelable: true,
+            touches: [{
+              identifier: 0,
+              target: searchInputRef.current,
+              clientX: 0,
+              clientY: 0
+            }]
+          });
+          searchInputRef.current.dispatchEvent(touchEvent);
+        }
+      }, 500); // Timeout'u artır
     }
   }, [isOpen]);
 
@@ -109,11 +130,32 @@ export default function ManualFoodSelector({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Besin ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onTouchStart={(e) => {
+                // Mobile cihazlarda dokunma ile klavye tetiklemesi
+                e.target.focus();
+              }}
+              onFocus={() => {
+                // Focus olduğunda klavye açılması için
+                console.log('Input focused - klavye açılmalı');
+              }}
+              onClick={() => {
+                // Click ile de klavye tetiklemesi
+                if (searchInputRef.current) {
+                  searchInputRef.current.focus();
+                }
+              }}
+              autoFocus={isOpen}
+              inputMode="text"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+              style={{ fontSize: '16px' }} // iOS'ta zoom'u önlemek için
             />
           </div>
         </div>
