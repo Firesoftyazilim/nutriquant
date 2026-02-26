@@ -235,7 +235,16 @@ export default function Scanning() {
       {/* Düşük Doğruluk Modal */}
       <LowConfidenceModal
         isOpen={showLowConfidenceModal}
-        onClose={() => setShowLowConfidenceModal(false)}
+        onClose={() => {
+          setShowLowConfidenceModal(false);
+          setLowConfidenceData(null);
+          // State'i sıfırla ve dashboard'a dön
+          setStatus('ready');
+          setProgress(0);
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 100);
+        }}
         data={lowConfidenceData}
         onRetryAnalysis={() => {
           setShowLowConfidenceModal(false);
@@ -252,8 +261,14 @@ export default function Scanning() {
         isOpen={showManualSelector}
         onClose={() => {
           setShowManualSelector(false);
-          // Manuel seçim iptal edildiğinde dashboard'a dön
-          navigate('/dashboard');
+          setShowLowConfidenceModal(false);
+          setLowConfidenceData(null);
+          // State'i sıfırla ve dashboard'a dön
+          setStatus('ready');
+          setProgress(0);
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 100);
         }}
         weight={lowConfidenceData?.weight || currentWeight}
         onSelect={(result) => {
