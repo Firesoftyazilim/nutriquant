@@ -640,6 +640,15 @@ async def scan_complete(request: ScanCompleteRequest):
         # Düşük doğruluk kontrolü (%65 altında)
         if percentage < 65.0:
             print(f"⚠️ Düşük doğruluk tespit edildi: %{percentage:.1f}")
+            
+            # Besin değerlerini yükle (Türkçe isimler için)
+            nutrition_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "foods.json")
+            try:
+                with open(nutrition_db_path, 'r', encoding='utf-8') as f:
+                    foods_db = json.load(f)
+            except:
+                foods_db = {}
+            
             return {
                 "status": "low_confidence",
                 "weight": weight,
@@ -649,6 +658,7 @@ async def scan_complete(request: ScanCompleteRequest):
                 "message": "Tahmin doğruluğu düşük. Manuel seçim yapın veya tekrar analiz edin.",
                 "predictions": [{
                     "food_name": pred['class'],
+                    "display_name": foods_db.get(pred['class'], {}).get('name', pred['class']),
                     "confidence": pred['confidence'],
                     "percentage": pred['percentage']
                 } for pred in predictions],

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Search, X, Check } from 'lucide-react';
 import { getFoodList } from '../services/api';
+import TouchKeyboard from './TouchKeyboard';
 
 export default function ManualFoodSelector({ 
   isOpen, 
@@ -14,31 +15,19 @@ export default function ManualFoodSelector({
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedFood, setSelectedFood] = useState(null);
+  const [showKeyboard, setShowKeyboard] = useState(false);
   const searchInputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       loadFoods();
-      // Modal açıldığında input'a focus ver (klavye tetiklemesi için)
+      // Modal açıldığında TouchKeyboard'u göster
       setTimeout(() => {
-        if (searchInputRef.current) {
-          searchInputRef.current.focus();
-          searchInputRef.current.click(); // Mobile cihazlarda klavye tetiklemesi için
-          
-          // Raspberry Pi touchscreen için ek tetikleme
-          const touchEvent = new TouchEvent('touchstart', {
-            bubbles: true,
-            cancelable: true,
-            touches: [{
-              identifier: 0,
-              target: searchInputRef.current,
-              clientX: 0,
-              clientY: 0
-            }]
-          });
-          searchInputRef.current.dispatchEvent(touchEvent);
-        }
-      }, 500); // Timeout'u artır
+        setShowKeyboard(true);
+      }, 300);
+    } else {
+      setShowKeyboard(false);
+      setSearchTerm('');
     }
   }, [isOpen]);
 
@@ -135,27 +124,15 @@ export default function ManualFoodSelector({
               placeholder="Besin ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onTouchStart={(e) => {
-                // Mobile cihazlarda dokunma ile klavye tetiklemesi
-                e.target.focus();
-              }}
               onFocus={() => {
-                // Focus olduğunda klavye açılması için
-                console.log('Input focused - klavye açılmalı');
+                setShowKeyboard(true);
               }}
               onClick={() => {
-                // Click ile de klavye tetiklemesi
-                if (searchInputRef.current) {
-                  searchInputRef.current.focus();
-                }
+                setShowKeyboard(true);
               }}
-              autoFocus={isOpen}
-              inputMode="text"
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck="false"
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
-              style={{ fontSize: '16px' }} // iOS'ta zoom'u önlemek için
+              readOnly
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-base cursor-pointer"
+              style={{ fontSize: '16px' }}
             />
           </div>
         </div>
@@ -233,6 +210,24 @@ export default function ManualFoodSelector({
           </div>
         </div>
       </motion.div>
+
+      {/* TouchKeyboard */}
+      {showKeyboard && (
+        <TouchKeyboard
+          onKeyPress={(key) => {
+            setSearchTerm(prev => prev + key);
+          }}
+          onBackspace={() => {
+            setSearchTerm(prev => prev.slice(0, -1));
+          }}
+          onClose={() => {
+            setShowKeyboard(false);
+          }}
+          type="text"
+          currentValue={searchTerm}
+          label="Besin Ara"
+        />
+      )}
     </div>
   );
 }

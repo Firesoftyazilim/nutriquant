@@ -44,7 +44,7 @@ export default function LowConfidenceModal({
                 className="flex justify-between items-center p-2 bg-white rounded border"
               >
                 <span className="font-medium text-gray-700">
-                  {pred.food_name}
+                  {pred.display_name || pred.food_name}
                 </span>
                 <span className="text-sm text-gray-500">
                   %{pred.percentage?.toFixed(1)}
